@@ -11,7 +11,7 @@
   "sec_company_tickers_source": {
     "url": "https://www.sec.gov/files/company_tickers.json",
     "retrieved_on": "2026-07-11",
-    "user_agent": "risk-weave-codex zakariakhan@ucf.edu"
+    "user_agent": "risk-weave-codex"
   },
   "selection_bounds": {
     "min_entities": 100,
