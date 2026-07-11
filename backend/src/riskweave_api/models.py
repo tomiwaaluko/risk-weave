@@ -1,0 +1,187 @@
+"""Pydantic v2 request/response models for RIS-14 (RW-FR-009, RW-FR-015, RW-FR-020)."""
+
+from __future__ import annotations
+
+from enum import StrEnum
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
+
+# ---------------------------------------------------------------------------
+# Scenario lifecycle
+# ---------------------------------------------------------------------------
+
+
+class ScenarioState(StrEnum):
+    DRAFT = "DRAFT"
+    VALIDATING = "VALIDATING"
+    READY = "READY"
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    PARTIAL = "PARTIAL"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+# Valid forward transitions (RW-FR-009)
+_VALID_TRANSITIONS: dict[ScenarioState, set[ScenarioState]] = {
+    ScenarioState.DRAFT: {ScenarioState.VALIDATING, ScenarioState.CANCELLED},
+    ScenarioState.VALIDATING: {ScenarioState.READY, ScenarioState.FAILED},
+    ScenarioState.READY: {ScenarioState.QUEUED, ScenarioState.CANCELLED},
+    ScenarioState.QUEUED: {ScenarioState.RUNNING, ScenarioState.CANCELLED},
+    ScenarioState.RUNNING: {ScenarioState.COMPLETED, ScenarioState.PARTIAL, ScenarioState.FAILED},
+    # Terminal states
+    ScenarioState.COMPLETED: set(),
+    ScenarioState.PARTIAL: set(),
+    ScenarioState.FAILED: set(),
+    ScenarioState.CANCELLED: set(),
+}
+
+
+def validate_transition(current: ScenarioState, next_state: ScenarioState) -> None:
+    if next_state not in _VALID_TRANSITIONS[current]:
+        raise ValueError(f"Invalid transition {current} → {next_state}")
+
+
+class ShockFactorIn(BaseModel):
+    factor_id: str
+    node_id: str
+    magnitude: float = Field(..., description="Normalized signed magnitude; Gemini never sets this")
+
+    @field_validator("factor_id", "node_id")
+    @classmethod
+    def non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("must be non-empty")
+        return v
+
+
+class ScenarioCreateRequest(BaseModel):
+    scenario_id: str
+    snapshot_id: str
+    graph_version: str
+    factors: list[ShockFactorIn] = Field(..., min_length=1)
+    seed: int = 0
+    config: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("scenario_id", "snapshot_id", "graph_version")
+    @classmethod
+    def non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("must be non-empty")
+        return v
+
+
+class ScenarioRecord(BaseModel):
+    scenario_id: str
+    snapshot_id: str
+    graph_version: str
+    engine_version: str
+    seed: int
+    config: dict[str, Any]
+    state: ScenarioState
+
+
+class RunRequest(BaseModel):
+    severity: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+# ---------------------------------------------------------------------------
+# Propagation results
+# ---------------------------------------------------------------------------
+
+
+class PathContributionOut(BaseModel):
+    path_key: str
+    factor_id: str
+    hop_count: int
+    contribution: float
+    edge_ids: list[str]
+    method_ids: list[str]
+    provenance_refs: list[str]
+
+
+class NodeImpactOut(BaseModel):
+    node_id: str
+    raw_impact: float
+    risk_score: float
+    contributions: list[PathContributionOut]
+
+
+class RunResult(BaseModel):
+    scenario_id: str
+    snapshot_id: str
+    graph_version: str
+    engine_version: str
+    seed: int
+    severity: float
+    damping: float
+    floor: float
+    max_hops: int
+    impacts: dict[str, NodeImpactOut]
+    ranked_entity_ids: list[str]
+    latency_ms: float
+
+
+# ---------------------------------------------------------------------------
+# WebSocket messages
+# ---------------------------------------------------------------------------
+
+
+class SliderMessage(BaseModel):
+    severity: float = Field(..., ge=0.0, le=1.0)
+
+
+class SliderUpdate(BaseModel):
+    severity: float
+    impacts: dict[str, NodeImpactOut]
+    ranked_entity_ids: list[str]
+    cached: bool
+    latency_ms: float
+
+
+# ---------------------------------------------------------------------------
+# §13.2 registry payloads
+# ---------------------------------------------------------------------------
+
+
+class ResolveEntityRequest(BaseModel):
+    query: str
+
+
+class ResolveEntityResponse(BaseModel):
+    node_id: str | None
+    name: str | None
+    node_type: str | None
+
+
+class CompanyExposuresResponse(BaseModel):
+    node_id: str
+    outgoing_edges: list[dict[str, Any]]
+
+
+class PropagateShockResponse(BaseModel):
+    result: RunResult
+
+
+class PropagationPathsResponse(BaseModel):
+    paths: list[PathContributionOut]
+
+
+class RatioResponse(BaseModel):
+    method_id: str
+    value: float
+    provenance_ref: str
+
+
+class FilingPassageResponse(BaseModel):
+    source_document_id: str
+    passage: str
+    char_start: int
+    char_end: int
+
+
+class FredSeriesResponse(BaseModel):
+    series_id: str
+    values: list[dict[str, Any]]
