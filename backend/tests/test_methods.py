@@ -86,10 +86,16 @@ def test_credit_portfolio_share_hand_computed(provenance):
     assert record.method_id == "DER-CREDIT"
 
 
-# --- DER-DURATION (stub) -------------------------------------------------- #
-def test_duration_is_stub(provenance):
-    with pytest.raises(NotImplementedError):
-        der_duration({"coupon": 0.05, "maturity_years": 10.0, "ytm": 0.06}, provenance)
+# --- DER-DURATION (full worked-example coverage lives in test_duration.py) - #
+def test_duration_record_binds_method_and_provenance(provenance):
+    record = der_duration(
+        {"coupon_rate": 0.10, "yield_rate": 0.10, "years_to_maturity": 3.0, "payments_per_year": 1},
+        provenance,
+    )
+    assert record.method_id == "DER-DURATION"
+    assert record.method_version == "1.0.0"
+    assert record.value == pytest.approx(2.4869, abs=5e-5)  # 2.7355 / 1.10
+    assert record.provenance is provenance
 
 
 # --- DER-GEO -------------------------------------------------------------- #

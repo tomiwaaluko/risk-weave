@@ -4,6 +4,12 @@ Public surface for the six registered `DER-*` methods, the provenance-bound
 ``WeightRecord`` type, the disclosed-magnitude parser, and the method registry.
 """
 
+from .duration import (
+    DurationError,
+    macaulay_duration,
+    modified_duration,
+    rate_shock_price_impact,
+)
 from .magnitude import MagnitudeParseError, ParsedMagnitude, parse_disclosed_magnitude
 from .methods import (
     MIN_REGRESSION_OBS,
@@ -34,6 +40,10 @@ __all__ = [
     "ParsedMagnitude",
     "parse_disclosed_magnitude",
     "DerivationError",
+    "DurationError",
+    "macaulay_duration",
+    "modified_duration",
+    "rate_shock_price_impact",
     "MIN_REGRESSION_OBS",
     "der_commodity_cost_share",
     "der_commodity_factor_beta",

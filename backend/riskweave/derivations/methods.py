@@ -19,6 +19,7 @@ from datetime import datetime
 import numpy as np
 import statsmodels.api as sm
 
+from .duration import DurationError, macaulay_duration
 from .provenance import Provenance, WeightRecord
 from .registry import get_method
 
@@ -187,18 +188,59 @@ def der_credit_portfolio_share(
 
 
 # --------------------------------------------------------------------------- #
-# DER-DURATION (stub — closed-form implemented in RIS-17, Graft 3)            #
+# DER-DURATION (Graft 3, RW-ALG-031)                                           #
 # --------------------------------------------------------------------------- #
-def der_duration(security_terms: Mapping[str, float], provenance: Provenance) -> WeightRecord:
-    """DER-DURATION interface stub.
+def der_duration(
+    security_terms: Mapping[str, float],
+    provenance: Provenance,
+    yield_timestamp: datetime | None = None,
+) -> WeightRecord:
+    """DER-DURATION: closed-form modified duration of a debt instrument.
 
-    The closed-form modified-duration derivation is Graft 3 (RIS-17). The
-    signature and registry entry are fixed here so downstream code can bind to
-    them; calling it raises until RIS-17 lands.
+    ``security_terms`` carries the bond/debt terms read from filings:
+    ``coupon_rate`` and ``yield_rate`` as annual decimals, ``years_to_maturity``,
+    and optionally ``payments_per_year`` (default 2, semiannual). ``provenance``
+    quotes the filing passage the terms came from; ``yield_timestamp`` is the
+    as-of of the current-yield input (FRED series observation) and is recorded
+    alongside the filing timestamp (`RW-ALG-032`).
+
+    The record's ``value`` is the (non-negative) modified duration in years.
+    For rate-shock transmission, the rate-factor edge weight is ``-value`` so
+    the engine's first-order rule reproduces ``ΔP/P ≈ −ModD × Δy`` — see
+    :mod:`riskweave.derivations.duration`.
     """
-    raise NotImplementedError(
-        "DER-DURATION closed-form modified duration is implemented in RIS-17 (Graft 3); "
-        "this is an interface stub only"
+    terms = dict(security_terms)
+    try:
+        coupon_rate = terms.pop("coupon_rate")
+        yield_rate = terms.pop("yield_rate")
+        years_to_maturity = terms.pop("years_to_maturity")
+    except KeyError as missing:
+        raise DerivationError(f"security_terms is missing {missing.args[0]!r}") from None
+    payments_per_year = int(terms.pop("payments_per_year", 2))
+    if terms:
+        raise DerivationError(f"unexpected security_terms keys: {sorted(terms)}")
+
+    try:
+        macaulay = macaulay_duration(coupon_rate, yield_rate, years_to_maturity, payments_per_year)
+    except DurationError as exc:
+        raise DerivationError(str(exc)) from exc
+    value = macaulay / (1.0 + yield_rate / payments_per_year)
+
+    timestamps = [provenance.data_timestamp]
+    if yield_timestamp is not None:
+        timestamps.append(yield_timestamp)
+    return _weight(
+        "DER-DURATION",
+        value,
+        {
+            "coupon_rate": coupon_rate,
+            "yield_rate": yield_rate,
+            "years_to_maturity": years_to_maturity,
+            "payments_per_year": float(payments_per_year),
+            "macaulay_duration_years": macaulay,
+        },
+        provenance,
+        timestamps,
     )
 
 

@@ -62,10 +62,13 @@ _METHODS: dict[str, DerivationMethod] = {
     ),
     "DER-DURATION": DerivationMethod(
         method_id="DER-DURATION",
-        version="0.0.0",  # stub; closed-form lands in RIS-17 (Graft 3)
+        version="1.0.0",
         spec_row="Interest-rate sensitivity (debt / security nodes)",
         source_data="Bond terms from filings, current yield inputs",
-        summary="Modified duration, closed-form (Graft 3) — implemented in RIS-17",
+        summary=(
+            "Modified duration, closed-form (Graft 3): "
+            "Macaulay/(1+y/k) from coupon, maturity, yield, frequency"
+        ),
         variants=("der_duration",),
     ),
     "DER-GEO": DerivationMethod(
