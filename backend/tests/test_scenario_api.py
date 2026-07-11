@@ -199,7 +199,13 @@ def test_result_carries_reproducibility_bundle(client, created_scenario, scenari
     client.post(f"/scenarios/{scenario_id}/validate")
     data = client.post(f"/scenarios/{scenario_id}/run", json={"severity": 1.0}).json()
     bundle_fields = (
-        "snapshot_id", "graph_version", "engine_version", "seed", "damping", "floor", "max_hops"
+        "snapshot_id",
+        "graph_version",
+        "engine_version",
+        "seed",
+        "damping",
+        "floor",
+        "max_hops",
     )
     for field in bundle_fields:
         assert field in data, f"reproducibility bundle missing field: {field}"

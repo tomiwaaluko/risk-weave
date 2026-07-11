@@ -6,7 +6,7 @@ import redis.asyncio as aioredis
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from riskweave_api.routers import registry, scenarios, slider
+from riskweave_api.routers import registry, scenarios, slider, spike
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.settings import Settings
 
@@ -44,6 +44,7 @@ app = FastAPI(title="RiskWeave API", version="0.1.0", lifespan=lifespan)
 app.include_router(scenarios.router)
 app.include_router(slider.router)
 app.include_router(registry.router)
+app.include_router(spike.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["operations"])

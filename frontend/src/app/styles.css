@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   font-family: Arial, Helvetica, sans-serif;
-  background: #101412;
+  background: #0f1411;
   color: #f4f7f5;
 }
 
@@ -14,29 +14,212 @@ body {
   margin: 0;
 }
 
-main {
+button,
+textarea,
+input,
+select {
+  font: inherit;
+}
+
+.workspace {
   display: grid;
+  gap: 1rem;
   min-height: 100vh;
-  place-content: center;
-  padding: 2rem;
+  padding: 1.25rem;
+}
+
+.topbar,
+.reviewGrid,
+.statusPane,
+.factorTable,
+.assumptionRegistry {
+  border: 1px solid #2d3d35;
+  border-radius: 8px;
+  background: #151d19;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .eyebrow {
-  margin: 0 0 1rem;
+  margin: 0 0 0.35rem;
   color: #8fa69a;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-h1 {
+h1,
+h2 {
   margin: 0;
-  font-size: clamp(3rem, 10vw, 7rem);
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
-.status {
-  margin: 1rem 0 0;
-  color: #9ee8bc;
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+}
+
+.templateSwitch {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border: 1px solid #34473d;
+  border-radius: 8px;
+}
+
+.templateSwitch button {
+  min-width: 4rem;
+  border: 0;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: #dce8e1;
+  cursor: pointer;
+}
+
+.templateSwitch button.active {
+  background: #cdebd7;
+  color: #102017;
+}
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.45fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.promptPane {
+  display: grid;
+  gap: 0.5rem;
+  color: #9fb1a8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  border: 1px solid #3c5146;
+  border-radius: 6px;
+  background: #0f1411;
+  color: #f4f7f5;
+  padding: 0.55rem 0.65rem;
+}
+
+.statusPane {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  padding: 0.85rem;
+}
+
+.statusPane p {
+  margin: 0;
+  color: #c8d8d0;
+}
+
+.ready,
+.invalid {
+  width: max-content;
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.ready {
+  background: #cdebd7;
+  color: #102017;
+}
+
+.invalid {
+  background: #ffd3cc;
+  color: #3d1510;
+}
+
+.factorTable {
+  display: grid;
+  overflow-x: auto;
+}
+
+.tableHeader,
+.factorRow {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1.4fr) 9rem 8rem 10rem 10rem;
+  gap: 0.5rem;
+  min-width: 52rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.tableHeader {
+  color: #9fb1a8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.factorRow {
+  border-top: 1px solid #293831;
+}
+
+.factorRow strong {
+  font-size: 0.9rem;
+}
+
+.assumptionRegistry {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.assumptionRegistry p {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin: 0;
+  color: #d8e5df;
+}
+
+.assumptionRegistry span {
+  min-width: 7.5rem;
+  color: #8fa69a;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .topbar,
+  .reviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: stretch;
+  }
+
+  .templateSwitch {
+    width: 100%;
+  }
+
+  .templateSwitch button {
+    flex: 1;
+  }
 }
