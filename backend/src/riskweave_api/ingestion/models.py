@@ -6,6 +6,7 @@ from sqlalchemy import (
     JSON,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     Numeric,
@@ -124,3 +125,64 @@ class SnapshotMember(Base):
     record_type: Mapped[str] = mapped_column(String(32))
     record_id: Mapped[str] = mapped_column(String(128))
     content_hash: Mapped[str] = mapped_column(String(64))
+
+
+class ExtractionRun(Base):
+    __tablename__ = "extraction_runs"
+    __table_args__ = (
+        UniqueConstraint("snapshot_id", "chunk_id", "schema_name", "prompt_version", "model"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    snapshot_id: Mapped[int] = mapped_column(ForeignKey("data_snapshots.id"))
+    chunk_id: Mapped[int] = mapped_column(ForeignKey("document_chunks.id"))
+    schema_name: Mapped[str] = mapped_column(String(64))
+    prompt_version: Mapped[str] = mapped_column(String(64))
+    model: Mapped[str] = mapped_column(String(64))
+    model_docs_checked_at: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(32))
+    attempts: Mapped[int] = mapped_column(Integer)
+    input_token_count: Mapped[int | None] = mapped_column(Integer)
+    output_token_count: Mapped[int | None] = mapped_column(Integer)
+    outcome_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class RelationshipExtraction(Base):
+    __tablename__ = "relationship_extractions"
+    __table_args__ = (UniqueConstraint("content_hash"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    snapshot_id: Mapped[int] = mapped_column(ForeignKey("data_snapshots.id"))
+    chunk_id: Mapped[int] = mapped_column(ForeignKey("document_chunks.id"))
+    extraction_run_id: Mapped[int | None] = mapped_column(ForeignKey("extraction_runs.id"))
+    source_entity: Mapped[str] = mapped_column(Text)
+    target_entity: Mapped[str] = mapped_column(Text)
+    relationship_type: Mapped[str] = mapped_column(String(64))
+    direction: Mapped[str] = mapped_column(String(16))
+    disclosed_magnitude: Mapped[str | None] = mapped_column(Text)
+    source_passage: Mapped[str] = mapped_column(Text)
+    source_document_id: Mapped[str] = mapped_column(String(64))
+    char_start: Mapped[int] = mapped_column(Integer)
+    char_end: Mapped[int] = mapped_column(Integer)
+    extraction_confidence: Mapped[float] = mapped_column(Float)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    validated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class CovenantThresholdExtraction(Base):
+    __tablename__ = "covenant_threshold_extractions"
+    __table_args__ = (UniqueConstraint("content_hash"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    snapshot_id: Mapped[int] = mapped_column(ForeignKey("data_snapshots.id"))
+    chunk_id: Mapped[int] = mapped_column(ForeignKey("document_chunks.id"))
+    extraction_run_id: Mapped[int | None] = mapped_column(ForeignKey("extraction_runs.id"))
+    entity: Mapped[str] = mapped_column(Text)
+    covenant_type: Mapped[str] = mapped_column(String(64))
+    threshold_value: Mapped[str] = mapped_column(Text)
+    source_passage: Mapped[str] = mapped_column(Text)
+    source_document_id: Mapped[str] = mapped_column(String(64))
+    char_start: Mapped[int] = mapped_column(Integer)
+    char_end: Mapped[int] = mapped_column(Integer)
+    extraction_confidence: Mapped[float] = mapped_column(Float)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    validated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
