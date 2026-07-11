@@ -1,25 +1,35 @@
 [project]
-name = "riskweave-backend"
+name = "riskweave-api"
 version = "0.1.0"
-description = "RiskWeave backend: deterministic edge-weight derivation library (spec §12.1)"
+description = "RiskWeave backend"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi==0.139.0",
     "numpy>=1.26",
+    "pydantic>=2.12,<3",
+    "pydantic-settings>=2.10,<3",
     "statsmodels>=0.14",
+    "uvicorn[standard]>=0.35,<1",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "pytest>=8.0",
+    "httpx2>=2.5,<3",
+    "pytest>=8.4,<10",
+    "ruff>=0.12,<1",
 ]
 
-[build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["riskweave*"]
+[tool.uv]
+package = false
 
 [tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

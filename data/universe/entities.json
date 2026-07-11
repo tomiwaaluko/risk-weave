@@ -1,0 +1,3698 @@
+{
+  "schema_version": "riskweave.entity_universe.v1",
+  "ticket": "RIS-7",
+  "requirements": [
+    "RW-SCOPE-001",
+    "RW-SCOPE-002",
+    "RW-FR-010",
+    "RW-DATA-001"
+  ],
+  "generated_on": "2026-07-11T17:35:07+00:00",
+  "sec_company_tickers_source": {
+    "url": "https://www.sec.gov/files/company_tickers.json",
+    "retrieved_on": "2026-07-11",
+    "user_agent": "risk-weave-codex"
+  },
+  "selection_bounds": {
+    "min_entities": 100,
+    "max_entities": 200
+  },
+  "entities": [
+    {
+      "id": "bank:jpm",
+      "canonical_name": "JPMorgan Chase",
+      "aliases": [
+        "Chase",
+        "JPM",
+        "JPMORGAN CHASE & CO",
+        "JPMorgan Chase"
+      ],
+      "ticker": "JPM",
+      "cik": "0000019617",
+      "lei": null,
+      "sec_company_name": "JPMORGAN CHASE & CO",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:bac",
+      "canonical_name": "Bank of America",
+      "aliases": [
+        "BAC",
+        "BANK OF AMERICA CORP /DE/",
+        "Bank of America",
+        "BofA"
+      ],
+      "ticker": "BAC",
+      "cik": "0000070858",
+      "lei": null,
+      "sec_company_name": "BANK OF AMERICA CORP /DE/",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:c",
+      "canonical_name": "Citigroup",
+      "aliases": [
+        "C",
+        "CITIGROUP INC",
+        "Citi",
+        "Citigroup"
+      ],
+      "ticker": "C",
+      "cik": "0000831001",
+      "lei": null,
+      "sec_company_name": "CITIGROUP INC",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:wfc",
+      "canonical_name": "Wells Fargo",
+      "aliases": [
+        "WELLS FARGO & COMPANY/MN",
+        "WFC",
+        "Wells Fargo"
+      ],
+      "ticker": "WFC",
+      "cik": "0000072971",
+      "lei": null,
+      "sec_company_name": "WELLS FARGO & COMPANY/MN",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:usb",
+      "canonical_name": "U.S. Bancorp",
+      "aliases": [
+        "U.S. Bancorp",
+        "US BANCORP DE",
+        "USB"
+      ],
+      "ticker": "USB",
+      "cik": "0000036104",
+      "lei": null,
+      "sec_company_name": "US BANCORP DE",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:pnc",
+      "canonical_name": "PNC Bank",
+      "aliases": [
+        "PNC",
+        "PNC Bank",
+        "PNC FINANCIAL SERVICES GROUP, INC."
+      ],
+      "ticker": "PNC",
+      "cik": "0000713676",
+      "lei": null,
+      "sec_company_name": "PNC FINANCIAL SERVICES GROUP, INC.",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:tfc",
+      "canonical_name": "Truist",
+      "aliases": [
+        "TFC",
+        "TRUIST FINANCIAL CORP",
+        "Truist"
+      ],
+      "ticker": "TFC",
+      "cik": "0000092230",
+      "lei": null,
+      "sec_company_name": "TRUIST FINANCIAL CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:cof",
+      "canonical_name": "Capital One",
+      "aliases": [
+        "CAPITAL ONE FINANCIAL CORP",
+        "COF",
+        "Capital One"
+      ],
+      "ticker": "COF",
+      "cik": "0000927628",
+      "lei": null,
+      "sec_company_name": "CAPITAL ONE FINANCIAL CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:key",
+      "canonical_name": "KeyBank",
+      "aliases": [
+        "KEY",
+        "KEYCORP /NEW/",
+        "KeyBank"
+      ],
+      "ticker": "KEY",
+      "cik": "0000091576",
+      "lei": null,
+      "sec_company_name": "KEYCORP /NEW/",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:rf",
+      "canonical_name": "Regions Bank",
+      "aliases": [
+        "REGIONS FINANCIAL CORP",
+        "RF",
+        "Regions Bank"
+      ],
+      "ticker": "RF",
+      "cik": "0001281761",
+      "lei": null,
+      "sec_company_name": "REGIONS FINANCIAL CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:hban",
+      "canonical_name": "Huntington Bank",
+      "aliases": [
+        "HBAN",
+        "HUNTINGTON BANCSHARES INC /MD/",
+        "Huntington Bank"
+      ],
+      "ticker": "HBAN",
+      "cik": "0000049196",
+      "lei": null,
+      "sec_company_name": "HUNTINGTON BANCSHARES INC /MD/",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:fitb",
+      "canonical_name": "Fifth Third Bank",
+      "aliases": [
+        "FIFTH THIRD BANCORP",
+        "FITB",
+        "Fifth Third Bank"
+      ],
+      "ticker": "FITB",
+      "cik": "0000035527",
+      "lei": null,
+      "sec_company_name": "FIFTH THIRD BANCORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:mtb",
+      "canonical_name": "M&T Bank",
+      "aliases": [
+        "M&T BANK CORP",
+        "M&T Bank",
+        "MTB"
+      ],
+      "ticker": "MTB",
+      "cik": "0000036270",
+      "lei": null,
+      "sec_company_name": "M&T BANK CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:zion",
+      "canonical_name": "Zions Bancorporation",
+      "aliases": [
+        "ZION",
+        "ZIONS BANCORPORATION, NATIONAL ASSOCIATION /UT/",
+        "Zions Bancorporation"
+      ],
+      "ticker": "ZION",
+      "cik": "0000109380",
+      "lei": null,
+      "sec_company_name": "ZIONS BANCORPORATION, NATIONAL ASSOCIATION /UT/",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:cfg",
+      "canonical_name": "Citizens Bank",
+      "aliases": [
+        "CFG",
+        "CITIZENS FINANCIAL GROUP INC/RI",
+        "Citizens Bank"
+      ],
+      "ticker": "CFG",
+      "cik": "0000759944",
+      "lei": null,
+      "sec_company_name": "CITIZENS FINANCIAL GROUP INC/RI",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:ally",
+      "canonical_name": "Ally Bank",
+      "aliases": [
+        "ALLY",
+        "Ally Bank",
+        "Ally Financial Inc."
+      ],
+      "ticker": "ALLY",
+      "cik": "0000040729",
+      "lei": null,
+      "sec_company_name": "Ally Financial Inc.",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": true,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:stt",
+      "canonical_name": "State Street",
+      "aliases": [
+        "STATE STREET CORP",
+        "STT",
+        "State Street"
+      ],
+      "ticker": "STT",
+      "cik": "0000093751",
+      "lei": null,
+      "sec_company_name": "STATE STREET CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:ntrs",
+      "canonical_name": "Northern Trust",
+      "aliases": [
+        "NORTHERN TRUST CORP",
+        "NTRS",
+        "Northern Trust"
+      ],
+      "ticker": "NTRS",
+      "cik": "0000073124",
+      "lei": null,
+      "sec_company_name": "NORTHERN TRUST CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:gs",
+      "canonical_name": "Goldman Sachs",
+      "aliases": [
+        "GOLDMAN SACHS GROUP INC",
+        "GS",
+        "Goldman Sachs"
+      ],
+      "ticker": "GS",
+      "cik": "0000886982",
+      "lei": null,
+      "sec_company_name": "GOLDMAN SACHS GROUP INC",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:ms",
+      "canonical_name": "Morgan Stanley",
+      "aliases": [
+        "MORGAN STANLEY",
+        "MS",
+        "Morgan Stanley"
+      ],
+      "ticker": "MS",
+      "cik": "0000895421",
+      "lei": null,
+      "sec_company_name": "MORGAN STANLEY",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:axp",
+      "canonical_name": "American Express",
+      "aliases": [
+        "AMERICAN EXPRESS CO",
+        "AXP",
+        "American Express"
+      ],
+      "ticker": "AXP",
+      "cik": "0000004962",
+      "lei": null,
+      "sec_company_name": "AMERICAN EXPRESS CO",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:fhn",
+      "canonical_name": "FIRST HORIZON CORP",
+      "aliases": [
+        "FHN",
+        "FIRST HORIZON CORP"
+      ],
+      "ticker": "FHN",
+      "cik": "0000036966",
+      "lei": null,
+      "sec_company_name": "FIRST HORIZON CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:wal",
+      "canonical_name": "WESTERN ALLIANCE BANCORPORATION",
+      "aliases": [
+        "WAL",
+        "WESTERN ALLIANCE BANCORPORATION"
+      ],
+      "ticker": "WAL",
+      "cik": "0001212545",
+      "lei": null,
+      "sec_company_name": "WESTERN ALLIANCE BANCORPORATION",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:ewbc",
+      "canonical_name": "EAST WEST BANCORP INC",
+      "aliases": [
+        "EAST WEST BANCORP INC",
+        "EWBC"
+      ],
+      "ticker": "EWBC",
+      "cik": "0001069157",
+      "lei": null,
+      "sec_company_name": "EAST WEST BANCORP INC",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "bank:wbs",
+      "canonical_name": "WEBSTER FINANCIAL CORP",
+      "aliases": [
+        "WBS",
+        "WEBSTER FINANCIAL CORP"
+      ],
+      "ticker": "WBS",
+      "cik": "0000801337",
+      "lei": null,
+      "sec_company_name": "WEBSTER FINANCIAL CORP",
+      "entity_type": "bank",
+      "sector_tags": [
+        "financials",
+        "bank",
+        "commercial_lending",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public bank or financial institution included for commercial-real-estate lending exposure and covenant/breach-distance candidates.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:spg",
+      "canonical_name": "Simon Property Group",
+      "aliases": [
+        "SIMON PROPERTY GROUP INC.",
+        "SPG",
+        "Simon Property Group"
+      ],
+      "ticker": "SPG",
+      "cik": "0001063761",
+      "lei": null,
+      "sec_company_name": "SIMON PROPERTY GROUP INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:pld",
+      "canonical_name": "Prologis",
+      "aliases": [
+        "PLD",
+        "Prologis",
+        "Prologis, Inc."
+      ],
+      "ticker": "PLD",
+      "cik": "0001045609",
+      "lei": null,
+      "sec_company_name": "Prologis, Inc.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:amt",
+      "canonical_name": "American Tower",
+      "aliases": [
+        "AMERICAN TOWER CORP /MA/",
+        "AMT",
+        "American Tower"
+      ],
+      "ticker": "AMT",
+      "cik": "0001053507",
+      "lei": null,
+      "sec_company_name": "AMERICAN TOWER CORP /MA/",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:eqix",
+      "canonical_name": "Equinix",
+      "aliases": [
+        "EQIX",
+        "EQUINIX INC",
+        "Equinix"
+      ],
+      "ticker": "EQIX",
+      "cik": "0001101239",
+      "lei": null,
+      "sec_company_name": "EQUINIX INC",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:psa",
+      "canonical_name": "Public Storage",
+      "aliases": [
+        "PSA",
+        "Public Storage"
+      ],
+      "ticker": "PSA",
+      "cik": "0001393311",
+      "lei": null,
+      "sec_company_name": "Public Storage",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:well",
+      "canonical_name": "Welltower",
+      "aliases": [
+        "WELL",
+        "WELLTOWER INC.",
+        "Welltower"
+      ],
+      "ticker": "WELL",
+      "cik": "0000766704",
+      "lei": null,
+      "sec_company_name": "WELLTOWER INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:dlr",
+      "canonical_name": "Digital Realty",
+      "aliases": [
+        "DIGITAL REALTY TRUST, INC.",
+        "DLR",
+        "Digital Realty"
+      ],
+      "ticker": "DLR",
+      "cik": "0001297996",
+      "lei": null,
+      "sec_company_name": "DIGITAL REALTY TRUST, INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:o",
+      "canonical_name": "Realty Income",
+      "aliases": [
+        "O",
+        "REALTY INCOME CORP",
+        "Realty Income"
+      ],
+      "ticker": "O",
+      "cik": "0000726728",
+      "lei": null,
+      "sec_company_name": "REALTY INCOME CORP",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:avb",
+      "canonical_name": "AvalonBay",
+      "aliases": [
+        "AVALONBAY COMMUNITIES INC",
+        "AVB",
+        "AvalonBay"
+      ],
+      "ticker": "AVB",
+      "cik": "0000915912",
+      "lei": null,
+      "sec_company_name": "AVALONBAY COMMUNITIES INC",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:eqr",
+      "canonical_name": "Equity Residential",
+      "aliases": [
+        "EQR",
+        "EQUITY RESIDENTIAL",
+        "Equity Residential"
+      ],
+      "ticker": "EQR",
+      "cik": "0000906107",
+      "lei": null,
+      "sec_company_name": "EQUITY RESIDENTIAL",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:vtr",
+      "canonical_name": "Ventas",
+      "aliases": [
+        "VTR",
+        "Ventas",
+        "Ventas, Inc."
+      ],
+      "ticker": "VTR",
+      "cik": "0000740260",
+      "lei": null,
+      "sec_company_name": "Ventas, Inc.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:ess",
+      "canonical_name": "Essex Property Trust",
+      "aliases": [
+        "ESS",
+        "ESSEX PROPERTY TRUST, INC.",
+        "Essex Property Trust"
+      ],
+      "ticker": "ESS",
+      "cik": "0000920522",
+      "lei": null,
+      "sec_company_name": "ESSEX PROPERTY TRUST, INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:maa",
+      "canonical_name": "Mid-America Apartment Communities",
+      "aliases": [
+        "MAA",
+        "MID AMERICA APARTMENT COMMUNITIES INC.",
+        "Mid-America Apartment Communities"
+      ],
+      "ticker": "MAA",
+      "cik": "0000912595",
+      "lei": null,
+      "sec_company_name": "MID AMERICA APARTMENT COMMUNITIES INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:udr",
+      "canonical_name": "UDR, Inc.",
+      "aliases": [
+        "UDR",
+        "UDR, Inc."
+      ],
+      "ticker": "UDR",
+      "cik": "0000074208",
+      "lei": null,
+      "sec_company_name": "UDR, Inc.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:bxp",
+      "canonical_name": "Boston Properties",
+      "aliases": [
+        "BXP",
+        "BXP, Inc.",
+        "Boston Properties"
+      ],
+      "ticker": "BXP",
+      "cik": "0001037540",
+      "lei": null,
+      "sec_company_name": "BXP, Inc.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:kim",
+      "canonical_name": "Kimco",
+      "aliases": [
+        "KIM",
+        "KIMCO REALTY CORP",
+        "Kimco"
+      ],
+      "ticker": "KIM",
+      "cik": "0000879101",
+      "lei": null,
+      "sec_company_name": "KIMCO REALTY CORP",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:reg",
+      "canonical_name": "Regency Centers",
+      "aliases": [
+        "REG",
+        "REGENCY CENTERS CORP",
+        "Regency Centers"
+      ],
+      "ticker": "REG",
+      "cik": "0000910606",
+      "lei": null,
+      "sec_company_name": "REGENCY CENTERS CORP",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:frt",
+      "canonical_name": "Federal Realty",
+      "aliases": [
+        "FEDERAL REALTY INVESTMENT TRUST",
+        "FRT",
+        "Federal Realty"
+      ],
+      "ticker": "FRT",
+      "cik": "0000034903",
+      "lei": null,
+      "sec_company_name": "FEDERAL REALTY INVESTMENT TRUST",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:slg",
+      "canonical_name": "SL Green",
+      "aliases": [
+        "SL GREEN REALTY CORP",
+        "SL Green",
+        "SLG"
+      ],
+      "ticker": "SLG",
+      "cik": "0001040971",
+      "lei": null,
+      "sec_company_name": "SL GREEN REALTY CORP",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:vno",
+      "canonical_name": "Vornado",
+      "aliases": [
+        "VNO",
+        "VORNADO REALTY TRUST",
+        "Vornado"
+      ],
+      "ticker": "VNO",
+      "cik": "0000899689",
+      "lei": null,
+      "sec_company_name": "VORNADO REALTY TRUST",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:are",
+      "canonical_name": "Alexandria Real Estate Equities",
+      "aliases": [
+        "ALEXANDRIA REAL ESTATE EQUITIES, INC.",
+        "ARE",
+        "Alexandria Real Estate Equities"
+      ],
+      "ticker": "ARE",
+      "cik": "0001035443",
+      "lei": null,
+      "sec_company_name": "ALEXANDRIA REAL ESTATE EQUITIES, INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:hst",
+      "canonical_name": "Host Hotels",
+      "aliases": [
+        "HOST HOTELS & RESORTS, INC.",
+        "HST",
+        "Host Hotels"
+      ],
+      "ticker": "HST",
+      "cik": "0001070750",
+      "lei": null,
+      "sec_company_name": "HOST HOTELS & RESORTS, INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:irm",
+      "canonical_name": "Iron Mountain",
+      "aliases": [
+        "IRM",
+        "IRON MOUNTAIN INC",
+        "Iron Mountain"
+      ],
+      "ticker": "IRM",
+      "cik": "0001020569",
+      "lei": null,
+      "sec_company_name": "IRON MOUNTAIN INC",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:exr",
+      "canonical_name": "Extra Space Storage",
+      "aliases": [
+        "EXR",
+        "Extra Space Storage",
+        "Extra Space Storage Inc."
+      ],
+      "ticker": "EXR",
+      "cik": "0001289490",
+      "lei": null,
+      "sec_company_name": "Extra Space Storage Inc.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "reit:cci",
+      "canonical_name": "Crown Castle",
+      "aliases": [
+        "CCI",
+        "CROWN CASTLE INC.",
+        "Crown Castle"
+      ],
+      "ticker": "CCI",
+      "cik": "0001051470",
+      "lei": null,
+      "sec_company_name": "CROWN CASTLE INC.",
+      "entity_type": "reit",
+      "sector_tags": [
+        "real_estate",
+        "reit",
+        "property_owner",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public REIT or real-estate infrastructure company included as a direct CRE-sector node.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:cbre",
+      "canonical_name": "CBRE Group",
+      "aliases": [
+        "CBRE",
+        "CBRE GROUP, INC.",
+        "CBRE Group"
+      ],
+      "ticker": "CBRE",
+      "cik": "0001138118",
+      "lei": null,
+      "sec_company_name": "CBRE GROUP, INC.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:jll",
+      "canonical_name": "Jones Lang LaSalle",
+      "aliases": [
+        "JLL",
+        "JONES LANG LASALLE INC",
+        "Jones Lang LaSalle"
+      ],
+      "ticker": "JLL",
+      "cik": "0001037976",
+      "lei": null,
+      "sec_company_name": "JONES LANG LASALLE INC",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:cigi",
+      "canonical_name": "Colliers",
+      "aliases": [
+        "CIGI",
+        "Colliers",
+        "Colliers International Group Inc."
+      ],
+      "ticker": "CIGI",
+      "cik": "0000913353",
+      "lei": null,
+      "sec_company_name": "Colliers International Group Inc.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:nmrk",
+      "canonical_name": "Newmark",
+      "aliases": [
+        "NEWMARK GROUP, INC.",
+        "NMRK",
+        "Newmark"
+      ],
+      "ticker": "NMRK",
+      "cik": "0001690680",
+      "lei": null,
+      "sec_company_name": "NEWMARK GROUP, INC.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:cwk",
+      "canonical_name": "Cushman & Wakefield",
+      "aliases": [
+        "CWK",
+        "Cushman & Wakefield",
+        "Cushman & Wakefield Ltd."
+      ],
+      "ticker": "CWK",
+      "cik": "0001628369",
+      "lei": null,
+      "sec_company_name": "Cushman & Wakefield Ltd.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:zg",
+      "canonical_name": "Zillow Group",
+      "aliases": [
+        "ZG",
+        "ZILLOW GROUP, INC.",
+        "Zillow Group"
+      ],
+      "ticker": "ZG",
+      "cik": "0001617640",
+      "lei": null,
+      "sec_company_name": "ZILLOW GROUP, INC.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:rmax",
+      "canonical_name": "RE/MAX",
+      "aliases": [
+        "RE/MAX",
+        "RE/MAX Holdings, Inc.",
+        "RMAX"
+      ],
+      "ticker": "RMAX",
+      "cik": "0001581091",
+      "lei": null,
+      "sec_company_name": "RE/MAX Holdings, Inc.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "property_company:open",
+      "canonical_name": "Opendoor",
+      "aliases": [
+        "OPEN",
+        "Opendoor",
+        "Opendoor Technologies Inc."
+      ],
+      "ticker": "OPEN",
+      "cik": "0001801169",
+      "lei": null,
+      "sec_company_name": "Opendoor Technologies Inc.",
+      "entity_type": "property_company",
+      "sector_tags": [
+        "real_estate_services",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:fnf",
+      "canonical_name": "Fidelity National Financial",
+      "aliases": [
+        "FNF",
+        "Fidelity National Financial",
+        "Fidelity National Financial, Inc."
+      ],
+      "ticker": "FNF",
+      "cik": "0001331875",
+      "lei": null,
+      "sec_company_name": "Fidelity National Financial, Inc.",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:faf",
+      "canonical_name": "First American Financial",
+      "aliases": [
+        "FAF",
+        "First American Financial",
+        "First American Financial Corp"
+      ],
+      "ticker": "FAF",
+      "cik": "0001472787",
+      "lei": null,
+      "sec_company_name": "First American Financial Corp",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:stc",
+      "canonical_name": "Stewart Title",
+      "aliases": [
+        "STC",
+        "STEWART INFORMATION SERVICES CORP",
+        "Stewart Title"
+      ],
+      "ticker": "STC",
+      "cik": "0000094344",
+      "lei": null,
+      "sec_company_name": "STEWART INFORMATION SERVICES CORP",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:len",
+      "canonical_name": "Lennar",
+      "aliases": [
+        "LEN",
+        "LENNAR CORP /NEW/",
+        "Lennar"
+      ],
+      "ticker": "LEN",
+      "cik": "0000920760",
+      "lei": null,
+      "sec_company_name": "LENNAR CORP /NEW/",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:dhi",
+      "canonical_name": "D.R. Horton",
+      "aliases": [
+        "D.R. Horton",
+        "DHI",
+        "HORTON D R INC /DE/"
+      ],
+      "ticker": "DHI",
+      "cik": "0000882184",
+      "lei": null,
+      "sec_company_name": "HORTON D R INC /DE/",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:nvr",
+      "canonical_name": "NVR INC",
+      "aliases": [
+        "NVR",
+        "NVR INC"
+      ],
+      "ticker": "NVR",
+      "cik": "0000906163",
+      "lei": null,
+      "sec_company_name": "NVR INC",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:phm",
+      "canonical_name": "PulteGroup",
+      "aliases": [
+        "PHM",
+        "PULTEGROUP INC/MI/",
+        "PulteGroup"
+      ],
+      "ticker": "PHM",
+      "cik": "0000822416",
+      "lei": null,
+      "sec_company_name": "PULTEGROUP INC/MI/",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:tol",
+      "canonical_name": "Toll Brothers",
+      "aliases": [
+        "TOL",
+        "Toll Brothers",
+        "Toll Brothers, Inc."
+      ],
+      "ticker": "TOL",
+      "cik": "0000794170",
+      "lei": null,
+      "sec_company_name": "Toll Brothers, Inc.",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:low",
+      "canonical_name": "Lowe's",
+      "aliases": [
+        "LOW",
+        "LOWES COMPANIES INC",
+        "Lowe's"
+      ],
+      "ticker": "LOW",
+      "cik": "0000060667",
+      "lei": null,
+      "sec_company_name": "LOWES COMPANIES INC",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:hd",
+      "canonical_name": "Home Depot",
+      "aliases": [
+        "HD",
+        "HOME DEPOT, INC.",
+        "Home Depot"
+      ],
+      "ticker": "HD",
+      "cik": "0000354950",
+      "lei": null,
+      "sec_company_name": "HOME DEPOT, INC.",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:cat",
+      "canonical_name": "Caterpillar",
+      "aliases": [
+        "CAT",
+        "CATERPILLAR INC",
+        "Caterpillar"
+      ],
+      "ticker": "CAT",
+      "cik": "0000018230",
+      "lei": null,
+      "sec_company_name": "CATERPILLAR INC",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "cre_connected_company:uri",
+      "canonical_name": "United Rentals",
+      "aliases": [
+        "UNITED RENTALS, INC.",
+        "URI",
+        "United Rentals"
+      ],
+      "ticker": "URI",
+      "cik": "0001067701",
+      "lei": null,
+      "sec_company_name": "UNITED RENTALS, INC.",
+      "entity_type": "cre_connected_company",
+      "sector_tags": [
+        "housing",
+        "construction",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public CRE service, title, housing, building-products, or equipment proxy included to support multi-hop CRE paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:xom",
+      "canonical_name": "ExxonMobil",
+      "aliases": [
+        "ExxonMobil",
+        "ExxonMobil Holdings Corp",
+        "XOM"
+      ],
+      "ticker": "XOM",
+      "cik": "0002115436",
+      "lei": null,
+      "sec_company_name": "ExxonMobil Holdings Corp",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:cvx",
+      "canonical_name": "Chevron",
+      "aliases": [
+        "CHEVRON CORP",
+        "CVX",
+        "Chevron"
+      ],
+      "ticker": "CVX",
+      "cik": "0000093410",
+      "lei": null,
+      "sec_company_name": "CHEVRON CORP",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:cop",
+      "canonical_name": "ConocoPhillips",
+      "aliases": [
+        "CONOCOPHILLIPS",
+        "COP",
+        "ConocoPhillips"
+      ],
+      "ticker": "COP",
+      "cik": "0001163165",
+      "lei": null,
+      "sec_company_name": "CONOCOPHILLIPS",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:eog",
+      "canonical_name": "EOG Resources",
+      "aliases": [
+        "EOG",
+        "EOG RESOURCES INC",
+        "EOG Resources"
+      ],
+      "ticker": "EOG",
+      "cik": "0000821189",
+      "lei": null,
+      "sec_company_name": "EOG RESOURCES INC",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:oxy",
+      "canonical_name": "Occidental Petroleum",
+      "aliases": [
+        "OCCIDENTAL PETROLEUM CORP /DE/",
+        "OXY",
+        "Occidental Petroleum"
+      ],
+      "ticker": "OXY",
+      "cik": "0000797468",
+      "lei": null,
+      "sec_company_name": "OCCIDENTAL PETROLEUM CORP /DE/",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:mpc",
+      "canonical_name": "Marathon Petroleum",
+      "aliases": [
+        "MPC",
+        "Marathon Petroleum",
+        "Marathon Petroleum Corp"
+      ],
+      "ticker": "MPC",
+      "cik": "0001510295",
+      "lei": null,
+      "sec_company_name": "Marathon Petroleum Corp",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:vlo",
+      "canonical_name": "Valero",
+      "aliases": [
+        "VALERO ENERGY CORP/TX",
+        "VLO",
+        "Valero"
+      ],
+      "ticker": "VLO",
+      "cik": "0001035002",
+      "lei": null,
+      "sec_company_name": "VALERO ENERGY CORP/TX",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:psx",
+      "canonical_name": "Phillips 66",
+      "aliases": [
+        "PSX",
+        "Phillips 66"
+      ],
+      "ticker": "PSX",
+      "cik": "0001534701",
+      "lei": null,
+      "sec_company_name": "Phillips 66",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:kmi",
+      "canonical_name": "Kinder Morgan",
+      "aliases": [
+        "KINDER MORGAN, INC.",
+        "KMI",
+        "Kinder Morgan"
+      ],
+      "ticker": "KMI",
+      "cik": "0001506307",
+      "lei": null,
+      "sec_company_name": "KINDER MORGAN, INC.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:wmb",
+      "canonical_name": "Williams Companies",
+      "aliases": [
+        "WILLIAMS COMPANIES, INC.",
+        "WMB",
+        "Williams Companies"
+      ],
+      "ticker": "WMB",
+      "cik": "0000107263",
+      "lei": null,
+      "sec_company_name": "WILLIAMS COMPANIES, INC.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:slb",
+      "canonical_name": "Schlumberger",
+      "aliases": [
+        "SLB",
+        "SLB LIMITED/NV",
+        "Schlumberger"
+      ],
+      "ticker": "SLB",
+      "cik": "0000087347",
+      "lei": null,
+      "sec_company_name": "SLB LIMITED/NV",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:hal",
+      "canonical_name": "Halliburton",
+      "aliases": [
+        "HAL",
+        "HALLIBURTON CO",
+        "Halliburton"
+      ],
+      "ticker": "HAL",
+      "cik": "0000045012",
+      "lei": null,
+      "sec_company_name": "HALLIBURTON CO",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:bkr",
+      "canonical_name": "Baker Hughes",
+      "aliases": [
+        "BKR",
+        "Baker Hughes",
+        "Baker Hughes Co"
+      ],
+      "ticker": "BKR",
+      "cik": "0001701605",
+      "lei": null,
+      "sec_company_name": "Baker Hughes Co",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:dvn",
+      "canonical_name": "Devon Energy",
+      "aliases": [
+        "DEVON ENERGY CORP/DE",
+        "DVN",
+        "Devon Energy"
+      ],
+      "ticker": "DVN",
+      "cik": "0001090012",
+      "lei": null,
+      "sec_company_name": "DEVON ENERGY CORP/DE",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:fang",
+      "canonical_name": "Diamondback Energy",
+      "aliases": [
+        "Diamondback Energy",
+        "Diamondback Energy, Inc.",
+        "FANG"
+      ],
+      "ticker": "FANG",
+      "cik": "0001539838",
+      "lei": null,
+      "sec_company_name": "Diamondback Energy, Inc.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:apa",
+      "canonical_name": "APA Corporation",
+      "aliases": [
+        "APA",
+        "APA Corp",
+        "APA Corporation"
+      ],
+      "ticker": "APA",
+      "cik": "0001841666",
+      "lei": null,
+      "sec_company_name": "APA Corp",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:eqt",
+      "canonical_name": "EQT",
+      "aliases": [
+        "EQT",
+        "EQT Corp"
+      ],
+      "ticker": "EQT",
+      "cik": "0000033213",
+      "lei": null,
+      "sec_company_name": "EQT Corp",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:lng",
+      "canonical_name": "Cheniere Energy",
+      "aliases": [
+        "Cheniere Energy",
+        "Cheniere Energy, Inc.",
+        "LNG"
+      ],
+      "ticker": "LNG",
+      "cik": "0000003570",
+      "lei": null,
+      "sec_company_name": "Cheniere Energy, Inc.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:trgp",
+      "canonical_name": "Targa Resources",
+      "aliases": [
+        "TRGP",
+        "Targa Resources",
+        "Targa Resources Corp."
+      ],
+      "ticker": "TRGP",
+      "cik": "0001389170",
+      "lei": null,
+      "sec_company_name": "Targa Resources Corp.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:ovv",
+      "canonical_name": "Ovintiv",
+      "aliases": [
+        "OVV",
+        "Ovintiv",
+        "Ovintiv Inc."
+      ],
+      "ticker": "OVV",
+      "cik": "0001792580",
+      "lei": null,
+      "sec_company_name": "Ovintiv Inc.",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:mur",
+      "canonical_name": "Murphy Oil",
+      "aliases": [
+        "MUR",
+        "MURPHY OIL CORP",
+        "Murphy Oil"
+      ],
+      "ticker": "MUR",
+      "cik": "0000717423",
+      "lei": null,
+      "sec_company_name": "MURPHY OIL CORP",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:dino",
+      "canonical_name": "HF Sinclair",
+      "aliases": [
+        "DINO",
+        "HF Sinclair",
+        "HF Sinclair Corp"
+      ],
+      "ticker": "DINO",
+      "cik": "0001915657",
+      "lei": null,
+      "sec_company_name": "HF Sinclair Corp",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "energy_company:paa",
+      "canonical_name": "Plains All American Pipeline",
+      "aliases": [
+        "PAA",
+        "PLAINS ALL AMERICAN PIPELINE LP",
+        "Plains All American Pipeline"
+      ],
+      "ticker": "PAA",
+      "cik": "0001070423",
+      "lei": null,
+      "sec_company_name": "PLAINS ALL AMERICAN PIPELINE LP",
+      "entity_type": "energy_company",
+      "sector_tags": [
+        "energy",
+        "oil_gas",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public energy, refining, oilfield-services, or midstream company included for the oil shock pack.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:dal",
+      "canonical_name": "Delta Air Lines",
+      "aliases": [
+        "DAL",
+        "DELTA AIR LINES, INC.",
+        "Delta Air Lines"
+      ],
+      "ticker": "DAL",
+      "cik": "0000027904",
+      "lei": null,
+      "sec_company_name": "DELTA AIR LINES, INC.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:ual",
+      "canonical_name": "United Airlines",
+      "aliases": [
+        "UAL",
+        "United Airlines",
+        "United Airlines Holdings, Inc."
+      ],
+      "ticker": "UAL",
+      "cik": "0000100517",
+      "lei": null,
+      "sec_company_name": "United Airlines Holdings, Inc.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:aal",
+      "canonical_name": "American Airlines",
+      "aliases": [
+        "AAL",
+        "American Airlines",
+        "American Airlines Group Inc."
+      ],
+      "ticker": "AAL",
+      "cik": "0000006201",
+      "lei": null,
+      "sec_company_name": "American Airlines Group Inc.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:luv",
+      "canonical_name": "Southwest Airlines",
+      "aliases": [
+        "LUV",
+        "SOUTHWEST AIRLINES CO",
+        "Southwest Airlines"
+      ],
+      "ticker": "LUV",
+      "cik": "0000092380",
+      "lei": null,
+      "sec_company_name": "SOUTHWEST AIRLINES CO",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:jblu",
+      "canonical_name": "JetBlue",
+      "aliases": [
+        "JBLU",
+        "JETBLUE AIRWAYS CORP",
+        "JetBlue"
+      ],
+      "ticker": "JBLU",
+      "cik": "0001158463",
+      "lei": null,
+      "sec_company_name": "JETBLUE AIRWAYS CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:alk",
+      "canonical_name": "Alaska Air Group",
+      "aliases": [
+        "ALASKA AIR GROUP, INC.",
+        "ALK",
+        "Alaska Air Group"
+      ],
+      "ticker": "ALK",
+      "cik": "0000766421",
+      "lei": null,
+      "sec_company_name": "ALASKA AIR GROUP, INC.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:ups",
+      "canonical_name": "United Parcel Service",
+      "aliases": [
+        "UNITED PARCEL SERVICE INC",
+        "UPS",
+        "United Parcel Service"
+      ],
+      "ticker": "UPS",
+      "cik": "0001090727",
+      "lei": null,
+      "sec_company_name": "UNITED PARCEL SERVICE INC",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:fdx",
+      "canonical_name": "FedEx",
+      "aliases": [
+        "FDX",
+        "FEDEX CORP",
+        "FedEx"
+      ],
+      "ticker": "FDX",
+      "cik": "0001048911",
+      "lei": null,
+      "sec_company_name": "FEDEX CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:chrw",
+      "canonical_name": "C.H. Robinson",
+      "aliases": [
+        "C. H. ROBINSON WORLDWIDE, INC.",
+        "C.H. Robinson",
+        "CHRW"
+      ],
+      "ticker": "CHRW",
+      "cik": "0001043277",
+      "lei": null,
+      "sec_company_name": "C. H. ROBINSON WORLDWIDE, INC.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:expd",
+      "canonical_name": "Expeditors International",
+      "aliases": [
+        "EXPD",
+        "EXPEDITORS INTERNATIONAL OF WASHINGTON INC",
+        "Expeditors International"
+      ],
+      "ticker": "EXPD",
+      "cik": "0000746515",
+      "lei": null,
+      "sec_company_name": "EXPEDITORS INTERNATIONAL OF WASHINGTON INC",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:jbht",
+      "canonical_name": "J.B. Hunt",
+      "aliases": [
+        "HUNT J B TRANSPORT SERVICES INC",
+        "J.B. Hunt",
+        "JBHT"
+      ],
+      "ticker": "JBHT",
+      "cik": "0000728535",
+      "lei": null,
+      "sec_company_name": "HUNT J B TRANSPORT SERVICES INC",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:odfl",
+      "canonical_name": "Old Dominion Freight Line",
+      "aliases": [
+        "ODFL",
+        "OLD DOMINION FREIGHT LINE, INC.",
+        "Old Dominion Freight Line"
+      ],
+      "ticker": "ODFL",
+      "cik": "0000878927",
+      "lei": null,
+      "sec_company_name": "OLD DOMINION FREIGHT LINE, INC.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:knx",
+      "canonical_name": "Knight-Swift",
+      "aliases": [
+        "KNX",
+        "Knight-Swift",
+        "Knight-Swift Transportation Holdings Inc."
+      ],
+      "ticker": "KNX",
+      "cik": "0001492691",
+      "lei": null,
+      "sec_company_name": "Knight-Swift Transportation Holdings Inc.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:saia",
+      "canonical_name": "Saia",
+      "aliases": [
+        "SAIA",
+        "SAIA INC",
+        "Saia"
+      ],
+      "ticker": "SAIA",
+      "cik": "0001177702",
+      "lei": null,
+      "sec_company_name": "SAIA INC",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:arcb",
+      "canonical_name": "ArcBest",
+      "aliases": [
+        "ARCB",
+        "ARCBEST CORP /DE/",
+        "ArcBest"
+      ],
+      "ticker": "ARCB",
+      "cik": "0000894405",
+      "lei": null,
+      "sec_company_name": "ARCBEST CORP /DE/",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:csx",
+      "canonical_name": "CSX",
+      "aliases": [
+        "CSX",
+        "CSX CORP"
+      ],
+      "ticker": "CSX",
+      "cik": "0000277948",
+      "lei": null,
+      "sec_company_name": "CSX CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:nsc",
+      "canonical_name": "Norfolk Southern",
+      "aliases": [
+        "NORFOLK SOUTHERN CORP",
+        "NSC",
+        "Norfolk Southern"
+      ],
+      "ticker": "NSC",
+      "cik": "0000702165",
+      "lei": null,
+      "sec_company_name": "NORFOLK SOUTHERN CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:unp",
+      "canonical_name": "Union Pacific",
+      "aliases": [
+        "UNION PACIFIC CORP",
+        "UNP",
+        "Union Pacific"
+      ],
+      "ticker": "UNP",
+      "cik": "0000100885",
+      "lei": null,
+      "sec_company_name": "UNION PACIFIC CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:matx",
+      "canonical_name": "Matson",
+      "aliases": [
+        "MATX",
+        "Matson",
+        "Matson, Inc."
+      ],
+      "ticker": "MATX",
+      "cik": "0000003453",
+      "lei": null,
+      "sec_company_name": "Matson, Inc.",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "transport_company:gatx",
+      "canonical_name": "GATX",
+      "aliases": [
+        "GATX",
+        "GATX CORP"
+      ],
+      "ticker": "GATX",
+      "cik": "0000040211",
+      "lei": null,
+      "sec_company_name": "GATX CORP",
+      "entity_type": "transport_company",
+      "sector_tags": [
+        "transportation",
+        "airline_logistics",
+        "fuel_cost_exposure",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "selection_rationale": "Public airline, parcel, trucking, rail, or logistics company included for fuel-cost transmission paths.",
+      "verification": {
+        "ticker_cik_source": "SEC company_tickers.json",
+        "verified_on": "2026-07-11"
+      }
+    },
+    {
+      "id": "macro:cre-loans",
+      "canonical_name": "Commercial Real Estate Loans, All Commercial Banks",
+      "aliases": [
+        "Commercial Real Estate Loans, All Commercial Banks",
+        "CREACBM027NBOG"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "bank_credit",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "CREACBM027NBOG"
+      ],
+      "selection_rationale": "CRE bank exposure level for scenario context.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "macro:cre-delinquency",
+      "canonical_name": "CRE Loan Delinquency Rate",
+      "aliases": [
+        "CRE Loan Delinquency Rate",
+        "DRCRELEXFACBS"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "credit_quality",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "DRCRELEXFACBS"
+      ],
+      "selection_rationale": "CRE credit-stress series for context and evaluation.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "macro:fed-funds",
+      "canonical_name": "Federal Funds Effective Rate",
+      "aliases": [
+        "Federal Funds Effective Rate",
+        "DFF"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "interest_rates"
+      ],
+      "packs": [
+        "cre",
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "DFF"
+      ],
+      "selection_rationale": "Policy-rate context for both packs.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "macro:ten-year-treasury",
+      "canonical_name": "10-Year Treasury Constant Maturity Rate",
+      "aliases": [
+        "10-Year Treasury Constant Maturity Rate",
+        "DGS10"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "interest_rates",
+        "duration_context"
+      ],
+      "packs": [
+        "cre",
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "DGS10"
+      ],
+      "selection_rationale": "Long-rate context for duration-sensitive nodes.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "macro:unemployment",
+      "canonical_name": "Unemployment Rate",
+      "aliases": [
+        "Unemployment Rate",
+        "UNRATE"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "macro_control"
+      ],
+      "packs": [
+        "cre",
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "UNRATE"
+      ],
+      "selection_rationale": "Macro control series for scenario context.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "macro:cpi",
+      "canonical_name": "Consumer Price Index",
+      "aliases": [
+        "Consumer Price Index",
+        "CPIAUCSL"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "macro_factor",
+      "sector_tags": [
+        "fred_series",
+        "inflation"
+      ],
+      "packs": [
+        "cre",
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "CPIAUCSL"
+      ],
+      "selection_rationale": "Inflation control series for scenario context.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "commodity:wti-crude",
+      "canonical_name": "West Texas Intermediate Crude Oil",
+      "aliases": [
+        "West Texas Intermediate Crude Oil",
+        "DCOILWTICO"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "commodity",
+      "sector_tags": [
+        "fred_series",
+        "commodity",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "DCOILWTICO"
+      ],
+      "selection_rationale": "Primary U.S. oil shock input.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "commodity:brent-crude",
+      "canonical_name": "Brent Crude Oil",
+      "aliases": [
+        "Brent Crude Oil",
+        "DCOILBRENTEU"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "commodity",
+      "sector_tags": [
+        "fred_series",
+        "commodity",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": 3,
+      "fred_series_ids": [
+        "DCOILBRENTEU"
+      ],
+      "selection_rationale": "Global oil benchmark for cross-checking oil scenarios.",
+      "verification": {
+        "source": "ADR-007 macro-series catalog"
+      }
+    },
+    {
+      "id": "sector:commercial-real-estate",
+      "canonical_name": "Commercial Real Estate Sector",
+      "aliases": [
+        "Commercial Real Estate Sector"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "sector",
+      "sector_tags": [
+        "sector_node",
+        "cre_pack"
+      ],
+      "packs": [
+        "cre"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": null,
+      "fred_series_ids": [],
+      "selection_rationale": "Sector aggregation node for CRE paths.",
+      "verification": {
+        "source": "curated metadata"
+      }
+    },
+    {
+      "id": "sector:oil-and-gas",
+      "canonical_name": "Oil And Gas Sector",
+      "aliases": [
+        "Oil And Gas Sector"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "sector",
+      "sector_tags": [
+        "sector_node",
+        "oil_pack"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": null,
+      "fred_series_ids": [],
+      "selection_rationale": "Sector aggregation node for oil paths.",
+      "verification": {
+        "source": "curated metadata"
+      }
+    },
+    {
+      "id": "sector:airline-logistics",
+      "canonical_name": "Airline And Logistics Sector",
+      "aliases": [
+        "Airline And Logistics Sector"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "sector",
+      "sector_tags": [
+        "sector_node",
+        "fuel_cost_exposure"
+      ],
+      "packs": [
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": null,
+      "fred_series_ids": [],
+      "selection_rationale": "Sector aggregation node for fuel-cost exposed transport companies.",
+      "verification": {
+        "source": "curated metadata"
+      }
+    },
+    {
+      "id": "geography:united-states",
+      "canonical_name": "United States",
+      "aliases": [
+        "United States"
+      ],
+      "ticker": null,
+      "cik": null,
+      "lei": null,
+      "sec_company_name": null,
+      "entity_type": "geography",
+      "sector_tags": [
+        "geography_node"
+      ],
+      "packs": [
+        "cre",
+        "oil"
+      ],
+      "breach_distance_candidate": false,
+      "expected_reporting_periods": null,
+      "fred_series_ids": [],
+      "selection_rationale": "Geography node for U.S. filings and macro series.",
+      "verification": {
+        "source": "curated metadata"
+      }
+    }
+  ]
+}

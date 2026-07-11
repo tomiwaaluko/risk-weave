@@ -4,9 +4,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-This repository currently contains **no code** — the source-of-truth product/system requirements specification `RISKWEAVE_MASTER_SPEC_MERGED.md` (v2.1.0) and the `workflows/` folder of branch-type agent workflows (see spec §25 for the agent tooling and MCP policy). All design, planning, implementation, and testing work MUST derive from that spec and MUST NOT silently redefine it. Read it before doing anything substantive; this file is only an orientation layer.
+The repository is a scaffolded monorepo with a uv-managed FastAPI backend in `backend/`, a Next.js TypeScript frontend in `frontend/`, Docker Compose infrastructure, and GitHub Actions CI. The source-of-truth product/system requirements specification remains `RISKWEAVE_MASTER_SPEC_MERGED.md` (v2.1.0); all design, planning, implementation, and testing work MUST derive from it and MUST NOT silently redefine it. Read it before doing anything substantive; this file is only an orientation layer.
 
-There are no build, lint, or test commands yet. When the codebase is scaffolded, update this file with the actual commands.
+## Commands
+
+Initial setup:
+
+```powershell
+Copy-Item .env.example .env
+Set-Location backend
+uv sync --frozen --dev
+Set-Location ..\frontend
+npm ci
+```
+
+Backend (run from `backend/`):
+
+```powershell
+uv run --env-file ../.env uvicorn riskweave_api.main:app --app-dir src --reload
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest
+```
+
+Frontend (run from `frontend/`):
+
+```powershell
+npm run dev
+npm run lint
+npm run format:check
+npm test
+npm run build
+```
+
+Full local stack (run from the repository root after creating `.env`):
+
+```powershell
+docker compose up --build --wait
+docker compose ps
+docker compose down
+```
+
+The local endpoints are frontend `http://localhost:3000`, backend health `http://localhost:8000/health`, Neo4j Browser `http://localhost:7474`, PostgreSQL `localhost:5432`, and Redis `localhost:6379`.
 
 ## What RiskWeave is
 
@@ -53,7 +92,7 @@ Reference spec requirement IDs (`RW-FR-*`, `RW-ALG-*`, `RW-AI-*`, etc.) in downs
 
 ## Development conventions
 
-Until the application is scaffolded, do not invent build, lint, test, or local-run commands in documentation. When adding a toolchain, expose a small, reproducible command set and update this file with the actual commands and directory layout.
+Keep the command set above synchronized with package scripts, CI, and the Docker Compose configuration whenever the toolchain changes.
 
 Follow the formatter and linter defaults committed for each language. Use four-space indentation and `snake_case` for Python modules and functions. Use two-space indentation, `PascalCase` for React components, and `camelCase` for TypeScript values. Prefer explicit domain names over abbreviations.
 
