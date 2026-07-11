@@ -29,3 +29,8 @@ Thumbs.db
 
 # Local worktrees
 .worktrees/
+
+# Claude Code generated
+.agents/
+.mcp.json
+skills-lock.json
