@@ -160,7 +160,8 @@ const creNode: NodeRecord = {
   structuralCentrality: 0.18,
   confidenceLabel: "Extraction confidence, not probability",
   lowConfidence: true,
-  missingDataNote: "Duration pass-through for two warehouse lines is not yet available in the frozen sample.",
+  missingDataNote:
+    "Duration pass-through for two warehouse lines is not yet available in the frozen sample.",
   breachDistance: {
     currentValue: "4.2x leverage",
     threshold: "4.5x covenant limit",
@@ -173,14 +174,16 @@ const creNode: NodeRecord = {
       id: "path-1",
       label: "Direct CRE loan-book hit",
       contribution: 0.62,
-      summary: "Office refinancing stress lands directly on the bank's CRE portfolio.",
+      summary:
+        "Office refinancing stress lands directly on the bank's CRE portfolio.",
       hops: [creEdges[0]],
     },
     {
       id: "path-2",
       label: "REIT -> title services -> CMBS loop",
       contribution: 0.19,
-      summary: "A surprising multi-hop path compounds the direct hit through transaction and servicing dependencies.",
+      summary:
+        "A surprising multi-hop path compounds the direct hit through transaction and servicing dependencies.",
       hops: [creEdges[0], creEdges[1], creEdges[2]],
     },
   ],
@@ -284,14 +287,16 @@ const oilNode: NodeRecord = {
       id: "oil-path-1",
       label: "Refining cost shock",
       contribution: 0.51,
-      summary: "Fuel costs land directly on line-haul margins before surcharge recovery catches up.",
+      summary:
+        "Fuel costs land directly on line-haul margins before surcharge recovery catches up.",
       hops: [oilEdges[0]],
     },
     {
       id: "oil-path-2",
       label: "Logistics -> air cargo -> retail sensitivity",
       contribution: 0.27,
-      summary: "An oil shock propagates through freight demand into inventory-heavy retail exposure.",
+      summary:
+        "An oil shock propagates through freight demand into inventory-heavy retail exposure.",
       hops: [oilEdges[0], oilEdges[1], oilEdges[2]],
     },
   ],
@@ -331,15 +336,18 @@ const scenarios: ScenarioBundle[] = [
 const methodology = [
   {
     title: "Registered derivations only",
-    detail: "Edge weights surface one of the six Section 12 methods. The UI always shows the method id, human-readable name, and evidence reference used to produce the number.",
+    detail:
+      "Edge weights surface one of the six Section 12 methods. The UI always shows the method id, human-readable name, and evidence reference used to produce the number.",
   },
   {
     title: "As-of honesty",
-    detail: "Every panel carries filing dates and market-data as-of dates so no impact score looks timeless.",
+    detail:
+      "Every panel carries filing dates and market-data as-of dates so no impact score looks timeless.",
   },
   {
     title: "Data limitations",
-    detail: "Free-tier equity-price inputs and short post-2020 samples are called out explicitly where they inform beta-style transmission edges.",
+    detail:
+      "Free-tier equity-price inputs and short post-2020 samples are called out explicitly where they inform beta-style transmission edges.",
   },
 ];
 
@@ -354,10 +362,16 @@ function formatPercent(value: number) {
 export function EvidenceWorkbench() {
   const [scenarioId, setScenarioId] = useState(scenarios[0].id);
   const [mode, setMode] = useState<"live" | "replay">("live");
-  const [selectedEdgeIds, setSelectedEdgeIds] = useState<Record<string, string>>(() =>
-    Object.fromEntries(scenarios.map((scenario) => [scenario.id, scenario.edges[0].id])),
+  const [selectedEdgeIds, setSelectedEdgeIds] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries(
+      scenarios.map((scenario) => [scenario.id, scenario.edges[0].id]),
+    ),
   );
-  const [expandedPathIds, setExpandedPathIds] = useState<Record<string, string>>(() =>
+  const [expandedPathIds, setExpandedPathIds] = useState<
+    Record<string, string>
+  >(() =>
     Object.fromEntries(
       scenarios.map((scenario) => [
         scenario.id,
@@ -365,14 +379,19 @@ export function EvidenceWorkbench() {
       ]),
     ),
   );
-  const scenario = scenarios.find((item) => item.id === scenarioId) ?? scenarios[0];
+  const scenario =
+    scenarios.find((item) => item.id === scenarioId) ?? scenarios[0];
   const node = scenario.node;
   const edges = scenario.edges;
   const selectedEdgeId = selectedEdgeIds[scenario.id] ?? edges[0].id;
   const expandedPathId =
-    expandedPathIds[scenario.id] ?? node.paths[1]?.id ?? node.paths[0]?.id ?? "";
+    expandedPathIds[scenario.id] ??
+    node.paths[1]?.id ??
+    node.paths[0]?.id ??
+    "";
 
-  const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? edges[0];
+  const selectedEdge =
+    edges.find((edge) => edge.id === selectedEdgeId) ?? edges[0];
   const highlightedPassage = `${selectedEdge.passage.contextBefore} ${selectedEdge.passage.quote} ${selectedEdge.passage.contextAfter}`;
 
   return (
@@ -382,13 +401,15 @@ export function EvidenceWorkbench() {
           <p className="eyebrow">RW-FR-021 • RW-ALG-032 • RW-GOAL-008</p>
           <h1>Trace any visible number to its source in under 30 seconds.</h1>
           <p className="hero-copy">
-            This evidence workbench turns the graph into a click-through audit trail:
-            node impact, contributing path, derivation method, source passage, and
-            exact character offsets.
+            This evidence workbench turns the graph into a click-through audit
+            trail: node impact, contributing path, derivation method, source
+            passage, and exact character offsets.
           </p>
         </div>
         <div className="hero-card">
-          <p className="hero-kicker">{mode === "live" ? "Live recompute" : "Replay fallback"}</p>
+          <p className="hero-kicker">
+            {mode === "live" ? "Live recompute" : "Replay fallback"}
+          </p>
           <strong>3 clicks from score to source sentence</strong>
           <span>
             {mode === "live"
@@ -449,7 +470,9 @@ export function EvidenceWorkbench() {
               <p className="panel-eyebrow">Selected node</p>
               <h2>{node.name}</h2>
             </div>
-            <span className="badge warning">Low-confidence evidence present</span>
+            <span className="badge warning">
+              Low-confidence evidence present
+            </span>
           </div>
 
           <div className="metrics-grid">
@@ -476,8 +499,9 @@ export function EvidenceWorkbench() {
             <p>
               {node.breachDistance?.currentValue} today against a{" "}
               {node.breachDistance?.threshold}; projected to{" "}
-              {node.breachDistance?.projectedValue} with {node.breachDistance?.headroom}{" "}
-              of headroom. Risk tier: {node.breachDistance?.riskTier}.
+              {node.breachDistance?.projectedValue} with{" "}
+              {node.breachDistance?.headroom} of headroom. Risk tier:{" "}
+              {node.breachDistance?.riskTier}.
             </p>
           </div>
 
@@ -486,7 +510,11 @@ export function EvidenceWorkbench() {
             <p>{node.missingDataNote}</p>
           </div>
 
-          <div className="path-list" role="list" aria-label="Contributing paths">
+          <div
+            className="path-list"
+            role="list"
+            aria-label="Contributing paths"
+          >
             {node.paths.map((path) => {
               const isExpanded = path.id === expandedPathId;
 
@@ -528,7 +556,8 @@ export function EvidenceWorkbench() {
                             {hop.source} → {hop.target}
                           </span>
                           <span className="hop-meta">
-                            {hop.relationshipType} • {hop.methodId} • {formatSigned(hop.weight)}
+                            {hop.relationshipType} • {hop.methodId} •{" "}
+                            {formatSigned(hop.weight)}
                           </span>
                         </button>
                       ))}
@@ -548,7 +577,9 @@ export function EvidenceWorkbench() {
                 {selectedEdge.source} → {selectedEdge.target}
               </h2>
             </div>
-            <span className={`badge ${selectedEdge.extractionConfidence < 0.7 ? "warning" : "ok"}`}>
+            <span
+              className={`badge ${selectedEdge.extractionConfidence < 0.7 ? "warning" : "ok"}`}
+            >
               {Math.round(selectedEdge.extractionConfidence * 100)}% confidence
             </span>
           </div>
@@ -604,7 +635,8 @@ export function EvidenceWorkbench() {
             <span>Doc ID: {selectedEdge.passage.documentId}</span>
             <span>Filed: {selectedEdge.passage.filingDate}</span>
             <span>
-              Offsets: {selectedEdge.passage.charStart}-{selectedEdge.passage.charEnd}
+              Offsets: {selectedEdge.passage.charStart}-
+              {selectedEdge.passage.charEnd}
             </span>
           </div>
 
