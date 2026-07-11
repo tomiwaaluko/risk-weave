@@ -8,9 +8,9 @@ exist, and its version string is stamped from here.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Mapping
 
 
 class UnknownMethodError(KeyError):
@@ -23,9 +23,9 @@ class DerivationMethod:
 
     method_id: str
     version: str
-    spec_row: str        # the §12.1 "Edge / exposure type" label
-    source_data: str     # the §12.1 "Source data" column
-    summary: str         # the deterministic derivation, one line
+    spec_row: str  # the §12.1 "Edge / exposure type" label
+    source_data: str  # the §12.1 "Source data" column
+    summary: str  # the deterministic derivation, one line
     variants: tuple[str, ...]  # callables implementing it (primary first)
 
 
@@ -35,7 +35,10 @@ _METHODS: dict[str, DerivationMethod] = {
         version="1.0.0",
         spec_row="Commodity dependency (e.g. jet fuel)",
         source_data="XBRL, FRED/commodity history, market returns",
-        summary="Cost-line share of operating expenses from XBRL; else factor beta vs the commodity series",
+        summary=(
+            "Cost-line share of operating expenses from XBRL; "
+            "else factor beta vs the commodity series"
+        ),
         variants=("der_commodity_cost_share", "der_commodity_factor_beta"),
     ),
     "DER-CONCENTRATION": DerivationMethod(
@@ -43,7 +46,10 @@ _METHODS: dict[str, DerivationMethod] = {
         version="1.0.0",
         spec_row="Supplier / customer dependency",
         source_data="10-K concentration disclosures, XBRL segments",
-        summary="Disclosed revenue-concentration percentage (validated verbatim); else segment revenue share",
+        summary=(
+            "Disclosed revenue-concentration percentage (validated verbatim); "
+            "else segment revenue share"
+        ),
         variants=("der_concentration_disclosed", "der_concentration_segment_share"),
     ),
     "DER-CREDIT": DerivationMethod(

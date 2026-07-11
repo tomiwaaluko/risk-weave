@@ -24,8 +24,25 @@ class MagnitudeParseError(ValueError):
 
 
 # Qualifier phrases we recognise. Each maps a matched phrase to a stable flag.
-_APPROX_WORDS = ("approximately", "approximate", "approx.", "approx", "about", "around", "roughly", "nearly", "~")
-_LOWER_BOUND_WORDS = ("at least", "no less than", "more than", "greater than", "in excess of", "over")
+_APPROX_WORDS = (
+    "approximately",
+    "approximate",
+    "approx.",
+    "approx",
+    "about",
+    "around",
+    "roughly",
+    "nearly",
+    "~",
+)
+_LOWER_BOUND_WORDS = (
+    "at least",
+    "no less than",
+    "more than",
+    "greater than",
+    "in excess of",
+    "over",
+)
 _UPPER_BOUND_WORDS = ("at most", "no more than", "less than", "up to", "under")
 
 # A percentage token, optionally trailed by a footnote marker like "(1)", "[2]",
@@ -132,15 +149,11 @@ def parse_disclosed_magnitude(text: str) -> ParsedMagnitude:
 
     matches = _SINGLE_RE.findall(normalized)
     if not matches:
-        raise MagnitudeParseError(
-            f"no parseable percentage in disclosed_magnitude: {raw!r}"
-        )
+        raise MagnitudeParseError(f"no parseable percentage in disclosed_magnitude: {raw!r}")
     if len(matches) > 1:
         # Two unrelated percentages with no range connective is ambiguous —
         # refuse rather than pick one (RW-PRIN-008).
-        raise MagnitudeParseError(
-            f"ambiguous: multiple percentages without a range in {raw!r}"
-        )
+        raise MagnitudeParseError(f"ambiguous: multiple percentages without a range in {raw!r}")
 
     value = _to_fraction(matches[0])
     return ParsedMagnitude(

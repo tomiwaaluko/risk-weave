@@ -13,8 +13,8 @@ on caller-supplied inputs.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import Mapping, Sequence
 
 import numpy as np
 import statsmodels.api as sm
