@@ -32,7 +32,7 @@ make them useful for demonstrating deterministic contagion paths.
 
 ## Composition
 
-The universe file contains 125 entities:
+The universe file currently contains 125 entities (as generated on 2026-07-11):
 
 - 25 banks or financial institutions for CRE credit and breach-distance paths.
 - 25 REITs or property-related infrastructure companies.
