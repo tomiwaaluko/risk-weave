@@ -671,3 +671,116 @@ select {
     max-width: none;
   }
 }
+
+/* Live shock parser (reduced RIS-18) */
+.shockParser {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.shockParserHead h2 {
+  margin: 0.25rem 0;
+}
+
+.shockParserCopy {
+  margin: 0;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+.shockParser .pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.shockParser .pill {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.shockParser .pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.shockParserStatus,
+.shockParserError {
+  margin: 0;
+}
+
+.shockParserError {
+  color: var(--warning);
+}
+
+.shockParserResult {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.shockParserPrompt {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.shockParserPrompt span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.shockParserMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.shockParser .badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+}
+
+.shockParser .badge.ok {
+  background: rgba(13, 107, 79, 0.18);
+  color: var(--accent);
+}
+
+.shockParser .badge.warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.shockParserRun {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.shockParserRun button {
+  padding: 0.5rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.shockParserRun button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
