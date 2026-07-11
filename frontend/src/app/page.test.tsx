@@ -16,5 +16,8 @@ describe("Home", () => {
     );
     expect(markup).toContain("Breach-distance block");
     expect(markup).toContain("Methodology / honesty page");
+    expect(markup).toContain("Exact quoted span with surrounding context");
+    expect(markup).toContain("Replay fallback");
+    expect(markup).toContain("snap-demo-2026-07-11");
   });
 });
