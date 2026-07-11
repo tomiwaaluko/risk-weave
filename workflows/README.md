@@ -7,6 +7,10 @@ markdown file step by step. Each step that starts with a `/ce-*` slash command
 invokes the corresponding skill from the
 [compound-engineering plugin](https://github.com/everyinc/compound-engineering-plugin).
 
+Tools without the plugin installed (Cursor, Codex, etc.): every referenced `/ce-*`
+skill is vendored in this repo at `skills/ce-<name>/SKILL.md` — read and follow
+that file for the step instead. See `skills/README.md`.
+
 ## Shared lifecycle (applies to every workflow)
 
 Every workflow follows the same outer shell:
