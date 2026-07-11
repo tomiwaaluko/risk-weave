@@ -1,4 +1,14 @@
 :root {
+  --bg: #f3efe6;
+  --panel: rgba(255, 252, 246, 0.78);
+  --panel-border: rgba(44, 54, 43, 0.14);
+  --ink: #112015;
+  --muted: #55645b;
+  --accent: #0d6b4f;
+  --accent-strong: #083f31;
+  --warning: #8f3d1f;
+  --warning-bg: rgba(196, 107, 56, 0.14);
+  --shadow: 0 24px 60px rgba(34, 42, 33, 0.12);
   color-scheme: dark;
   font-family: Arial, Helvetica, sans-serif;
   background: #0f1411;
@@ -7,6 +17,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -46,7 +60,7 @@ select {
   padding: 1rem;
 }
 
-.eyebrow {
+.workspace .eyebrow {
   margin: 0 0 0.35rem;
   color: #8fa69a;
   font-size: 0.75rem;
@@ -54,17 +68,17 @@ select {
   text-transform: uppercase;
 }
 
-h1,
-h2 {
+.workspace h1,
+.workspace h2 {
   margin: 0;
   letter-spacing: 0;
 }
 
-h1 {
+.workspace h1 {
   font-size: 1.5rem;
 }
 
-h2 {
+.workspace h2 {
   font-size: 1rem;
 }
 
@@ -205,6 +219,345 @@ select {
   text-transform: uppercase;
 }
 
+.app-shell {
+  width: min(1400px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1rem 0 4rem;
+}
+
+.app-shell,
+.app-shell .hero,
+.app-shell .workspace-grid,
+.app-shell .methodology-grid,
+.app-shell .metrics-grid,
+.app-shell .detail-grid,
+.app-shell .passage-meta {
+  display: grid;
+  gap: 1rem;
+}
+
+.app-shell .hero {
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.8fr);
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.app-shell .eyebrow,
+.app-shell .panel-eyebrow,
+.app-shell .hero-kicker,
+.app-shell .hop-index {
+  margin: 0;
+  font-family: "Courier New", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.app-shell .eyebrow,
+.app-shell .panel-eyebrow,
+.app-shell .hero-kicker {
+  color: var(--accent);
+}
+
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.app-shell strong {
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+}
+
+.app-shell h1 {
+  margin: 0.3rem 0 0.75rem;
+  font-size: clamp(2.8rem, 5vw, 5.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  max-width: 10ch;
+}
+
+.app-shell h2,
+.app-shell h3,
+.app-shell p {
+  margin: 0;
+}
+
+.app-shell .hero-copy {
+  max-width: 58ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.app-shell .hero-card,
+.app-shell .panel,
+.app-shell .method-card,
+.app-shell .metric,
+.app-shell .callout,
+.app-shell .path-card,
+.app-shell .hop-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.app-shell .hero-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.4rem;
+  justify-self: stretch;
+}
+
+.app-shell .hero-card strong {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.app-shell .hero-card span {
+  color: var(--muted);
+}
+
+.app-shell .workspace-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.85fr);
+  align-items: start;
+}
+
+.app-shell .graph-panel {
+  grid-row: span 2;
+}
+
+.app-shell .passage-panel {
+  grid-column: 2;
+}
+
+.app-shell .panel,
+.app-shell .method-card {
+  padding: 1.4rem;
+}
+
+.app-shell .panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.app-shell .panel-header h2 {
+  font-size: clamp(1.5rem, 2vw, 2.2rem);
+  line-height: 1;
+}
+
+.app-shell .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-family: "Courier New", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(13, 107, 79, 0.12);
+  color: var(--accent-strong);
+}
+
+.app-shell .badge.warning {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.app-shell .badge.ok {
+  color: var(--accent-strong);
+}
+
+.app-shell .metrics-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.app-shell .metric {
+  padding: 1rem;
+}
+
+.app-shell .metric span,
+.app-shell .detail-grid dt,
+.app-shell .methodology-link span,
+.app-shell .passage-meta span,
+.app-shell .hop-meta,
+.app-shell .callout p,
+.app-shell .path-button small,
+.app-shell .method-card p {
+  color: var(--muted);
+}
+
+.app-shell .metric span,
+.app-shell .detail-grid dt {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.88rem;
+}
+
+.app-shell .metric strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.app-shell .callout {
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.app-shell .callout.subtle {
+  background: rgba(17, 32, 21, 0.04);
+}
+
+.app-shell .callout strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 1.15rem;
+}
+
+.app-shell .path-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.app-shell .path-card {
+  padding: 0.55rem;
+}
+
+.app-shell .path-button,
+.app-shell .hop-card {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-shell .path-button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+}
+
+.app-shell .path-button span {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.app-shell .path-button strong {
+  font-size: 1.8rem;
+  white-space: nowrap;
+}
+
+.app-shell .hop-list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.25rem 0.75rem 0.75rem;
+}
+
+.app-shell .hop-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.app-shell .hop-card.active {
+  outline: 2px solid rgba(13, 107, 79, 0.32);
+  background: rgba(223, 240, 231, 0.92);
+}
+
+.app-shell .hop-route {
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.25rem;
+}
+
+.app-shell .detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.app-shell .detail-grid div {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(44, 54, 43, 0.09);
+}
+
+.app-shell .detail-grid dd {
+  margin: 0;
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.15rem;
+}
+
+.app-shell .methodology-link {
+  display: grid;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+}
+
+.app-shell .methodology-link a {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.app-shell .passage-meta {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+  font-family: "Courier New", monospace;
+  font-size: 0.8rem;
+}
+
+.app-shell .passage {
+  font-size: 1.06rem;
+  line-height: 1.75;
+}
+
+.app-shell mark {
+  background: rgba(255, 208, 96, 0.55);
+  color: inherit;
+  padding: 0.1rem 0.2rem;
+  border-radius: 0.35rem;
+}
+
+.app-shell .methodology-panel {
+  margin-top: 1.5rem;
+}
+
+.app-shell .methodology-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.app-shell .method-card {
+  min-height: 100%;
+}
+
+.app-shell .method-card h3 {
+  margin-bottom: 0.55rem;
+  font-size: 1.4rem;
+}
+
+.app-shell .method-card p {
+  line-height: 1.6;
+}
+
+@media (max-width: 1080px) {
+  .app-shell .workspace-grid,
+  .app-shell .hero,
+  .app-shell .methodology-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell .graph-panel,
+  .app-shell .passage-panel {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
 @media (max-width: 800px) {
   .topbar,
   .reviewGrid {
@@ -221,5 +574,39 @@ select {
 
   .templateSwitch button {
     flex: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: min(100% - 1rem, 1400px);
+    padding-top: 1rem;
+  }
+
+  .app-shell .metrics-grid,
+  .app-shell .detail-grid,
+  .app-shell .passage-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .app-shell .panel-header,
+  .app-shell .path-button {
+    flex-direction: column;
+  }
+
+  .app-shell .path-button strong {
+    font-size: 1.45rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell .metrics-grid,
+  .app-shell .detail-grid,
+  .app-shell .passage-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell h1 {
+    max-width: none;
   }
 }
