@@ -7,6 +7,7 @@ Covers: RW-FR-009 (lifecycle), RW-FR-015 (reproducibility bundle),
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +15,7 @@ from fastapi.testclient import TestClient
 from riskweave.propagation import GraphEdge, GraphNode, GraphSnapshot
 from riskweave_api.main import app
 from riskweave_api.models import ScenarioState
+from riskweave_api.routers import registry
 from riskweave_api.scenario_store import ScenarioStore, TransitionError
 
 # ---------------------------------------------------------------------------
@@ -199,7 +201,13 @@ def test_result_carries_reproducibility_bundle(client, created_scenario, scenari
     client.post(f"/scenarios/{scenario_id}/validate")
     data = client.post(f"/scenarios/{scenario_id}/run", json={"severity": 1.0}).json()
     bundle_fields = (
-        "snapshot_id", "graph_version", "engine_version", "seed", "damping", "floor", "max_hops"
+        "snapshot_id",
+        "graph_version",
+        "engine_version",
+        "seed",
+        "damping",
+        "floor",
+        "max_hops",
     )
     for field in bundle_fields:
         assert field in data, f"reproducibility bundle missing field: {field}"
@@ -264,6 +272,23 @@ def test_resolve_entity_finds_node_by_name(client, created_scenario):
     resp = client.post("/registry/resolve_entity", json={"query": "Bank Alpha"})
     assert resp.status_code == 200
     assert resp.json()["node_id"] == "bank-a"
+
+
+def test_resolve_entity_uses_curated_universe_identifiers_first(client):
+    resp = client.post("/registry/resolve_entity", json={"query": "JPM"})
+    assert resp.status_code == 200
+    assert resp.json()["node_id"] == "bank:jpm"
+    assert resp.json()["name"] == "JPMorgan Chase"
+
+
+def test_resolve_entity_uses_configured_universe_path(client, monkeypatch):
+    registry._curated_resolver.cache_clear()
+    universe = Path(__file__).resolve().parents[2] / "data/universe/entities.json"
+    monkeypatch.setenv("RISKWEAVE_UNIVERSE_PATH", str(universe))
+    resp = client.post("/registry/resolve_entity", json={"query": "0000019617"})
+    assert resp.status_code == 200
+    assert resp.json()["node_id"] == "bank:jpm"
+    registry._curated_resolver.cache_clear()
 
 
 def test_resolve_entity_returns_nulls_for_unknown(client):

@@ -11,8 +11,13 @@ Functions: resolve_entity, get_company_exposures, run_scenario,
 
 from __future__ import annotations
 
+import os
+from functools import lru_cache
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
 
+from riskweave.entity_resolution import Resolver
 from riskweave_api.dependencies import get_store
 from riskweave_api.models import (
     CompanyExposuresResponse,
@@ -28,6 +33,25 @@ from riskweave_api.models import (
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore
 
 router = APIRouter(prefix="/registry", tags=["registry"])
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
+
+@lru_cache(maxsize=1)
+def _curated_resolver() -> Resolver | None:
+    candidates = []
+    configured_path = os.environ.get("RISKWEAVE_UNIVERSE_PATH")
+    if configured_path:
+        candidates.append(Path(configured_path))
+    candidates.extend(
+        [
+            REPO_ROOT / "data/universe/entities.json",
+            Path("/app/data/universe/entities.json"),
+        ]
+    )
+    for path in candidates:
+        if path.exists():
+            return Resolver.from_universe_file(path)
+    return None
 
 
 @router.post("/resolve_entity", response_model=ResolveEntityResponse)
@@ -37,9 +61,20 @@ def resolve_entity(
 ) -> ResolveEntityResponse:
     """Find the canonical node id for a natural-language entity name.
 
-    Searches registered snapshots for a node whose name matches the query
-    (case-insensitive prefix match). Returns the first match or nulls.
+    RIS-11 deterministic universe resolution runs first. Registered snapshots
+    remain as a compatibility fallback for test/demo snapshots not in the
+    curated universe.
     """
+    resolver = _curated_resolver()
+    if resolver is not None:
+        result = resolver.resolve(req.query)
+        if result.entity is not None:
+            return ResolveEntityResponse(
+                node_id=result.entity.id,
+                name=result.entity.canonical_name,
+                node_type=result.entity.entity_type,
+            )
+
     query = req.query.strip().lower()
     for snapshot in store._snapshots.values():
         for node in snapshot.nodes:
