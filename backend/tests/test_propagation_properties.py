@@ -69,7 +69,8 @@ def shock(snapshot: GraphSnapshot, magnitude: float) -> Scenario:
 def test_scores_bounded(snap, magnitude):
     result = propagate(snap, shock(snap, magnitude))
     for impact in result.impacts.values():
-        assert 0.0 <= impact.risk_score < 100.0
+        # 100.0 is attainable in float when exp(-|raw|) underflows to 0.
+        assert 0.0 <= impact.risk_score <= 100.0
         assert math.isfinite(impact.raw_impact)
 
 

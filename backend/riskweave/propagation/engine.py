@@ -17,7 +17,9 @@ Node aggregation (`RW-ALG-006`):
     raw_node_impact = fsum(retained incoming path contributions)
     risk_score      = 100 * (1 - exp(-abs(raw_node_impact)))
 
-``risk_score`` is bounded to ``[0, 100)`` and is a display/ranking score only —
+``risk_score`` is bounded to ``[0, 100]``
+(asymptotic in exact arithmetic; 100.0 is reached in floats only when
+``exp(-|raw|)`` underflows) and is a display/ranking score only —
 not a probability. The signed per-path contributions are kept on the result so
 the evidence panel can decompose any score exactly (`RW-FR-018`).
 
