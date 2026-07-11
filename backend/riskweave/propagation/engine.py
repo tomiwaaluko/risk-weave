@@ -220,10 +220,13 @@ def propagate(snapshot: GraphSnapshot, scenario: Scenario) -> PropagationResult:
             c.contribution for c in sorted(contributions, key=lambda c: c.path_key)
         )
         ranked = tuple(sorted(contributions, key=lambda c: (-abs(c.contribution), c.path_key)))
+        risk_score = 100.0 * -math.expm1(-abs(raw_impact))
+        if risk_score >= 100.0:
+            risk_score = math.nextafter(100.0, 0.0)
         impacts[node_id] = NodeImpact(
             node_id=node_id,
             raw_impact=raw_impact,
-            risk_score=100.0 * (1.0 - math.exp(-abs(raw_impact))),
+            risk_score=risk_score,
             contributions=ranked,
         )
 
