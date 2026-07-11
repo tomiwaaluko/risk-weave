@@ -88,6 +88,69 @@ def created_scenario(client, scenario_id):
 
 
 # ---------------------------------------------------------------------------
+# Structured scenario review (RW-FR-001..008)
+# ---------------------------------------------------------------------------
+
+
+def test_review_templates_are_prevalidated(client):
+    resp = client.get("/scenarios/templates")
+
+    assert resp.status_code == 200
+    templates = resp.json()
+    assert {template["scenario_pack"] for template in templates} == {"cre", "oil"}
+    assert all(template["status"] == "READY" for template in templates)
+    assert all(template["prevalidated_template"] for template in templates)
+    assert all(template["assumptions"] for template in templates)
+
+
+def test_parse_endpoint_returns_reviewable_scenario(client):
+    resp = client.post(
+        "/scenarios/parse",
+        json={
+            "text": (
+                "Commercial real-estate values fall 20%, refinancing rates rise "
+                "150 basis points, stress persists six quarters."
+            )
+        },
+    )
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["status"] == "READY"
+    assert len(payload["factors"]) >= 5
+    assert payload["factors"][0]["factor_id"] == "cre_property_value"
+    assert payload["factors"][1]["unit"] == "basis_points"
+
+
+def test_review_run_rejects_unvalidated_edit(client):
+    parsed = client.post(
+        "/scenarios/parse",
+        json={"text": "Commercial real-estate values fall 20%."},
+    ).json()
+    parsed["status"] = "DRAFT"
+
+    resp = client.post("/scenarios/review/run", json=parsed)
+
+    assert resp.status_code == 200
+    assert resp.json()["accepted"] is False
+
+
+def test_review_validate_does_not_reparse_prompt(client):
+    parsed = client.post(
+        "/scenarios/parse",
+        json={"text": "Commercial real-estate values fall 20%."},
+    ).json()
+    parsed["factors"][0]["magnitude"] = 25
+
+    resp = client.post("/scenarios/review/validate", json=parsed)
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["status"] == "READY"
+    assert payload["factors"][0]["magnitude"] == 25
+
+
+# ---------------------------------------------------------------------------
 # Scenario lifecycle (RW-FR-009)
 # ---------------------------------------------------------------------------
 
