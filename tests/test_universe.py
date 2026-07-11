@@ -81,7 +81,7 @@ def test_breach_distance_candidate_count_is_scoped():
 
 
 def test_selection_document_records_scope_guard_and_requirements():
-    text = SELECTION_PATH.read_text()
+    text = SELECTION_PATH.read_text(encoding="utf-8")
     normalized = " ".join(text.split())
 
     assert "RW-SCOPE-001" in text
