@@ -2,17 +2,13 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Literal
 
+import redis.asyncio as aioredis
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from riskweave_api.routers import registry, scenarios, slider, spike
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.settings import Settings
-
-try:
-    import redis.asyncio as aioredis
-except ImportError:  # pragma: no cover - Redis is optional until RIS-14 persistence lands.
-    aioredis = None
 
 
 class HealthResponse(BaseModel):
@@ -25,18 +21,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.settings = settings
     app.state.store = ScenarioStore()
 
-    redis_client = None
+    redis_client: aioredis.Redis | None = None
     try:
-        if aioredis is not None:
-            redis_client = aioredis.from_url(
-                settings.redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-            )
-            await redis_client.ping()
-            app.state.redis = redis_client
-        else:
-            app.state.redis = None
+        redis_client = aioredis.from_url(
+            settings.redis_url,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+        await redis_client.ping()
+        app.state.redis = redis_client
     except Exception:
         app.state.redis = None
 

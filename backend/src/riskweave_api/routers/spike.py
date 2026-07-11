@@ -20,9 +20,7 @@ from riskweave.propagation import (
     GraphEdge,
     GraphNode,
     GraphSnapshot,
-    Scenario,
     ShockFactor,
-    propagate,
 )
 from riskweave_api.dependencies import get_store
 from riskweave_api.models import ScenarioCreateRequest, ScenarioState, ShockFactorIn
@@ -399,52 +397,31 @@ def run_spike(
     for the spike. The frontend also uses the WebSocket slider, but this
     endpoint is useful for testing and initial load.
     """
-    import time
-
     try:
-        record = store.get(SPIKE_SCENARIO_ID)
-        snapshot = store.get_snapshot(record.snapshot_id)
+        result, _latency = store.run(SPIKE_SCENARIO_ID, severity)
     except KeyError as exc:
         raise HTTPException(
             status_code=404,
             detail="Spike not seeded — call POST /spike/seed first",
         ) from exc
 
-    scaled = Scenario(
-        scenario_id=record.scenario.scenario_id,
-        factors=tuple(
-            ShockFactor(
-                factor_id=f.factor_id,
-                node_id=f.node_id,
-                magnitude=f.magnitude * severity,
-            )
-            for f in record.scenario.factors
-        ),
-        seed=record.scenario.seed,
-    )
-
-    t0 = time.perf_counter()
-    result = propagate(snapshot, scaled)
-    latency_ms = (time.perf_counter() - t0) * 1000.0
-
-    ranked = result.ranked_entities()
     impacts: dict[str, SpikeNodeImpactOut] = {}
-    for ni in ranked:
+    for node_id, ni in result.impacts.items():
         paths = [
             SpikePathOut(
                 path_key=pc.path_key,
                 factor_id=pc.factor_id,
-                target_node_id=pc.target_node_id,
+                target_node_id=node_id,
                 hop_count=pc.hop_count,
                 contribution=pc.contribution,
-                edge_ids=[e.edge_id for e in pc.edges],
-                method_ids=[e.method_id for e in pc.edges],
-                provenance_refs=[e.provenance_ref for e in pc.edges],
+                edge_ids=pc.edge_ids,
+                method_ids=pc.method_ids,
+                provenance_refs=pc.provenance_refs,
             )
             for pc in ni.contributions
         ]
-        impacts[ni.node_id] = SpikeNodeImpactOut(
-            node_id=ni.node_id,
+        impacts[node_id] = SpikeNodeImpactOut(
+            node_id=node_id,
             raw_impact=ni.raw_impact,
             risk_score=ni.risk_score,
             contributions=paths,
@@ -454,7 +431,7 @@ def run_spike(
         scenario_id=SPIKE_SCENARIO_ID,
         severity=severity,
         impacts=impacts,
-        ranked_entity_ids=[ni.node_id for ni in ranked],
-        latency_ms=latency_ms,
+        ranked_entity_ids=result.ranked_entity_ids,
+        latency_ms=result.latency_ms,
         cached=False,
     )
