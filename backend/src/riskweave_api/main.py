@@ -2,8 +2,11 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Literal
 
+import os
+
 import redis.asyncio as aioredis
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from riskweave_api.routers import registry, scenarios, slider, spike
@@ -40,6 +43,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="RiskWeave API", version="0.1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=os.getenv(
+        "CORS_ALLOW_ORIGIN_REGEX",
+        Settings.model_fields["cors_allow_origin_regex"].default,
+    ),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(scenarios.router)
 app.include_router(slider.router)
