@@ -1,0 +1,147 @@
+/* RIS-15 production graph page: ranked sidebar, legend groups, disclaimer footer */
+
+.spike-page {
+  height: auto;
+  min-height: 100vh;
+}
+
+.spike-body {
+  min-height: 0;
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Ranked sidebar
+   --------------------------------------------------------------------------- */
+
+.ranked-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #1e293b;
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ranked-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  flex-shrink: 0;
+}
+
+.ranked-sidebar-header h2 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.ranked-count {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.ranked-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ranked-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  color: #e2e8f0;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.72rem;
+}
+
+.ranked-row:hover {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.ranked-row.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.ranked-index {
+  color: #64748b;
+  min-width: 1.4rem;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.ranked-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranked-name small {
+  display: block;
+  color: #64748b;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+}
+
+.ranked-score {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Legend groups
+   --------------------------------------------------------------------------- */
+
+.legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.legend-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.legend-group-label {
+  color: #64748b;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.15rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Disclaimer footer (RW-SAFE-001)
+   --------------------------------------------------------------------------- */
+
+.disclaimer-footer {
+  flex-shrink: 0;
+  padding: 0.5rem 1.25rem;
+  background: #0b1220;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
