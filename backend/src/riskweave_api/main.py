@@ -1,8 +1,7 @@
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Literal
-
-import os
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI
