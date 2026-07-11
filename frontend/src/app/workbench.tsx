@@ -55,7 +55,21 @@ type EdgeRecord = {
   };
 };
 
-const edges: EdgeRecord[] = [
+type ScenarioBundle = {
+  id: string;
+  title: string;
+  pack: string;
+  nlInput: string;
+  snapshotId: string;
+  graphVersion: string;
+  engineVersion: string;
+  replayReady: boolean;
+  replayLabel: string;
+  node: NodeRecord;
+  edges: EdgeRecord[];
+};
+
+const creEdges: EdgeRecord[] = [
   {
     id: "edge-cre-loans",
     source: "Atlantic Regional Bank",
@@ -136,7 +150,7 @@ const edges: EdgeRecord[] = [
   },
 ];
 
-const node: NodeRecord = {
+const creNode: NodeRecord = {
   id: "node-arb",
   name: "Atlantic Regional Bank",
   type: "Bank",
@@ -160,17 +174,159 @@ const node: NodeRecord = {
       label: "Direct CRE loan-book hit",
       contribution: 0.62,
       summary: "Office refinancing stress lands directly on the bank's CRE portfolio.",
-      hops: [edges[0]],
+      hops: [creEdges[0]],
     },
     {
       id: "path-2",
       label: "REIT -> title services -> CMBS loop",
       contribution: 0.19,
       summary: "A surprising multi-hop path compounds the direct hit through transaction and servicing dependencies.",
-      hops: [edges[0], edges[1], edges[2]],
+      hops: [creEdges[0], creEdges[1], creEdges[2]],
     },
   ],
 };
+
+const oilEdges: EdgeRecord[] = [
+  {
+    id: "edge-refining-logistics",
+    source: "North Coast Refining",
+    target: "Apex Logistics",
+    relationshipType: "fuel-cost pass-through",
+    direction: "positive",
+    weight: 0.47,
+    methodId: "DER-COMMODITY",
+    methodName: "Fuel cost share",
+    extractionConfidence: 0.88,
+    filingDate: "2025-03-11",
+    asOfDate: "2025-04-01",
+    provenanceRef: "OIL-PACK-2025Q1#4201-4273",
+    passage: {
+      documentId: "OIL-PACK-2025Q1",
+      filingDate: "2025-03-11",
+      charStart: 4201,
+      charEnd: 4273,
+      quote:
+        "Fuel represented forty-seven percent of line-haul operating expense in the peak quarter.",
+      contextBefore:
+        "Apex Logistics disclosed that diesel and jet exposure remained the largest variable cost and",
+      contextAfter:
+        "Management's surcharge recovery lagged underlying spot-price moves by one reporting cycle.",
+    },
+  },
+  {
+    id: "edge-logistics-air",
+    source: "Apex Logistics",
+    target: "Harbor Air Cargo",
+    relationshipType: "freight demand transmission",
+    direction: "positive",
+    weight: 0.29,
+    methodId: "DER-CONCENTRATION",
+    methodName: "Customer concentration share",
+    extractionConfidence: 0.74,
+    filingDate: "2025-02-28",
+    asOfDate: "2025-03-31",
+    provenanceRef: "AIR-CARGO-2025Q1#12010-12084",
+    passage: {
+      documentId: "AIR-CARGO-2025Q1",
+      filingDate: "2025-02-28",
+      charStart: 12010,
+      charEnd: 12084,
+      quote:
+        "Roughly twenty-nine percent of premium cargo volume was tied to domestic logistics partners.",
+      contextBefore:
+        "Harbor Air Cargo noted that large contract customers deferred some shipments and",
+      contextAfter:
+        "Yield pressure intensified when fuel surcharges could not be passed through in full.",
+    },
+  },
+  {
+    id: "edge-air-retail",
+    source: "Harbor Air Cargo",
+    target: "Regional Retail Basket",
+    relationshipType: "inventory and margin sensitivity",
+    direction: "positive",
+    weight: 0.18,
+    methodId: "DER-BETA",
+    methodName: "Observed transmission beta",
+    extractionConfidence: 0.61,
+    filingDate: "2025-04-18",
+    asOfDate: "2025-05-15",
+    provenanceRef: "RETAIL-SENSITIVITY-2025Q1#918-990",
+    passage: {
+      documentId: "RETAIL-SENSITIVITY-2025Q1",
+      filingDate: "2025-04-18",
+      charStart: 918,
+      charEnd: 990,
+      quote:
+        "Short-cycle inventory margins compressed when expedited air freight remained elevated.",
+      contextBefore:
+        "Across the sample, management teams noted that markdown cadence worsened because",
+      contextAfter:
+        "The estimate is directionally useful but some regional fare-elasticity data is still missing.",
+    },
+  },
+];
+
+const oilNode: NodeRecord = {
+  id: "node-apex",
+  name: "Apex Logistics",
+  type: "Logistics",
+  directImpact: 0.51,
+  indirectImpact: 0.27,
+  riskScore: 54.1,
+  structuralCentrality: 0.14,
+  confidenceLabel: "Extraction confidence, not probability",
+  lowConfidence: true,
+  missingDataNote:
+    "Regional fare elasticity is still missing for two downstream carriers, so the replay bundle keeps that gap visible.",
+  paths: [
+    {
+      id: "oil-path-1",
+      label: "Refining cost shock",
+      contribution: 0.51,
+      summary: "Fuel costs land directly on line-haul margins before surcharge recovery catches up.",
+      hops: [oilEdges[0]],
+    },
+    {
+      id: "oil-path-2",
+      label: "Logistics -> air cargo -> retail sensitivity",
+      contribution: 0.27,
+      summary: "An oil shock propagates through freight demand into inventory-heavy retail exposure.",
+      hops: [oilEdges[0], oilEdges[1], oilEdges[2]],
+    },
+  ],
+};
+
+const scenarios: ScenarioBundle[] = [
+  {
+    id: "cre",
+    title: "CRE refinancing squeeze",
+    pack: "Commercial real estate",
+    nlInput:
+      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.",
+    snapshotId: "snap-demo-2026-07-11",
+    graphVersion: "1.1.0",
+    engineVersion: "adr-001-simple-path-v1",
+    replayReady: true,
+    replayLabel: "Replay mode: precomputed results from frozen bundle",
+    node: creNode,
+    edges: creEdges,
+  },
+  {
+    id: "oil",
+    title: "Oil price shock",
+    pack: "Energy transmission",
+    nlInput:
+      "Oil prices jump 25%, jet fuel costs stay elevated for two quarters, and airlines pass only part of the shock through to fares.",
+    snapshotId: "snap-demo-2026-07-11",
+    graphVersion: "1.1.0",
+    engineVersion: "adr-001-simple-path-v1",
+    replayReady: true,
+    replayLabel: "Replay mode: precomputed results from frozen bundle",
+    node: oilNode,
+    edges: oilEdges,
+  },
+];
 
 const methodology = [
   {
@@ -196,8 +352,25 @@ function formatPercent(value: number) {
 }
 
 export function EvidenceWorkbench() {
-  const [selectedEdgeId, setSelectedEdgeId] = useState(edges[0].id);
-  const [expandedPathId, setExpandedPathId] = useState(node.paths[1].id);
+  const [scenarioId, setScenarioId] = useState(scenarios[0].id);
+  const [mode, setMode] = useState<"live" | "replay">("live");
+  const [selectedEdgeIds, setSelectedEdgeIds] = useState<Record<string, string>>(() =>
+    Object.fromEntries(scenarios.map((scenario) => [scenario.id, scenario.edges[0].id])),
+  );
+  const [expandedPathIds, setExpandedPathIds] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      scenarios.map((scenario) => [
+        scenario.id,
+        scenario.node.paths[1]?.id ?? scenario.node.paths[0]?.id ?? "",
+      ]),
+    ),
+  );
+  const scenario = scenarios.find((item) => item.id === scenarioId) ?? scenarios[0];
+  const node = scenario.node;
+  const edges = scenario.edges;
+  const selectedEdgeId = selectedEdgeIds[scenario.id] ?? edges[0].id;
+  const expandedPathId =
+    expandedPathIds[scenario.id] ?? node.paths[1]?.id ?? node.paths[0]?.id ?? "";
 
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? edges[0];
   const highlightedPassage = `${selectedEdge.passage.contextBefore} ${selectedEdge.passage.quote} ${selectedEdge.passage.contextAfter}`;
@@ -215,9 +388,57 @@ export function EvidenceWorkbench() {
           </p>
         </div>
         <div className="hero-card">
-          <p className="hero-kicker">Timed drill</p>
+          <p className="hero-kicker">{mode === "live" ? "Live recompute" : "Replay fallback"}</p>
           <strong>3 clicks from score to source sentence</strong>
-          <span>Node panel → path hop → passage viewer</span>
+          <span>
+            {mode === "live"
+              ? "Node panel → path hop → passage viewer"
+              : scenario.replayLabel}
+          </span>
+        </div>
+      </section>
+
+      <section className="demo-toolbar panel" aria-label="Frozen demo controls">
+        <div className="toolbar-block">
+          <p className="panel-eyebrow">Scenario pack</p>
+          <div className="pill-row">
+            {scenarios.map((item) => (
+              <button
+                className={`pill ${item.id === scenario.id ? "active" : ""}`}
+                key={item.id}
+                type="button"
+                onClick={() => setScenarioId(item.id)}
+              >
+                {item.title}
+              </button>
+            ))}
+          </div>
+          <p className="toolbar-copy">{scenario.nlInput}</p>
+        </div>
+
+        <div className="toolbar-block">
+          <p className="panel-eyebrow">Mode</p>
+          <div className="pill-row">
+            <button
+              className={`pill ${mode === "live" ? "active" : ""}`}
+              type="button"
+              onClick={() => setMode("live")}
+            >
+              Live recompute
+            </button>
+            <button
+              className={`pill ${mode === "replay" ? "active" : ""}`}
+              type="button"
+              onClick={() => setMode("replay")}
+            >
+              Replay fallback
+            </button>
+          </div>
+          <div className="bundle-meta">
+            <span>Snapshot: {scenario.snapshotId}</span>
+            <span>Graph: {scenario.graphVersion}</span>
+            <span>Engine: {scenario.engineVersion}</span>
+          </div>
         </div>
       </section>
 
@@ -274,7 +495,12 @@ export function EvidenceWorkbench() {
                   <button
                     className="path-button"
                     type="button"
-                    onClick={() => setExpandedPathId(isExpanded ? "" : path.id)}
+                    onClick={() =>
+                      setExpandedPathIds((current) => ({
+                        ...current,
+                        [scenario.id]: isExpanded ? "" : path.id,
+                      }))
+                    }
                   >
                     <span>
                       {path.label}
@@ -290,7 +516,12 @@ export function EvidenceWorkbench() {
                           className={`hop-card ${hop.id === selectedEdgeId ? "active" : ""}`}
                           key={hop.id}
                           type="button"
-                          onClick={() => setSelectedEdgeId(hop.id)}
+                          onClick={() =>
+                            setSelectedEdgeIds((current) => ({
+                              ...current,
+                              [scenario.id]: hop.id,
+                            }))
+                          }
                         >
                           <span className="hop-index">Hop {index + 1}</span>
                           <span className="hop-route">
