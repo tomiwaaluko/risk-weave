@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { EvidenceWorkbench } from "./workbench";
+import { ShockParserPanel } from "./ShockParserPanel";
 
 type Factor = {
   factorId: string;
@@ -275,6 +276,8 @@ export default function Home() {
             </p>
           ))}
         </section>
+
+        <ShockParserPanel />
       </main>
 
       <EvidenceWorkbench />
