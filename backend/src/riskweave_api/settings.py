@@ -13,3 +13,5 @@ class Settings(BaseSettings):
     neo4j_password: SecretStr
     redis_url: str
     gemini_api_key: SecretStr
+    fred_api_key: SecretStr | None = None
+    sec_user_agent: str = "RiskWeave contact@example.com"

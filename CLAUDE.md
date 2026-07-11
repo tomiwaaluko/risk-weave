@@ -27,6 +27,13 @@ uv run ruff format --check .
 uv run pytest
 ```
 
+Batch ingestion (run from `backend/` after configuring `DATABASE_URL`,
+`FRED_API_KEY`, and an identifying `SEC_USER_AGENT`):
+
+```powershell
+uv run python -m riskweave_api.ingestion.cli --snapshot demo-2026-07-11
+```
+
 Frontend (run from `frontend/`):
 
 ```powershell

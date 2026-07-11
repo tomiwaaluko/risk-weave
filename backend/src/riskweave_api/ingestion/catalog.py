@@ -1,0 +1,10 @@
+FRED_SERIES = (
+    "CREACBM027NBOG",
+    "DRCRELEXFACBS",
+    "DCOILWTICO",
+    "DCOILBRENTEU",
+    "DFF",
+    "DGS10",
+    "UNRATE",
+    "CPIAUCSL",
+)
