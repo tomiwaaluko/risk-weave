@@ -6,7 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository currently contains **no code** — the source-of-truth product/system requirements specification `RISKWEAVE_MASTER_SPEC_MERGED.md` (v2.1.0) and the `workflows/` folder of branch-type agent workflows (see spec §25 for the agent tooling and MCP policy). All design, planning, implementation, and testing work MUST derive from that spec and MUST NOT silently redefine it. Read it before doing anything substantive; this file is only an orientation layer.
 
-There are no build, lint, or test commands yet. When the codebase is scaffolded, update this file with the actual commands.
+There is no application build command yet. Current validation commands:
+
+- `python3 tests/test_universe.py` — validates the curated universe JSON and
+  selection criteria without third-party dependencies.
+
+When the codebase is scaffolded, update this file with the actual build, lint,
+test, and local-run commands.
 
 ## What RiskWeave is
 
