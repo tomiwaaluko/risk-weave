@@ -1,47 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import CytoscapeGraph from "./CytoscapeGraph";
-import EvidencePanel from "./EvidencePanel";
-import SeveritySlider from "./SeveritySlider";
-import { useSliderSocket } from "./useSliderSocket";
+import ContagionGraph, { TYPE_COLORS } from "./ContagionGraph";
+import RankedSidebar from "./RankedSidebar";
+import { useLiveSlider } from "./useLiveSlider";
+import EvidencePanel from "../spike/EvidencePanel";
+import SeveritySlider from "../spike/SeveritySlider";
 import type {
   SelectedElement,
   SpikeEdge,
   SpikeNode,
   SpikeSeedResponse,
-} from "./types";
-import "./styles.css";
+} from "../spike/types";
+import "../spike/styles.css";
+import "./graph.css";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
-const WS_BACKEND_URL = BACKEND_URL.replace(/^http/, "ws");
 
-// Node type → legend color (matches CytoscapeGraph).
-const TYPE_COLORS: Record<string, string> = {
-  bank: "#3b82f6",
-  company: "#8b5cf6",
-  reit: "#ec4899",
-  security: "#f59e0b",
-  commodity: "#10b981",
-  geography: "#06b6d4",
-  sector: "#f97316",
-};
-
-export default function SpikePage() {
-  // -----------------------------------------------------------------------
-  // State
-  // -----------------------------------------------------------------------
+export default function GraphPage() {
   const [seedData, setSeedData] = useState<SpikeSeedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [severity, setSeverity] = useState(0.5);
   const [selected, setSelected] = useState<SelectedElement>(null);
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const initialRunDone = useRef(false);
 
-  // -----------------------------------------------------------------------
-  // Derived lookups
-  // -----------------------------------------------------------------------
   const nodeMap = useMemo(() => {
     if (!seedData) return new Map<string, SpikeNode>();
     return new Map(seedData.nodes.map((n) => [n.node_id, n]));
@@ -57,27 +42,18 @@ export default function SpikePage() {
     return new Set(seedData.factors.map((f) => f.node_id));
   }, [seedData]);
 
-  // -----------------------------------------------------------------------
-  // WebSocket
-  // -----------------------------------------------------------------------
-  const { sendSeverity, latestUpdate, connected, latencyMs } = useSliderSocket({
+  const { sendSeverity, latestUpdate, connected, latencyMs } = useLiveSlider({
     scenarioId: seedData?.scenario_id ?? null,
-    backendUrl: WS_BACKEND_URL,
+    backendUrl: BACKEND_URL,
   });
 
-  // -----------------------------------------------------------------------
-  // Seed the spike graph on mount
-  // -----------------------------------------------------------------------
   const seedGraph = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch(`${BACKEND_URL}/spike/seed`, {
-        method: "POST",
-      });
-      if (!resp.ok) {
+      const resp = await fetch(`${BACKEND_URL}/spike/seed`, { method: "POST" });
+      if (!resp.ok)
         throw new Error(`Seed failed: ${resp.status} ${resp.statusText}`);
-      }
       const data: SpikeSeedResponse = await resp.json();
       setSeedData(data);
     } catch (err) {
@@ -94,15 +70,10 @@ export default function SpikePage() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void seedGraph();
-    }, 0);
+    const timer = window.setTimeout(() => void seedGraph(), 0);
     return () => window.clearTimeout(timer);
   }, [seedGraph]);
 
-  // -----------------------------------------------------------------------
-  // Trigger initial propagation run once connected
-  // -----------------------------------------------------------------------
   useEffect(() => {
     if (connected && !initialRunDone.current) {
       sendSeverity(severity);
@@ -110,9 +81,6 @@ export default function SpikePage() {
     }
   }, [connected, severity, sendSeverity]);
 
-  // -----------------------------------------------------------------------
-  // Slider handler
-  // -----------------------------------------------------------------------
   const handleSeverityChange = useCallback(
     (newSeverity: number) => {
       setSeverity(newSeverity);
@@ -121,9 +89,6 @@ export default function SpikePage() {
     [sendSeverity],
   );
 
-  // -----------------------------------------------------------------------
-  // Selection handlers
-  // -----------------------------------------------------------------------
   const handleSelectNode = useCallback(
     (nodeId: string) => {
       const node = nodeMap.get(nodeId);
@@ -134,6 +99,7 @@ export default function SpikePage() {
           data: node,
           impact: latestUpdate?.impacts[nodeId] ?? null,
         });
+        setFocusNodeId(nodeId);
       }
     },
     [nodeMap, latestUpdate],
@@ -142,20 +108,24 @@ export default function SpikePage() {
   const handleSelectEdge = useCallback(
     (edgeId: string) => {
       const edge = edgeMap.get(edgeId);
-      if (edge) {
-        setSelected({ kind: "edge", edgeId, data: edge });
-      }
+      if (edge) setSelected({ kind: "edge", edgeId, data: edge });
     },
     [edgeMap],
   );
 
   const handleDeselect = useCallback(() => {
     setSelected(null);
+    setFocusNodeId(null);
   }, []);
 
-  // -----------------------------------------------------------------------
-  // Latency classification for perf overlay
-  // -----------------------------------------------------------------------
+  const handleFocusNode = useCallback(
+    (nodeId: string) => {
+      setFocusNodeId(nodeId);
+      handleSelectNode(nodeId);
+    },
+    [handleSelectNode],
+  );
+
   const latencyClass =
     latencyMs === null
       ? ""
@@ -165,22 +135,19 @@ export default function SpikePage() {
           ? "warn"
           : "bad";
 
-  // -----------------------------------------------------------------------
-  // Render
-  // -----------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="spike-loading" id="spike-loading">
+      <div className="spike-loading" id="graph-loading">
         <div className="spinner" />
-        <p>Seeding 200-node spike graph…</p>
+        <p>Loading contagion graph…</p>
       </div>
     );
   }
 
   if (error || !seedData) {
     return (
-      <div className="spike-error" id="spike-error">
-        <p>{error ?? "Failed to load spike data"}</p>
+      <div className="spike-error" id="graph-error">
+        <p>{error ?? "Failed to load graph data"}</p>
         <button className="retry-btn" onClick={seedGraph}>
           Retry
         </button>
@@ -189,12 +156,11 @@ export default function SpikePage() {
   }
 
   return (
-    <div className="spike-page" id="spike-page">
-      {/* Header: title, slider, connection status */}
+    <div className="spike-page" id="graph-page">
       <header className="spike-header">
         <h1 className="spike-title">
           RiskWeave
-          <span>Cytoscape.js Spike · RIS-15</span>
+          <span>Contagion graph</span>
         </h1>
 
         <SeveritySlider
@@ -207,24 +173,30 @@ export default function SpikePage() {
           <span
             className={`connection-dot ${connected ? "connected" : "disconnected"}`}
           />
-          {connected ? "Live" : "Disconnected"}
+          {connected ? "Live" : "Reconnecting…"}
         </div>
       </header>
 
-      {/* Body: graph + optional evidence panel */}
       <div className="spike-body">
+        <RankedSidebar
+          nodeMap={nodeMap}
+          update={latestUpdate}
+          focusNodeId={focusNodeId}
+          onFocusNode={handleFocusNode}
+        />
+
         <div className="graph-area">
-          <CytoscapeGraph
+          <ContagionGraph
             nodes={seedData.nodes}
             edges={seedData.edges}
             shockedNodeIds={shockedNodeIds}
             sliderUpdate={latestUpdate}
+            focusNodeId={focusNodeId}
             onSelectNode={handleSelectNode}
             onSelectEdge={handleSelectEdge}
             onDeselect={handleDeselect}
           />
 
-          {/* Performance overlay */}
           <div className="perf-overlay" id="perf-overlay">
             <div className="perf-row">
               <span className="perf-label">Nodes</span>
@@ -246,42 +218,58 @@ export default function SpikePage() {
                 {latestUpdate ? Object.keys(latestUpdate.impacts).length : "—"}
               </span>
             </div>
-            <div className="perf-row">
-              <span className="perf-label">Cached</span>
-              <span className="perf-value">
-                {latestUpdate !== null
-                  ? latestUpdate.cached
-                    ? "yes"
-                    : "no"
-                  : "—"}
-              </span>
-            </div>
           </div>
 
-          {/* Node type legend */}
           <div className="graph-legend" id="graph-legend">
-            {Object.entries(TYPE_COLORS).map(([type, color]) => (
-              <div key={type} className="legend-item">
-                <span className="legend-dot" style={{ background: color }} />
-                {type}
+            <div className="legend-group">
+              <span className="legend-group-label">Type (fill)</span>
+              {Object.entries(TYPE_COLORS).map(([type, color]) => (
+                <div key={type} className="legend-item">
+                  <span className="legend-dot" style={{ background: color }} />
+                  {type}
+                </div>
+              ))}
+            </div>
+            <div className="legend-group">
+              <span className="legend-group-label">Scenario impact</span>
+              <div className="legend-item">
+                <span
+                  className="legend-dot"
+                  style={{ background: "#ef4444" }}
+                />
+                high risk score (fill tint + size)
               </div>
-            ))}
-            <div className="legend-item">
-              <span
-                className="legend-dot"
-                style={{
-                  background: "transparent",
-                  border: "2px solid #ef4444",
-                  width: 8,
-                  height: 8,
-                }}
-              />
-              shock origin
+            </div>
+            <div className="legend-group">
+              <span className="legend-group-label">Structural centrality</span>
+              <div className="legend-item">
+                <span
+                  className="legend-dot"
+                  style={{
+                    background: "transparent",
+                    border: "2px solid #38bdf8",
+                  }}
+                />
+                connection density (ring)
+              </div>
+            </div>
+            <div className="legend-group">
+              <div className="legend-item">
+                <span
+                  className="legend-dot"
+                  style={{
+                    background: "transparent",
+                    border: "2px solid #ef4444",
+                    width: 8,
+                    height: 8,
+                  }}
+                />
+                shock origin
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Evidence panel */}
         <EvidencePanel
           selected={selected}
           nodeMap={nodeMap}
@@ -290,6 +278,13 @@ export default function SpikePage() {
           onClose={handleDeselect}
         />
       </div>
+
+      <footer className="disclaimer-footer" id="disclaimer-footer">
+        Analytics only — not investment, trading, or advisory guidance.
+        RiskWeave surfaces deterministic scenario propagation over curated,
+        provenance-backed data; it does not predict prices or recommend
+        buy/sell/hold decisions.
+      </footer>
     </div>
   );
 }

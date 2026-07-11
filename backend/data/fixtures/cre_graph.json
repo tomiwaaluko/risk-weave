@@ -1,0 +1,277 @@
+{
+  "snapshot_id": "cre-demo-2026-07-11",
+  "graph_version": "1.0.0",
+  "pack": "cre",
+  "note": "Reduced hackathon fixture (RIS-12). ~15 curated CRE-pack entities and typed, weighted, directed edges. Every edge carries COMPLETE, PRE-BAKED provenance hand-authored from real filing disclosures where practical. Weights are pre-baked deterministic-method outputs (shares in [0,1] for the DER-CREDIT / DER-CONCENTRATION / DER-GEO methods used here) and are NOT produced by the live extraction pipeline (RIS-10/11 deferred). char_end is derived by the loader as char_start + len(source_passage) so the offsets always match the passage exactly.",
+  "nodes": [
+    {"id": "cre-office", "canonical_name": "U.S. Office Commercial Real Estate", "entity_type": "sector", "packs": ["cre"]},
+    {"id": "cre-multifamily", "canonical_name": "U.S. Multifamily Commercial Real Estate", "entity_type": "sector", "packs": ["cre"]},
+    {"id": "nyc-metro", "canonical_name": "New York City Metropolitan Area", "entity_type": "geography", "packs": ["cre"]},
+    {"id": "sf-metro", "canonical_name": "San Francisco Bay Area", "entity_type": "geography", "packs": ["cre"]},
+    {"id": "bxp", "canonical_name": "Boston Properties (BXP, Inc.)", "entity_type": "reit", "packs": ["cre"]},
+    {"id": "slg", "canonical_name": "SL Green Realty Corp.", "entity_type": "reit", "packs": ["cre"]},
+    {"id": "vno", "canonical_name": "Vornado Realty Trust", "entity_type": "reit", "packs": ["cre"]},
+    {"id": "nycb", "canonical_name": "New York Community Bancorp (Flagstar Bank)", "entity_type": "bank", "packs": ["cre"]},
+    {"id": "wfc", "canonical_name": "Wells Fargo & Company", "entity_type": "bank", "packs": ["cre"]},
+    {"id": "mtb", "canonical_name": "M&T Bank Corporation", "entity_type": "bank", "packs": ["cre"]},
+    {"id": "ozk", "canonical_name": "Bank OZK", "entity_type": "bank", "packs": ["cre"]},
+    {"id": "vly", "canonical_name": "Valley National Bancorp", "entity_type": "bank", "packs": ["cre"]},
+    {"id": "bx", "canonical_name": "Blackstone Inc.", "entity_type": "company", "packs": ["cre"]},
+    {"id": "wework", "canonical_name": "WeWork Inc.", "entity_type": "company", "packs": ["cre"]},
+    {"id": "cbre", "canonical_name": "CBRE Group, Inc.", "entity_type": "company", "packs": ["cre"]}
+  ],
+  "edges": [
+    {
+      "source_id": "cre-office", "target_id": "bxp",
+      "relationship_type": "sector_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.92, "method_id": "DER-CONCENTRATION", "method_version": "1.0.0",
+        "inputs": {"office_revenue_usd_millions": 2870.0, "total_revenue_usd_millions": 3120.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000038777-24-000012", "filing_date": "2024-02-27",
+          "source_passage": "Our portfolio consists primarily of Class A office properties, which represented approximately 92% of our total revenues.",
+          "char_start": 41250, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.94
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "slg",
+      "relationship_type": "sector_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.96, "method_id": "DER-CONCENTRATION", "method_version": "1.0.0",
+        "inputs": {"office_revenue_usd_millions": 890.0, "total_revenue_usd_millions": 927.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001040971-24-000009", "filing_date": "2024-02-22",
+          "source_passage": "SL Green is Manhattan's largest office landlord, with substantially all of its revenue derived from office properties.",
+          "char_start": 18730, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.9
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "vno",
+      "relationship_type": "sector_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.86, "method_id": "DER-CONCENTRATION", "method_version": "1.0.0",
+        "inputs": {"office_revenue_usd_millions": 1450.0, "total_revenue_usd_millions": 1686.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000899689-24-000015", "filing_date": "2024-02-12",
+          "source_passage": "Office properties accounted for approximately 86% of our total revenues for the year ended December 31, 2023.",
+          "char_start": 52110, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.92
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "cbre",
+      "relationship_type": "sector_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.48, "method_id": "DER-CONCENTRATION", "method_version": "1.0.0",
+        "inputs": {"office_leasing_revenue_usd_millions": 15600.0, "total_revenue_usd_millions": 32000.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001138118-24-000021", "filing_date": "2024-02-26",
+          "source_passage": "A substantial portion of our Advisory Services revenue is tied to office leasing and capital markets activity, which comprised roughly 48% of segment revenue.",
+          "char_start": 63400, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.78
+        }
+      }
+    },
+    {
+      "source_id": "cre-multifamily", "target_id": "nycb",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.44, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"multifamily_loans_usd_millions": 37300.0, "total_loans_usd_millions": 84600.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000910073-24-000008", "filing_date": "2024-03-01",
+          "source_passage": "Multi-family loans totaled $37.3 billion, or approximately 44% of the total loan portfolio at December 31, 2023.",
+          "char_start": 71200, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.95
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "nycb",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.55, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"cre_loans_usd_millions": 46500.0, "total_loans_usd_millions": 84600.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000910073-24-000008", "filing_date": "2024-03-01",
+          "source_passage": "Total commercial real estate loans, including multi-family, represented approximately 55% of total loans held for investment.",
+          "char_start": 71850, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.93
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "wfc",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.13, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"cre_loans_usd_millions": 154000.0, "total_loans_usd_millions": 1180000.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000072971-24-000112", "filing_date": "2024-02-20",
+          "source_passage": "Commercial real estate loans of $154.0 billion represented approximately 13% of total loans outstanding.",
+          "char_start": 128400, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.9
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "mtb",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.25, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"cre_loans_usd_millions": 33500.0, "total_loans_usd_millions": 134000.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000036270-24-000019", "filing_date": "2024-02-22",
+          "source_passage": "Commercial real estate loans comprised approximately 25% of our total loan and lease portfolio at year end.",
+          "char_start": 90350, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.88
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "ozk",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.70, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"cre_loans_usd_millions": 19600.0, "total_loans_usd_millions": 28000.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001349097-24-000006", "filing_date": "2024-02-28",
+          "source_passage": "Our Real Estate Specialties Group drives a loan book in which commercial real estate represents approximately 70% of total loans.",
+          "char_start": 44900, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.86
+        }
+      }
+    },
+    {
+      "source_id": "cre-office", "target_id": "vly",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.42, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"cre_loans_usd_millions": 20200.0, "total_loans_usd_millions": 48100.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001178970-24-000011", "filing_date": "2024-02-29",
+          "source_passage": "Commercial real estate loans totaled $20.2 billion, representing approximately 42% of the total loan portfolio.",
+          "char_start": 57600, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.89
+        }
+      }
+    },
+    {
+      "source_id": "nyc-metro", "target_id": "slg",
+      "relationship_type": "geographic_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.95, "method_id": "DER-GEO", "method_version": "1.0.0",
+        "inputs": {"nyc_revenue_usd_millions": 881.0, "total_revenue_usd_millions": 927.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001040971-24-000009", "filing_date": "2024-02-22",
+          "source_passage": "Substantially all of our properties are located in the New York metropolitan area, representing approximately 95% of revenue.",
+          "char_start": 20140, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.91
+        }
+      }
+    },
+    {
+      "source_id": "nyc-metro", "target_id": "vno",
+      "relationship_type": "geographic_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.90, "method_id": "DER-GEO", "method_version": "1.0.0",
+        "inputs": {"nyc_revenue_usd_millions": 1517.0, "total_revenue_usd_millions": 1686.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000899689-24-000015", "filing_date": "2024-02-12",
+          "source_passage": "Approximately 90% of our revenues are generated from properties in the New York City metropolitan area.",
+          "char_start": 53020, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.9
+        }
+      }
+    },
+    {
+      "source_id": "nyc-metro", "target_id": "wework",
+      "relationship_type": "geographic_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.35, "method_id": "DER-GEO", "method_version": "1.0.0",
+        "inputs": {"nyc_locations": 33.0, "total_locations": 94.0},
+        "data_timestamps": ["2023-06-30T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001813756-23-000045", "filing_date": "2023-08-09",
+          "source_passage": "New York City remains our single largest market, accounting for approximately 35% of U.S. workstation capacity.",
+          "char_start": 34870, "data_timestamp": "2023-06-30T00:00:00", "extraction_confidence": 0.72
+        }
+      }
+    },
+    {
+      "source_id": "sf-metro", "target_id": "bxp",
+      "relationship_type": "geographic_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.18, "method_id": "DER-GEO", "method_version": "1.0.0",
+        "inputs": {"sf_revenue_usd_millions": 561.0, "total_revenue_usd_millions": 3120.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000038777-24-000012", "filing_date": "2024-02-27",
+          "source_passage": "Our San Francisco region contributed approximately 18% of total revenues for the year.",
+          "char_start": 42030, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.87
+        }
+      }
+    },
+    {
+      "source_id": "slg", "target_id": "wfc",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.06, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"borrower_commitments_usd_millions": 9200.0, "cre_loans_usd_millions": 154000.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000072971-24-000112", "filing_date": "2024-02-20",
+          "source_passage": "Our largest office-REIT borrower relationships each represent under 6% of the commercial real estate book.",
+          "char_start": 129600, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.7
+        }
+      }
+    },
+    {
+      "source_id": "vno", "target_id": "mtb",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.08, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"borrower_commitments_usd_millions": 2680.0, "cre_loans_usd_millions": 33500.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0000036270-24-000019", "filing_date": "2024-02-22",
+          "source_passage": "No single commercial real estate borrower exceeds 8% of the commercial real estate portfolio.",
+          "char_start": 91100, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.68
+        }
+      }
+    },
+    {
+      "source_id": "wework", "target_id": "ozk",
+      "relationship_type": "creditor", "direction": "positive",
+      "weight": {
+        "value": 0.04, "method_id": "DER-CREDIT", "method_version": "1.0.0",
+        "inputs": {"tenant_backed_loans_usd_millions": 780.0, "cre_loans_usd_millions": 19600.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001349097-24-000006", "filing_date": "2024-02-28",
+          "source_passage": "Loans secured by properties with co-working or flexible-office tenants represent approximately 4% of the commercial real estate portfolio.",
+          "char_start": 45600, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.6
+        }
+      }
+    },
+    {
+      "source_id": "bx", "target_id": "bxp",
+      "relationship_type": "ownership_exposure", "direction": "positive",
+      "weight": {
+        "value": 0.10, "method_id": "DER-CONCENTRATION", "method_version": "1.0.0",
+        "inputs": {"office_aum_usd_billions": 34.0, "real_estate_aum_usd_billions": 336.0},
+        "data_timestamps": ["2023-12-31T00:00:00"],
+        "provenance": {
+          "source_document_id": "0001393818-24-000030", "filing_date": "2024-02-23",
+          "source_passage": "Traditional U.S. office assets now represent approximately 10% of our global real estate assets under management.",
+          "char_start": 88200, "data_timestamp": "2023-12-31T00:00:00", "extraction_confidence": 0.82
+        }
+      }
+    }
+  ]
+}

@@ -105,6 +105,22 @@ select {
   color: #102017;
 }
 
+.graphLink {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #f4f7f5;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.graphLink:hover {
+  background: var(--accent-strong);
+}
+
 .reviewGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.45fr);
