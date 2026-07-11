@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { EvidenceWorkbench } from "./workbench";
+
 type Factor = {
   factorId: string;
   label: string;
@@ -111,19 +113,24 @@ function factor(
 
 function validateFactors(factors: Factor[]) {
   const issues: string[] = [];
-  if (factors.length < 5)
+  if (factors.length < 5) {
     issues.push("At least five simultaneous factors are required.");
+  }
   for (const item of factors) {
-    if (item.direction === "ambiguous")
+    if (item.direction === "ambiguous") {
       issues.push(`${item.label}: direction is ambiguous.`);
-    if (!item.horizon.trim()) issues.push(`${item.label}: horizon is missing.`);
+    }
+    if (!item.horizon.trim()) {
+      issues.push(`${item.label}: horizon is missing.`);
+    }
     if (item.magnitude <= 0 || item.magnitude > 1000) {
       issues.push(
         `${item.label}: magnitude is outside the supported demo range.`,
       );
     }
-    if (item.factorId.startsWith("unsupported"))
+    if (item.factorId.startsWith("unsupported")) {
       issues.push(`${item.label}: factor is unsupported.`);
+    }
   }
   return issues;
 }
@@ -155,112 +162,122 @@ export default function Home() {
   }
 
   return (
-    <main className="workspace">
-      <section className="topbar" aria-label="Scenario templates">
-        <div>
-          <p className="eyebrow">RiskWeave</p>
-          <h1>Structured scenario review</h1>
-        </div>
-        <div className="templateSwitch">
-          <button
-            className={selectedTemplate === "cre" ? "active" : ""}
-            onClick={() => loadTemplate("cre")}
-            type="button"
-          >
-            CRE
-          </button>
-          <button
-            className={selectedTemplate === "oil" ? "active" : ""}
-            onClick={() => loadTemplate("oil")}
-            type="button"
-          >
-            Oil
-          </button>
-        </div>
-      </section>
-
-      <section className="reviewGrid">
-        <label className="promptPane">
-          <span>Original shock text</span>
-          <textarea
-            value={prompt}
-            onChange={(event) => setPrompt(event.target.value)}
-          />
-        </label>
-
-        <div className="statusPane">
-          <p className={issues.length === 0 ? "ready" : "invalid"}>
-            {issues.length === 0 ? "READY" : "INVALID"}
-          </p>
+    <>
+      <main className="workspace">
+        <section className="topbar" aria-label="Scenario templates">
           <div>
-            {issues.length === 0 ? (
-              <p>
-                Validated factors can execute; edited fields did not reparse the
-                prompt.
-              </p>
-            ) : (
-              issues.map((issue) => <p key={issue}>{issue}</p>)
-            )}
+            <p className="eyebrow">RiskWeave</p>
+            <h1>Structured scenario review</h1>
           </div>
-        </div>
-      </section>
-
-      <section className="factorTable" aria-label="Editable structured factors">
-        <div className="tableHeader">
-          <span>Factor</span>
-          <span>Direction</span>
-          <span>Magnitude</span>
-          <span>Unit</span>
-          <span>Horizon</span>
-        </div>
-        {factors.map((item, index) => (
-          <div className="factorRow" key={item.factorId}>
-            <strong>{item.label}</strong>
-            <select
-              value={item.direction}
-              onChange={(event) =>
-                updateFactor(index, {
-                  direction: event.target.value as Factor["direction"],
-                })
-              }
+          <div className="templateSwitch">
+            <button
+              className={selectedTemplate === "cre" ? "active" : ""}
+              onClick={() => loadTemplate("cre")}
+              type="button"
             >
-              <option value="up">up</option>
-              <option value="down">down</option>
-              <option value="flat">flat</option>
-              <option value="ambiguous">ambiguous</option>
-            </select>
-            <input
-              type="number"
-              value={item.magnitude}
-              onChange={(event) =>
-                updateFactor(index, { magnitude: Number(event.target.value) })
-              }
-            />
-            <input
-              value={item.unit}
-              onChange={(event) =>
-                updateFactor(index, { unit: event.target.value })
-              }
-            />
-            <input
-              value={item.horizon}
-              onChange={(event) =>
-                updateFactor(index, { horizon: event.target.value })
-              }
-            />
+              CRE
+            </button>
+            <button
+              className={selectedTemplate === "oil" ? "active" : ""}
+              onClick={() => loadTemplate("oil")}
+              type="button"
+            >
+              Oil
+            </button>
           </div>
-        ))}
-      </section>
+        </section>
 
-      <section className="assumptionRegistry" aria-label="Assumption registry">
-        <h2>Assumption registry</h2>
-        {assumptions.map((assumption) => (
-          <p key={`${assumption.kind}-${assumption.text}`}>
-            <span>{assumption.kind.replace("_", " ")}</span>
-            {assumption.text}
-          </p>
-        ))}
-      </section>
-    </main>
+        <section className="reviewGrid">
+          <label className="promptPane">
+            <span>Original shock text</span>
+            <textarea
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+            />
+          </label>
+
+          <div className="statusPane">
+            <p className={issues.length === 0 ? "ready" : "invalid"}>
+              {issues.length === 0 ? "READY" : "INVALID"}
+            </p>
+            <div>
+              {issues.length === 0 ? (
+                <p>
+                  Validated factors can execute; edited fields did not reparse
+                  the prompt.
+                </p>
+              ) : (
+                issues.map((issue) => <p key={issue}>{issue}</p>)
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="factorTable"
+          aria-label="Editable structured factors"
+        >
+          <div className="tableHeader">
+            <span>Factor</span>
+            <span>Direction</span>
+            <span>Magnitude</span>
+            <span>Unit</span>
+            <span>Horizon</span>
+          </div>
+          {factors.map((item, index) => (
+            <div className="factorRow" key={item.factorId}>
+              <strong>{item.label}</strong>
+              <select
+                value={item.direction}
+                onChange={(event) =>
+                  updateFactor(index, {
+                    direction: event.target.value as Factor["direction"],
+                  })
+                }
+              >
+                <option value="up">up</option>
+                <option value="down">down</option>
+                <option value="flat">flat</option>
+                <option value="ambiguous">ambiguous</option>
+              </select>
+              <input
+                type="number"
+                value={item.magnitude}
+                onChange={(event) =>
+                  updateFactor(index, { magnitude: Number(event.target.value) })
+                }
+              />
+              <input
+                value={item.unit}
+                onChange={(event) =>
+                  updateFactor(index, { unit: event.target.value })
+                }
+              />
+              <input
+                value={item.horizon}
+                onChange={(event) =>
+                  updateFactor(index, { horizon: event.target.value })
+                }
+              />
+            </div>
+          ))}
+        </section>
+
+        <section
+          className="assumptionRegistry"
+          aria-label="Assumption registry"
+        >
+          <h2>Assumption registry</h2>
+          {assumptions.map((assumption) => (
+            <p key={`${assumption.kind}-${assumption.text}`}>
+              <span>{assumption.kind.replace("_", " ")}</span>
+              {assumption.text}
+            </p>
+          ))}
+        </section>
+      </main>
+
+      <EvidenceWorkbench />
+    </>
   );
 }
