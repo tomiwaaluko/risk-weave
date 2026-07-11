@@ -20,7 +20,7 @@ SEC_TYPES = {
 
 
 def load_universe():
-    return json.loads(UNIVERSE_PATH.read_text())
+    return json.loads(UNIVERSE_PATH.read_text(encoding="utf-8"))
 
 
 def test_universe_size_and_unique_ids():
