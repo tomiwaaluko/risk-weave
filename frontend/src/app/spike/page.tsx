@@ -13,8 +13,9 @@ import type {
 } from "./types";
 import "./styles.css";
 
-const BACKEND_URL = "http://localhost:8000";
-const WS_BACKEND_URL = "ws://localhost:8000";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+const WS_BACKEND_URL = BACKEND_URL.replace(/^http/, "ws");
 
 // Node type → legend color (matches CytoscapeGraph).
 const TYPE_COLORS: Record<string, string> = {
@@ -80,7 +81,13 @@ export default function SpikePage() {
       const data: SpikeSeedResponse = await resp.json();
       setSeedData(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(
+        err instanceof TypeError
+          ? `Backend unreachable at ${BACKEND_URL}. Set NEXT_PUBLIC_BACKEND_URL to a live backend or run the local stack.`
+          : err instanceof Error
+            ? err.message
+            : String(err),
+      );
     } finally {
       setLoading(false);
     }
