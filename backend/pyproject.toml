@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.10,<3",
     "sqlalchemy>=2.0,<3",
     "statsmodels>=0.14",
+    "redis[hiredis]>=5.0,<6",
     "uvicorn[standard]>=0.35,<1",
 ]
 
@@ -45,3 +46,5 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+# B008: FastAPI Depends() in function signatures is the idiomatic pattern
+per-file-ignores = {"src/riskweave_api/routers/*.py" = ["B008"]}
