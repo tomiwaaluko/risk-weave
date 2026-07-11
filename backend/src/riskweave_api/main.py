@@ -1,15 +1,14 @@
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Literal
-
-import os
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from riskweave_api.routers import registry, scenarios, slider, spike
+from riskweave_api.routers import graph, registry, scenarios, slider, spike
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.settings import Settings
 
@@ -58,6 +57,7 @@ app.include_router(scenarios.router)
 app.include_router(slider.router)
 app.include_router(registry.router)
 app.include_router(spike.router)
+app.include_router(graph.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["operations"])
