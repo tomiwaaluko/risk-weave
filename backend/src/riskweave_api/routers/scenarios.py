@@ -7,7 +7,10 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
+from riskweave.scenario import ParsedScenario, ScenarioStatus, list_templates, parse_shock_text
+from riskweave.scenario.validation import validate_scenario as validate_structured_scenario
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
 from riskweave_api.dependencies import get_redis, get_store
 from riskweave_api.models import (
@@ -25,6 +28,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
 
+class ParseScenarioRequest(BaseModel):
+    text: str
+
+
 def _scenario_config_json(req: ScenarioCreateRequest) -> str:
     payload = {
         "scenario_id": req.scenario_id,
@@ -34,6 +41,33 @@ def _scenario_config_json(req: ScenarioCreateRequest) -> str:
         "seed": req.seed,
     }
     return json.dumps(payload, sort_keys=True)
+
+
+@router.get("/templates", response_model=tuple[ParsedScenario, ...])
+def scenario_templates() -> tuple[ParsedScenario, ...]:
+    """Return editable, prevalidated CRE and oil demo templates (`RW-FR-002`)."""
+    return list_templates()
+
+
+@router.post("/parse", response_model=ParsedScenario)
+def parse_scenario(req: ParseScenarioRequest) -> ParsedScenario:
+    """Parse untrusted natural-language shock text into a reviewable scenario."""
+    return parse_shock_text(req.text)
+
+
+@router.post("/review/validate", response_model=ParsedScenario)
+def validate_review_scenario(scenario: ParsedScenario) -> ParsedScenario:
+    """Revalidate edited structured factors without re-invoking parsing (`RW-FR-005`)."""
+    validation = validate_structured_scenario(scenario)
+    return scenario.model_copy(update={"validation": validation, "status": validation.status})
+
+
+@router.post("/review/run")
+def run_review_scenario(scenario: ParsedScenario) -> dict[str, str | bool]:
+    """Gate reviewed scenario execution on deterministic validation (`RW-FR-004`)."""
+    validation = validate_structured_scenario(scenario)
+    accepted = scenario.status is ScenarioStatus.READY and validation.status is ScenarioStatus.READY
+    return {"scenario_id": scenario.scenario_id, "accepted": accepted}
 
 
 @router.post("", response_model=ScenarioRecord, status_code=status.HTTP_201_CREATED)
