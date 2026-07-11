@@ -1,6 +1,6 @@
 ---
 title: "RiskWeave — Master Product and System Requirements Specification (Merged)"
-version: "2.0.0"
+version: "2.1.0"
 status: "Baseline for downstream design, planning, implementation, and testing"
 date: "2026-07-10"
 required_ai_platform: "Gemini API"
@@ -9,7 +9,9 @@ secondary_scenario_pack: "Oil price shock"
 target_context: "Hackathon (Bloomberg Best FinTech Hack) — judged live on originality, impact, technical difficulty"
 ---
 
-# RiskWeave — Master Product and System Requirements Specification (Merged v2.0.0)
+# RiskWeave — Master Product and System Requirements Specification (Merged v2.1.0)
+
+> **Change note (v2.0.0 → v2.1.0).** Additive only: new Section 26 (Agent Tooling — MCPs, Plugins, and Workflows) and a matching `agent_tooling` block in the Section 22 manifest. No product requirement was added, weakened, or reinterpreted; Section 26 is development-process guidance and is explicitly subordinate to all `RW-*` requirements.
 
 > **Merge note.** This version keeps the governance rigor of the formal requirements spec (requirement IDs, normative language, traceability, change control, decision priority, reproducibility bundle, machine-readable manifest) and imposes hackathon scope discipline plus the project's defensibility core: an explicit edge-weight derivation policy (Section 12), three first-class grafts (breach-distance, provenance, duration), a curated entity universe sized for a live demo, and explicit DEFERRED marking of every deliberately excluded idea so nothing looks accidentally dropped. Where the two source specs conflicted, correctness and demo-defensibility won and enterprise-scale features were demoted to DEFERRED.
 
@@ -471,7 +473,7 @@ RiskWeave v1 is complete when: build-priority steps 1 through 9 are implemented;
 ```yaml
 project:
   name: RiskWeave
-  version: 2.0.0
+  version: 2.1.0
   type: financial_contagion_scenario_platform
   context: hackathon_bloomberg_best_fintech
   primary_scenario_pack: commercial_real_estate
@@ -573,6 +575,29 @@ downstream_specs:
   - ai_evaluation
   - testing
   - operations
+
+agent_tooling:  # development process only — never part of the product runtime (Section 25)
+  ticket_system: linear_mcp
+  workflow_definitions: workflows/
+  methodology: compound_engineering_loop
+  memory: [claude_mem, docs_solutions_learnings]
+  recommended_mcps:
+    - linear
+    - claude_in_chrome        # UI/latency verification, RW-FR-020/021
+    - context7_docs_research  # Section 23 recheck rule
+    - figma                   # UI mocks: graph canvas, evidence panels, dashboard
+    - railway                 # optional demo mirror only, Section 25.3
+    - canva                   # pitch materials
+  recommended_plugins:
+    - compound_engineering
+    - claude_mem
+    - codex_second_opinion    # propagation math review, RW-ALG-005/006
+  hosting_posture:
+    demo_primary: local_docker_compose
+    cloud_mirror_optional: railway
+    frontend_previews_only: vercel
+    avoid: supabase
+  boundary: gemini_tool_registry_is_closed  # Section 13.2; dev tooling never enters it
 ```
 
 ---
@@ -597,7 +622,46 @@ Note that unlike the source specification, the *sourcing* of every edge weight i
 
 ---
 
-## 25. Final Instruction to Future Agents
+## 25. Agent Tooling — MCPs, Plugins, and Workflows (development process; non-normative for the product)
+
+This section governs how AI agents *work on* RiskWeave, not what RiskWeave *is*. Nothing here overrides any `RW-*` requirement, and none of this tooling ships inside the product. Where a tool conflicts with a requirement (e.g., demo reliability, secrets handling), the requirement wins per Section 0.4.
+
+### 25.1 Ticket-driven workflow (required process)
+
+- `RW-PROC-001` — Work SHOULD flow from Linear tickets through the branch-type workflows in `workflows/` (feature, bugfix, spike, etc.). Each workflow embeds the compound-engineering loop (brainstorm → plan → work → simplify → review → compound) and ends by linking a PR to the ticket.
+- `RW-PROC-002` — Tickets and PRs MUST cite the `RW-*` requirement IDs they implement (restates Section 0.2 for the ticket workflow).
+- `RW-PROC-003` — Learnings captured via `/ce-compound` land in `docs/solutions/` and SHOULD be consulted (`mem-search`, `docs/solutions/`) before starting new work, so decisions like the propagation aggregation formula (Section 24) are made once, not re-derived per session.
+
+### 25.2 Recommended MCP servers and plugins (mapped to build phases)
+
+| Tool | Kind | Use in this project | Build-priority phases (Section 20) |
+|---|---|---|---|
+| **Linear MCP** | MCP | Ticket lifecycle: read, status, comments, PR links | All |
+| **claude-in-chrome** | MCP (Chrome extension) | Verify graph UI, slider latency feel, evidence panels (`RW-FR-020/021`); inspect WebSocket traffic; spot-check EDGAR/FRED endpoints | 1, 6, 7, 9 |
+| **Context7 / docs researchers** | MCP + agents | Current API docs for Gemini (Section 23 recheck rule), Neo4j/Cypher, React Flow vs Cytoscape.js, FastAPI/Pydantic v2 | 2, 3, 4, 6, 8 |
+| **WebFetch / web research** | Built-in | SEC EDGAR and FRED API documentation, provider terms verification (`RW-DATA-005`) | 1 |
+| **claude-mem + compound-engineering** | Plugins | Cross-session memory and documented learnings; multi-agent code review; the `/ce-*` skill loop | All |
+| **Codex plugin** | Plugin | Second-opinion pass on correctness-critical math: propagation, cycle handling, path decomposition (`RW-ALG-005/006`) | 5 |
+| **Figma MCP** | MCP | Mock the graph canvas, evidence panels, and evaluation dashboard before building | 6, 9 |
+| **Railway MCP** | MCP | Optional cloud mirror of the Docker Compose stack (see 25.3); deploy, logs, env vars | 9 (demo prep) |
+| **Canva MCP** | MCP | Pitch deck, including the roadmap/DEFERRED slide (Section 5.3) | Demo prep |
+
+Agents SHOULD load only the tools relevant to the ticket at hand (per-workflow guidance lives in `workflows/README.md`).
+
+### 25.3 Hosting posture for the demo
+
+- Primary demo target is **local Docker Compose** (`RW-NFR-005`); the ≤500 ms slider budget (`RW-NFR-002`) is easiest to guarantee without a network hop.
+- Railway MAY host a shareable mirror of the same containers; this does not constitute a packaging substitution and needs no ADR. The mirror MUST NOT be the demo-critical path.
+- Vercel MAY host frontend previews during development only. Supabase SHOULD NOT be used: plain PostgreSQL in Compose is settled (`RW-NFR-003`), and a swap would require an ADR for no demo benefit.
+- Regardless of host: the Gemini API key lives server-side only (`RW-SEC-001`) — Railway/host env vars, never the client bundle, never the repo.
+
+### 25.4 Boundary rule
+
+Development-agent tooling (MCPs, plugins) is **not** part of the RiskWeave runtime. The only AI provider inside the product is the Gemini API (`RW-AI-*`), and the only tools Gemini may call are those in the closed registry of Section 13.2. Nothing in this section adds tools to that registry.
+
+---
+
+## 26. Final Instruction to Future Agents
 
 RiskWeave MUST NOT become a chatbot that summarizes financial documents. Its defining loop is:
 
