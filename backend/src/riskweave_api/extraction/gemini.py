@@ -18,11 +18,15 @@ from .schemas import (
     relationship_response_schema,
 )
 
+# Model aliases and docs verified live against the Gemini API on this date
+# (ListModels enumeration + a generateContent structured-output probe); see ADR-006.
 GEMINI_DOCS_CHECKED_AT = date(2026, 7, 11)
+# Flash tier for high-volume extraction; Pro tier for shock parsing and explanation (RW-AI-003).
 GEMINI_EXTRACTION_MODEL = "gemini-3.5-flash"
+GEMINI_PARSING_MODEL = "gemini-3.1-pro-preview"
 RELATIONSHIP_PROMPT_VERSION = "relationship-extraction-v1"
 COVENANT_PROMPT_VERSION = "covenant-threshold-extraction-v1"
-GEMINI_INTERACTIONS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
+GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 
 class GeminiTransport(Protocol):
@@ -38,14 +42,38 @@ class GeminiResponseError(RuntimeError):
 
 
 class GeminiRestTransport:
-    def __init__(self, api_key: SecretStr, endpoint: str = GEMINI_INTERACTIONS_ENDPOINT) -> None:
+    """Calls the real Gemini ``generateContent`` endpoint with structured JSON output.
+
+    The ``GeminiTransport`` protocol shape is preserved so unit tests keep their fakes:
+    callers pass ``model``, ``input``, ``temperature`` and a ``response_format`` carrying
+    ``mime_type`` and ``schema``; the transport translates that into the documented
+    ``contents`` + ``generationConfig`` body and returns ``output_text`` plus normalized
+    ``usage`` keys (``input_tokens`` / ``output_tokens``).
+    """
+
+    def __init__(self, api_key: SecretStr, base_url: str = GEMINI_API_BASE) -> None:
         self.api_key = api_key
-        self.endpoint = endpoint
+        self.base_url = base_url.rstrip("/")
 
     def create_interaction(self, **kwargs: object) -> dict[str, object]:
-        body = json.dumps(kwargs).encode()
+        model = str(kwargs["model"])
+        generation_config: dict[str, object] = {"temperature": kwargs.get("temperature", 0)}
+        response_format = kwargs.get("response_format")
+        if isinstance(response_format, dict):
+            mime_type = response_format.get("mime_type")
+            if mime_type:
+                generation_config["responseMimeType"] = mime_type
+            schema = response_format.get("schema")
+            if schema:
+                generation_config["responseJsonSchema"] = schema
+        body = json.dumps(
+            {
+                "contents": [{"role": "user", "parts": [{"text": str(kwargs["input"])}]}],
+                "generationConfig": generation_config,
+            }
+        ).encode()
         request = urllib.request.Request(
-            self.endpoint,
+            f"{self.base_url}/models/{model}:generateContent",
             data=body,
             headers={
                 "Content-Type": "application/json",
@@ -56,11 +84,35 @@ class GeminiRestTransport:
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
                 raw_response = json.loads(response.read().decode())
-                usage = raw_response.get("usage") if isinstance(raw_response, dict) else None
-                return {"output_text": json.dumps(raw_response), "usage": usage or {}}
         except urllib.error.HTTPError as exc:
-            detail = exc.read().decode(errors="replace")
+            detail = self._redact(exc.read().decode(errors="replace"))
             raise GeminiResponseError(f"Gemini API request failed: {detail}", 1, [detail]) from exc
+        except urllib.error.URLError as exc:
+            detail = self._redact(str(exc.reason))
+            raise GeminiResponseError(f"Gemini API request failed: {detail}", 1, [detail]) from exc
+        return self._parse(raw_response)
+
+    def _parse(self, raw_response: object) -> dict[str, object]:
+        raw = raw_response if isinstance(raw_response, dict) else {}
+        candidates = raw.get("candidates")
+        if not candidates:
+            detail = self._redact(json.dumps(raw.get("promptFeedback")))
+            raise GeminiResponseError(
+                f"Gemini returned no candidates (promptFeedback={detail})", 1, []
+            )
+        parts = candidates[0].get("content", {}).get("parts", [])
+        output_text = "".join(str(part.get("text", "")) for part in parts if isinstance(part, dict))
+        usage_metadata = raw.get("usageMetadata") or {}
+        usage: dict[str, object] = {}
+        if usage_metadata.get("promptTokenCount") is not None:
+            usage["input_tokens"] = usage_metadata["promptTokenCount"]
+        if usage_metadata.get("candidatesTokenCount") is not None:
+            usage["output_tokens"] = usage_metadata["candidatesTokenCount"]
+        return {"output_text": output_text, "usage": usage}
+
+    def _redact(self, text: str) -> str:
+        secret = self.api_key.get_secret_value()
+        return text.replace(secret, "***") if secret and secret in text else text
 
 
 @dataclass(frozen=True)

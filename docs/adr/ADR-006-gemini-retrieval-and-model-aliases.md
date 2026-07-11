@@ -66,6 +66,39 @@ viable 3.x replacement and records the shutdown risk. Persist the exact model
 string, docs check date, prompt/schema version, and response validation version
 in every extraction snapshot.
 
+## Implementation-Time Verification (RIS-24, 2026-07-11)
+
+The live Gemini connection was wired in RIS-24. Model aliases were verified
+empirically against the running API using the server-side key, not from
+training-data memory (spec §23):
+
+- Method: a `ListModels` enumeration (`GET v1beta/models`) plus a
+  `generateContent` structured-output probe, run 2026-07-11.
+- Flash extraction alias `gemini-3.5-flash`: present and lists
+  `generateContent` support. Confirmed and pinned in code as
+  `GEMINI_EXTRACTION_MODEL`.
+- Pro parsing/explanation alias `gemini-3.1-pro-preview`: present and lists
+  `generateContent` support. Confirmed and pinned in code as
+  `GEMINI_PARSING_MODEL`.
+- Also available as 3.x fallbacks if either alias is later withdrawn:
+  `gemini-3-flash-preview`, `gemini-3-pro-preview`. The `gemini-2.5-*` aliases
+  remain listed but are avoided for new snapshots per the deprecation policy
+  above. `latest` aliases are avoided for reproducibility.
+
+Structured-output transport decision (RW-AI-001): strict JSON is requested via
+`generationConfig.responseMimeType = "application/json"` plus
+`generationConfig.responseJsonSchema`, which accepts a full JSON Schema
+including `$defs`/`$ref` and therefore takes the Pydantic
+`model_json_schema()` output directly. The older
+`generationConfig.responseSchema` (OpenAPI 3.0 subset) rejects `$ref`/`$defs`
+with HTTP 400 and is intentionally not used.
+
+An official documentation citation from the ai.google.dev model and
+structured-output pages will be appended to the Sources list; that recheck was
+deferred only because the web-fetch tooling was rate-limited at implementation
+time. The empirical live verification above is authoritative for what the
+project's key can actually call.
+
 ## Alternatives Considered
 
 - Gemini File Search as the primary retrieval layer: rejected because

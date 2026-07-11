@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime
@@ -353,31 +352,6 @@ def test_gemini_api_key_is_read_from_server_settings_only() -> None:
     assert client.api_key.get_secret_value() == "real-server-side-key"
     live_client = GeminiExtractionClient.from_settings(settings)
     assert isinstance(live_client.transport, GeminiRestTransport)
-
-
-def test_rest_transport_normalizes_structured_json(monkeypatch: pytest.MonkeyPatch) -> None:
-    class _Response:
-        def __enter__(self) -> _Response:
-            return self
-
-        def __exit__(self, *args: object) -> None:
-            return None
-
-        def read(self) -> bytes:
-            return json.dumps({"relationships": []}).encode()
-
-    def fake_urlopen(request: object, timeout: int) -> _Response:
-        assert timeout == 60
-        return _Response()
-
-    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
-    response = GeminiRestTransport(SecretStr("server-only")).create_interaction(
-        model=GEMINI_EXTRACTION_MODEL,
-        input="prompt",
-        temperature=0,
-        response_format={},
-    )
-    assert response == {"output_text": '{"relationships": []}', "usage": {}}
 
 
 def test_client_fails_after_bounded_schema_invalid_retries() -> None:

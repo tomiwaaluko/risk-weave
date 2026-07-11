@@ -37,9 +37,12 @@ where = [".", "src"]
 include = ["riskweave*", "riskweave_api*"]
 
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q -m 'not live_gemini'"
 pythonpath = ["src", "."]
 testpaths = ["tests"]
+markers = [
+    "live_gemini: exercises the real Gemini API; deselected by default and auto-skips unless a real GEMINI_API_KEY is available. Run with `uv run pytest -m live_gemini`.",
+]
 
 [tool.ruff]
 line-length = 100
