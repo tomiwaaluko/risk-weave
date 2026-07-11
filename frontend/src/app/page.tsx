@@ -170,6 +170,9 @@ export default function Home() {
             <h1>Structured scenario review</h1>
           </div>
           <div className="templateSwitch">
+            <a className="graphLink" href="/graph">
+              Open contagion graph →
+            </a>
             <button
               className={selectedTemplate === "cre" ? "active" : ""}
               onClick={() => loadTemplate("cre")}
