@@ -1,0 +1,33 @@
+[project]
+name = "riskweave-api"
+version = "0.1.0"
+description = "RiskWeave API scaffold"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.139.0",
+    "pydantic>=2.12,<3",
+    "pydantic-settings>=2.10,<3",
+    "uvicorn[standard]>=0.35,<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.5,<3",
+    "pytest>=8.4,<10",
+    "ruff>=0.12,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

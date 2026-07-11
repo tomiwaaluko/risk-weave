@@ -1,0 +1,28 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.uv-cache/
+htmlcov/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+coverage/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local worktrees
+.worktrees/
