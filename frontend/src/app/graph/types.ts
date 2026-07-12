@@ -57,3 +57,48 @@ export interface GraphSeedResponse {
 /** Which graph element the evidence panel is currently drilled into. */
 export type GraphSelection =
   { kind: "node"; id: string } | { kind: "edge"; id: string } | null;
+
+/** One provenance record an evidence-bound explanation cites (RIS-19). */
+export interface ExplanationCitation {
+  citation_id: string;
+  edge_id: string;
+  source_name: string;
+  target_name: string;
+  relationship_type: string;
+  method_id: string;
+  source_document_id: string;
+  source_passage: string;
+  char_start: number;
+  char_end: number;
+  filing_date: string;
+  data_timestamp: string;
+  extraction_confidence: number;
+}
+
+/** A labeled verified figure shown when generated prose fails the guard. */
+export interface StructuredNumber {
+  label: string;
+  value: number;
+  citation_ids: string[];
+}
+
+/**
+ * A guarded, evidence-bound explanation of one node's impact
+ * (GET /scenarios/{id}/explanation/{node}, RIS-19, `RW-AI-011`).
+ *
+ * `prose` is present only when the generated text passed the numeric guard.
+ * When `used_fallback` is true, `prose` is null and `structured_numbers`
+ * carries the verified figures shown in its place — the rejected prose is
+ * never sent to the client.
+ */
+export interface ExplanationResponse {
+  node_id: string;
+  node_name: string;
+  prose: string | null;
+  used_fallback: boolean;
+  attempts: number;
+  guard_violations: string[];
+  citations: ExplanationCitation[];
+  structured_numbers: StructuredNumber[];
+  model: string;
+}

@@ -125,6 +125,57 @@ class RunResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Evidence-bound explanations (RIS-19, RW-AI-011)
+# ---------------------------------------------------------------------------
+
+
+class CitationOut(BaseModel):
+    """One provenance record an explanation cites (`RW-ALG-032`)."""
+
+    citation_id: str
+    edge_id: str
+    source_name: str
+    target_name: str
+    relationship_type: str
+    method_id: str
+    source_document_id: str
+    source_passage: str
+    char_start: int
+    char_end: int
+    filing_date: str
+    data_timestamp: str
+    extraction_confidence: float
+
+
+class StructuredNumberOut(BaseModel):
+    """One labeled verified figure for the guard-failure fallback."""
+
+    label: str
+    value: float
+    citation_ids: list[str] = Field(default_factory=list)
+
+
+class ExplanationOut(BaseModel):
+    """A guarded, evidence-bound explanation of one node's scenario impact.
+
+    ``prose`` is present only when the generated text passed the numeric guard
+    (`RW-AI-011`). When it failed after one regeneration, ``used_fallback`` is
+    True, ``prose`` is null, and ``structured_numbers`` carries the labeled
+    verified figures shown instead — the rejected prose is never returned.
+    """
+
+    node_id: str
+    node_name: str
+    prose: str | None
+    used_fallback: bool
+    attempts: int
+    guard_violations: list[str]
+    citations: list[CitationOut]
+    structured_numbers: list[StructuredNumberOut]
+    model: str
+
+
+# ---------------------------------------------------------------------------
 # WebSocket messages
 # ---------------------------------------------------------------------------
 

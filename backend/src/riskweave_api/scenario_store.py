@@ -11,9 +11,11 @@ from __future__ import annotations
 import threading
 from typing import Any
 
+from riskweave.explain import EdgeEvidence
 from riskweave.propagation import (
     ENGINE_VERSION,
     GraphSnapshot,
+    PropagationResult,
     Scenario,
     ShockFactor,
     propagate,
@@ -45,6 +47,9 @@ class ScenarioStore:
         self._records: dict[str, ScenarioRecord] = {}
         self._snapshots: dict[str, GraphSnapshot] = {}
         self._configs: dict[str, dict[str, Any]] = {}
+        # snapshot_id -> {edge_id -> EdgeEvidence}; the pre-baked provenance an
+        # explanation cites (RIS-19). Registered alongside the snapshot.
+        self._provenance: dict[str, dict[str, EdgeEvidence]] = {}
 
     # ------------------------------------------------------------------
     # Snapshot management
@@ -59,6 +64,18 @@ class ScenarioStore:
             if snapshot_id not in self._snapshots:
                 raise NotFoundError(snapshot_id)
             return self._snapshots[snapshot_id]
+
+    def register_provenance(
+        self, snapshot_id: str, provenance_by_edge: dict[str, EdgeEvidence]
+    ) -> None:
+        """Attach the per-edge provenance an explanation may cite (RIS-19)."""
+        with self._lock:
+            self._provenance[snapshot_id] = dict(provenance_by_edge)
+
+    def get_provenance(self, snapshot_id: str) -> dict[str, EdgeEvidence]:
+        """Per-edge provenance for a snapshot; empty if none was registered."""
+        with self._lock:
+            return dict(self._provenance.get(snapshot_id, {}))
 
     # ------------------------------------------------------------------
     # Scenario lifecycle (RW-FR-009)
@@ -111,8 +128,15 @@ class ScenarioStore:
     # Run (propagate)
     # ------------------------------------------------------------------
 
-    def run(self, scenario_id: str, severity: float) -> tuple[RunResult, float]:
-        """Run propagation and return (result, latency_ms)."""
+    def propagate_scenario(
+        self, scenario_id: str, severity: float
+    ) -> tuple[PropagationResult, float]:
+        """Run propagation and return the raw engine (result, latency_ms).
+
+        Kept separate from :meth:`run` so callers that need the full engine
+        result (e.g. explanation generation, RIS-19) get the un-serialized
+        contributions with edge objects, not just the API projection.
+        """
         import time
 
         record = self.get(scenario_id)
@@ -136,6 +160,10 @@ class ScenarioStore:
         t0 = time.perf_counter()
         prop_result = propagate(snapshot, scenario)
         latency_ms = (time.perf_counter() - t0) * 1000.0
+        return prop_result, latency_ms
 
+    def run(self, scenario_id: str, severity: float) -> tuple[RunResult, float]:
+        """Run propagation and return (result, latency_ms)."""
+        prop_result, latency_ms = self.propagate_scenario(scenario_id, severity)
         run_result = propagation_result_to_run_result(prop_result, severity, latency_ms)
         return run_result, latency_ms

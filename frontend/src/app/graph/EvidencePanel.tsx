@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { NodeImpact, PathContribution } from "../spike/types";
 import type { EvidenceEdge, EvidenceNode, GraphSelection } from "./types";
+import ExplanationCard from "./ExplanationCard";
 
 /**
  * RIS-20 evidence panel: the 30-second trace (`RW-GOAL-008`).
@@ -23,6 +24,9 @@ interface EvidencePanelProps {
   edgeMap: Map<string, EvidenceEdge>;
   impacts: Record<string, NodeImpact> | null;
   lowConfidenceThreshold: number;
+  scenarioId: string;
+  backendUrl: string;
+  severity: number;
   onSelectEdge: (edgeId: string) => void;
   onSelectNode: (nodeId: string) => void;
   onClose: () => void;
@@ -34,6 +38,9 @@ export default function EvidencePanel({
   edgeMap,
   impacts,
   lowConfidenceThreshold,
+  scenarioId,
+  backendUrl,
+  severity,
   onSelectEdge,
   onSelectNode,
   onClose,
@@ -62,6 +69,9 @@ export default function EvidencePanel({
           nodeMap={nodeMap}
           edgeMap={edgeMap}
           impact={impacts?.[selection.id] ?? null}
+          scenarioId={scenarioId}
+          backendUrl={backendUrl}
+          severity={severity}
           onSelectEdge={onSelectEdge}
         />
       ) : (
@@ -86,12 +96,18 @@ function NodeDetail({
   nodeMap,
   edgeMap,
   impact,
+  scenarioId,
+  backendUrl,
+  severity,
   onSelectEdge,
 }: {
   nodeId: string;
   nodeMap: Map<string, EvidenceNode>;
   edgeMap: Map<string, EvidenceEdge>;
   impact: NodeImpact | null;
+  scenarioId: string;
+  backendUrl: string;
+  severity: number;
   onSelectEdge: (edgeId: string) => void;
 }) {
   const node = nodeMap.get(nodeId);
@@ -192,6 +208,15 @@ function NodeDetail({
                 </p>
               )}
             </div>
+
+            <ExplanationCard
+              key={`${nodeId}:${severity}`}
+              scenarioId={scenarioId}
+              backendUrl={backendUrl}
+              severity={severity}
+              nodeId={nodeId}
+              onSelectEdge={onSelectEdge}
+            />
           </>
         ) : (
           <p className="evidence-empty">
