@@ -19,12 +19,32 @@ review without implying that the deferred live ingestion pipeline is frozen.
 
 | Gate | Evidence to record before demo | Status |
 |---|---|---|
-| 3 consecutive scripted runs from clean Compose | Operator, date, command, and pass/fail notes | Pending manual rehearsal |
+| 3 consecutive scripted runs from clean Compose | Operator, date, command, and pass/fail notes | 1 of 3 logged (see Rehearsal log) — 2 human runs pending |
 | Replay fallback switches seamlessly and is labeled | Screenshot or recording timestamp showing `Replay fallback` and replay label | Pending recording |
 | Five provenance drill traces under 30 seconds each | Five rows from `docs/demo/PROVENANCE_DRILL.md` with elapsed times | Pending manual rehearsal |
 | Fixture scenario reproduces identical results | `backend/tests/test_demo_freeze.py` deterministic seed test | Automated |
 | Full-flow recording captured and stored | Local or hosted recording path | Pending recording |
 | Section 21 completion checklist reviewed | Open gaps converted to Linear tickets | Pending review |
+
+## Rehearsal log
+
+### Run 1 — 2026-07-11, automated API walk (Claude Code)
+
+Command: `docker compose down` → `docker compose up --build --wait` (cold rebuild,
+including the newly committed `backend/Dockerfile` fixtures/PYTHONPATH change, PR #54).
+
+| Step | Endpoint | Result |
+|---|---|---|
+| Stack health | — | 6/6 containers Healthy |
+| Seed | `POST /graph/seed` | HTTP 201, 15 nodes |
+| CRE parse (live Gemini) | `POST /scenarios/presets/cre/parse` | `source: gemini`, 1 attempt, no fallback; `stress_duration=6.0 quarters` parsed verbatim |
+| Propagation | `POST /registry/run_scenario/cre-demo` | Ranked impacts with path decomposition (BXP 60.1, Wells Fargo 17.5) |
+| Explanation (live Gemini) | `GET /scenarios/cre-demo/explanation/wfc` | `gemini-3.1-pro-preview`, no fallback, 0 guard violations, 4 citations; prose cites only computation-payload numbers |
+
+Notes: both live Gemini call sites (parse + explanation) succeeded on the first
+attempt with zero fallbacks and zero `RW-AI-011` guard violations. Still owed
+before the gate closes: 2 more consecutive human-driven runs, the five timed
+provenance drills, and the fallback recording.
 
 ## Known gaps to ticket after review
 
