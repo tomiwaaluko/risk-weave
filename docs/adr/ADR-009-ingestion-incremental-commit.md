@@ -33,11 +33,16 @@ list retains only small `(record_type, record_id, content_hash)` identity tuples
 which are cheap. The immutable snapshot is still created **once at the end** from
 the full `members` set and frozen atomically in the final commit.
 
-Replace the transaction-scoped advisory lock (`pg_try_advisory_xact_lock`, which
-the initial `IngestionRun` commit released almost immediately, leaving the bulk of
-the run unguarded) with a **session-level** advisory lock (`pg_try_advisory_lock`)
-that survives the per-batch commits, released best-effort in a `finally` block and
-unconditionally at process exit (each ingestion is a fresh single-replica process).
+Remove the cross-run database lock entirely. The original transaction-scoped
+advisory lock (`pg_try_advisory_xact_lock`) was released by the initial
+`IngestionRun` commit, leaving the bulk of the run unguarded. A session-level
+advisory lock (`pg_try_advisory_lock`) was then tried so it would survive the
+per-batch commits, but with the connection pool it was acquired on one connection
+while the `finally` unlock ran on another, so it leaked and **wedged every
+subsequent run** (`RuntimeError: another ingestion run is active`). Concurrency is
+instead prevented by the single-replica, deploy-triggered one-off job model, and
+correctness under any overlap is guaranteed by the idempotent content-hash /
+accession upserts that already satisfy `RW-FR-014`.
 
 ## Reason
 
@@ -47,8 +52,9 @@ most cost-efficient fix — and keeps ingestion robust as the universe grows.
 
 ## Decision
 
-Adopt incremental per-unit commits with identity-map expunging and a session-level
-advisory lock.
+Adopt incremental per-unit commits with identity-map expunging, and no
+database-level cross-run lock (idempotent upserts plus single-replica execution
+provide the guarantees the lock was meant to).
 
 ## Alternatives Considered
 
