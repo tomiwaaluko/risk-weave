@@ -1,7 +1,7 @@
 {
   "bundle_version": "2026-07-11.demo-freeze.1",
-  "snapshot_id": "snap-demo-2026-07-11",
-  "graph_version": "1.1.0",
+  "snapshot_id": "cre-demo-2026-07-11",
+  "graph_version": "1.0.0",
   "engine_version": "adr-001-simple-path-v1",
   "prompt_version": "shock-parse-v1",
   "seed": 20260711,
@@ -12,17 +12,8 @@
       "pack": "cre",
       "title": "CRE refinancing squeeze",
       "natural_language_input": "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.",
-      "surprising_path": "Atlantic Regional Bank -> Harbor Point REIT -> Summit Title Services -> Metro CMBS Trust",
-      "low_confidence_example": "Metro CMBS Trust servicing linkage uses a short post-2020 sample and remains visibly badged.",
-      "fallback_ready": true
-    },
-    {
-      "id": "oil-price-shock",
-      "pack": "oil",
-      "title": "Oil spike and transport cost pass-through",
-      "natural_language_input": "Oil prices jump 25%, jet fuel costs stay elevated for two quarters, and airlines pass only part of the shock through to fares.",
-      "surprising_path": "North Coast Refining -> Apex Logistics -> Harbor Air Cargo -> Regional Retail Basket",
-      "low_confidence_example": "Regional fare elasticity remains marked as missing for two carriers in the replay bundle.",
+      "surprising_path": "U.S. Office Commercial Real Estate -> SL Green Realty Corp. -> Wells Fargo & Company",
+      "low_confidence_example": "WeWork -> Bank OZK creditor exposure is preserved with a 60% extraction-confidence badge.",
       "fallback_ready": true
     }
   ]

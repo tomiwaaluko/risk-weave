@@ -7,19 +7,12 @@ demo path must be traceable to source, method, and passage in under 30 seconds.
 
 | Visible number | Where it appears | Source document | Method | Provenance trail |
 |---|---|---|---|---|
-| `+0.62` direct impact | Node panel, Atlantic Regional Bank | `0001456789-25-000044` | `DER-CREDIT` | Node panel -> Direct CRE loan-book hit -> edge `Atlantic Regional Bank -> Harbor Point REIT` -> passage viewer |
-| `+0.19` indirect impact | Node panel, Atlantic Regional Bank | `0001888031-25-000012` and `CMBS-SERVICING-2025Q1` | `DER-CONCENTRATION`, `DER-BETA` | Node panel -> `REIT -> title services -> CMBS loop` -> hop 2 or 3 -> passage viewer |
-| `55.6` risk score | Node panel | Frozen bundle path decomposition | ADR-001 score transform | Node panel -> contributing path totals -> explain `100 * (1 - exp(-abs(raw_impact)))` |
-| `18%` structural centrality | Node panel | Frozen graph snapshot | transmission centrality | Node panel -> structural centrality label -> methodology panel |
-| `31%` loan-book share | Edge panel weight provenance | `0001456789-25-000044` | `DER-CREDIT` | Path hop -> edge panel -> passage offsets |
-
-## Oil path numbers
-
-| Visible number | Where it appears | Source document | Method | Provenance trail |
-|---|---|---|---|---|
-| `25%` oil shock magnitude | Scenario card | Frozen bundle scenario input | scenario parser output | Scenario selector -> bundle detail |
-| `+0.47` logistics transmission | Edge panel | `OIL-PACK-2025Q1` | `DER-COMMODITY` | Path hop -> edge panel -> quote |
-| `61%` confidence badge | Edge panel | `AIR-CARGO-2025Q1` | extraction confidence formula | Edge panel -> low-confidence badge -> methodology panel |
+| `0.96` office exposure | Edge panel, `cre-office -> slg` | `0001040971-24-000009` | `DER-CONCENTRATION` | Graph node -> edge panel -> passage viewer |
+| `0.95` NYC exposure | Edge panel, `nyc-metro -> slg` | `0001040971-24-000009` | `DER-GEO` | Graph node -> edge panel -> passage viewer |
+| `0.06` SLG creditor exposure | Edge panel, `slg -> wfc` | `0000072971-24-000112` | `DER-CREDIT` | Path hop -> edge panel -> passage offsets |
+| `70%` confidence badge | Edge panel, `slg -> wfc` | `0000072971-24-000112` | extraction confidence formula | Edge panel -> low-confidence badge -> methodology panel |
+| `60%` confidence badge | Edge panel, `wework -> ozk` | `0001349097-24-000006` | extraction confidence formula | Edge panel -> low-confidence badge -> methodology panel |
+| `15` nodes / `18` edges | Graph HUD | `backend/data/fixtures/cre_graph.json` | fixture assembly | `/graph/seed` response -> graph HUD -> fixture file |
 
 ## Drill rule
 
