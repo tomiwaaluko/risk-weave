@@ -17,7 +17,7 @@ Rehearse it from a clean `docker compose up --build --wait` environment.
 
 ### Exact NL input
 
-`Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.`
+`Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists 6 quarters.`
 
 ### Demo beats
 

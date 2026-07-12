@@ -29,7 +29,7 @@ const templates: Record<
 > = {
   cre: {
     prompt:
-      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, stress persists six quarters.",
+      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, stress persists 6 quarters.",
     factors: [
       factor(
         "cre_property_value",

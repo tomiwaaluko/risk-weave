@@ -308,7 +308,7 @@ const scenarios: ScenarioBundle[] = [
     title: "CRE refinancing squeeze",
     pack: "Commercial real estate",
     nlInput:
-      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.",
+      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists 6 quarters.",
     snapshotId: "cre-demo-2026-07-11",
     graphVersion: "1.0.0",
     engineVersion: "adr-001-simple-path-v1",

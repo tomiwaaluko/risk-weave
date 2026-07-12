@@ -11,7 +11,7 @@
       "id": "cre-refinancing-shock",
       "pack": "cre",
       "title": "CRE refinancing squeeze",
-      "natural_language_input": "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.",
+      "natural_language_input": "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists 6 quarters.",
       "surprising_path": "U.S. Office Commercial Real Estate -> SL Green Realty Corp. -> Wells Fargo & Company",
       "low_confidence_example": "WeWork -> Bank OZK creditor exposure is preserved with a 60% extraction-confidence badge.",
       "fallback_ready": true
