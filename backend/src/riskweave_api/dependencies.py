@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from riskweave.explain import ExplanationTransport
 
 from .extraction.gemini import GeminiRestTransport
+from .extraction.shock_parser import GeminiShockParser
 from .scenario_store import ScenarioStore
 
 
@@ -27,6 +28,10 @@ def get_explanation_transport(request: Request) -> ExplanationTransport:
         return override
     settings = request.app.state.settings
     return GeminiRestTransport(settings.gemini_api_key)
+
+
+def get_shock_parser(request: Request) -> GeminiShockParser:
+    return request.app.state.shock_parser
 
 
 async def get_redis(request: Request) -> aioredis.Redis | None:
