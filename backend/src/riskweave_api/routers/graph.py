@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from riskweave.derivations.registry import list_methods
+from riskweave.explain import EdgeEvidence
 from riskweave.graph.assembly import AssembledGraph, GraphAssemblyError
 from riskweave.graph.fixture import load_graph_fixture
 from riskweave_api.dependencies import get_store
@@ -135,6 +136,33 @@ class MethodologyResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+def _provenance_by_edge(graph: AssembledGraph) -> dict[str, EdgeEvidence]:
+    """Map each fixture edge to its pre-baked provenance for RIS-19 citations.
+
+    ``citation_id`` and node display names are placeholders here; explanation
+    generation reassigns stable ``cit-N`` ids and resolves names per run.
+    """
+    records: dict[str, EdgeEvidence] = {}
+    for edge in graph.edges:
+        prov = edge.record.provenance
+        records[edge.edge_id] = EdgeEvidence(
+            citation_id="",
+            edge_id=edge.edge_id,
+            source_name=edge.source_id,
+            target_name=edge.target_id,
+            relationship_type=edge.relationship_type,
+            method_id=edge.record.method_id,
+            source_document_id=prov.source_document_id,
+            source_passage=prov.source_passage,
+            char_start=prov.char_start,
+            char_end=prov.char_end,
+            filing_date=prov.filing_date.isoformat(),
+            data_timestamp=prov.data_timestamp.isoformat(),
+            extraction_confidence=prov.extraction_confidence,
+        )
+    return records
+
+
 def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
     from riskweave.derivations.registry import get_method
 
@@ -216,6 +244,7 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
 
     snapshot = graph.to_snapshot()
     store.register_snapshot(snapshot)
+    store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
 
     # Overwrite any previous demo scenario so re-seeding is idempotent.
     with store._lock:

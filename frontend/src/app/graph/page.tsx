@@ -275,6 +275,9 @@ export default function GraphPage() {
           edgeMap={edgeMap}
           impacts={latestUpdate?.impacts ?? null}
           lowConfidenceThreshold={seedData.low_confidence_threshold}
+          scenarioId={seedData.scenario_id}
+          backendUrl={BACKEND_URL}
+          severity={severity}
           onSelectEdge={handleSelectEdge}
           onSelectNode={handleSelectNode}
           onClose={handleDeselect}

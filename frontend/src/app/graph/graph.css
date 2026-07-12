@@ -349,3 +349,103 @@
   font-size: 0.68rem;
   line-height: 1.4;
 }
+
+/* ---------------------------------------------------------------------------
+   Evidence-bound AI explanation (RIS-19, RW-AI-011)
+   --------------------------------------------------------------------------- */
+
+.explanation-block {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.explanation-badge {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.35rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
+.explanation-badge.verified {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.explanation-badge.fallback {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.explanation-prose {
+  margin: 0.5rem 0;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.citation-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  margin: 0 0.15rem;
+  padding: 0 0.25rem;
+  border: 1px solid #3b82f6;
+  border-radius: 0.3rem;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  vertical-align: super;
+  line-height: 1;
+}
+
+.citation-chip:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.citation-chip:disabled {
+  border-color: #475569;
+  color: #64748b;
+  cursor: default;
+}
+
+.citation-list ol {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.citation-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.citation-passage {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.citation-source {
+  grid-column: 2;
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
+.explanation-model {
+  margin-top: 0.5rem;
+  color: #475569;
+  font-size: 0.65rem;
+}
+
+.explanation-fallback .evidence-fields {
+  margin-top: 0.4rem;
+}
