@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-
-import "./styles.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RiskWeave",
-  description: "AI-assisted financial contagion analysis",
+  title: "RiskWeave Terminal",
+  description: "Live financial contagion intelligence terminal",
 };
 
 export default function RootLayout({
