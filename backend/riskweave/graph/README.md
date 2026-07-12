@@ -39,10 +39,40 @@ separately from propagation impact so the UI can show both distinctly.
 `to_snapshot(pack=None)` produces an engine-ready `GraphSnapshot` (RIS-13),
 optionally restricted to the `cre` or `oil` scenario pack.
 
-## Neo4j
+## Fixture-seeded graph (reduced hackathon scope)
 
-This module is the in-memory assembly + validation core and the source of truth
-for the write gate. The Neo4j persistence layer (Cypher `MERGE` of the same
-validated `AssembledGraph`) is a thin writer over this contract; it is gated
-behind the same `ProposedEdge` type so no un-provenanced edge can reach the
-database either.
+Under the reduced RIS-12 scope the graph is not extracted live. A committed
+fixture — `backend/data/fixtures/cre_graph.json`, ~15 CRE-pack entities and
+typed/weighted/directed edges — carries **pre-baked** weights and provenance
+(hand-authored from real filing disclosures where practical), rather than output
+from the deferred Gemini pipeline (RIS-10/11).
+
+`fixture.load_graph_fixture()` still routes every pre-baked edge through the
+Graft 2 gate above: each edge weight becomes a `WeightRecord` bound to a
+validated `Provenance`, then `assemble()`. A fixture edge missing any provenance
+field is rejected at load (`test_missing_provenance_field_is_rejected`). So the
+fixture is pre-baked, not un-provenanced.
+
+## Neo4j store
+
+`store.Neo4jGraphStore` writes and reads the assembled graph:
+
+- `seed(graph)` — **drop-then-reload in one transaction**, so re-running
+  reproduces the same graph (`test_reseed_reproduces_the_same_graph`). Every
+  edge is written with its full provenance fields; the source `AssembledGraph`
+  cannot contain an un-provenanced edge, so neither can the database.
+- `read_snapshot(pack=None)` — the engine read API: adjacency + signed weights +
+  provenance refs as a `GraphSnapshot`, optionally filtered to one pack.
+
+The `neo4j` driver is imported lazily, so this package imports and unit-tests
+without the driver or a database. Seed the local stack with:
+
+```
+docker compose up --wait          # brings up the Neo4j service
+cd backend
+uv add neo4j                      # one-time: adds the driver + updates the lock
+uv run python -m riskweave.graph.seed
+```
+
+Integration tests in `test_graph_store.py` seed a live Neo4j and are skipped
+when the driver or a reachable database is absent.

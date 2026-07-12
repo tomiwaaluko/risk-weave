@@ -62,6 +62,6 @@ describe("RiskWeave terminal", () => {
     expect(markup).toContain("Methodology / honesty page");
     expect(markup).toContain("Exact quoted span with surrounding context");
     expect(markup).toContain("Replay fallback");
-    expect(markup).toContain("snap-demo-2026-07-11");
+    expect(markup).toContain("cre-demo-2026-07-11");
   });
 });

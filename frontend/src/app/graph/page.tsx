@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ContagionGraph, { TYPE_COLORS } from "./ContagionGraph";
 import RankedSidebar from "./RankedSidebar";
+import EvidencePanel from "./EvidencePanel";
 import { useLiveSlider } from "./useLiveSlider";
-import EvidencePanel from "../spike/EvidencePanel";
 import SeveritySlider from "../spike/SeveritySlider";
 import type {
-  SelectedElement,
-  SpikeEdge,
-  SpikeNode,
-  SpikeSeedResponse,
-} from "../spike/types";
+  EvidenceEdge,
+  EvidenceNode,
+  GraphSeedResponse,
+  GraphSelection,
+} from "./types";
 import "../spike/styles.css";
 import "./graph.css";
 
@@ -19,21 +20,21 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
 
 export default function GraphPage() {
-  const [seedData, setSeedData] = useState<SpikeSeedResponse | null>(null);
+  const [seedData, setSeedData] = useState<GraphSeedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [severity, setSeverity] = useState(0.5);
-  const [selected, setSelected] = useState<SelectedElement>(null);
+  const [selected, setSelected] = useState<GraphSelection>(null);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const initialRunDone = useRef(false);
 
   const nodeMap = useMemo(() => {
-    if (!seedData) return new Map<string, SpikeNode>();
+    if (!seedData) return new Map<string, EvidenceNode>();
     return new Map(seedData.nodes.map((n) => [n.node_id, n]));
   }, [seedData]);
 
   const edgeMap = useMemo(() => {
-    if (!seedData) return new Map<string, SpikeEdge>();
+    if (!seedData) return new Map<string, EvidenceEdge>();
     return new Map(seedData.edges.map((e) => [e.edge_id, e]));
   }, [seedData]);
 
@@ -51,10 +52,10 @@ export default function GraphPage() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch(`${BACKEND_URL}/spike/seed`, { method: "POST" });
+      const resp = await fetch(`${BACKEND_URL}/graph/seed`, { method: "POST" });
       if (!resp.ok)
         throw new Error(`Seed failed: ${resp.status} ${resp.statusText}`);
-      const data: SpikeSeedResponse = await resp.json();
+      const data: GraphSeedResponse = await resp.json();
       setSeedData(data);
     } catch (err) {
       setError(
@@ -91,24 +92,17 @@ export default function GraphPage() {
 
   const handleSelectNode = useCallback(
     (nodeId: string) => {
-      const node = nodeMap.get(nodeId);
-      if (node) {
-        setSelected({
-          kind: "node",
-          nodeId,
-          data: node,
-          impact: latestUpdate?.impacts[nodeId] ?? null,
-        });
+      if (nodeMap.has(nodeId)) {
+        setSelected({ kind: "node", id: nodeId });
         setFocusNodeId(nodeId);
       }
     },
-    [nodeMap, latestUpdate],
+    [nodeMap],
   );
 
   const handleSelectEdge = useCallback(
     (edgeId: string) => {
-      const edge = edgeMap.get(edgeId);
-      if (edge) setSelected({ kind: "edge", edgeId, data: edge });
+      if (edgeMap.has(edgeId)) setSelected({ kind: "edge", id: edgeId });
     },
     [edgeMap],
   );
@@ -160,7 +154,7 @@ export default function GraphPage() {
       <header className="spike-header">
         <h1 className="spike-title">
           RiskWeave
-          <span>Contagion graph</span>
+          <span>Contagion graph — CRE decline</span>
         </h1>
 
         <SeveritySlider
@@ -169,11 +163,16 @@ export default function GraphPage() {
           disabled={!connected}
         />
 
-        <div className="connection-status" id="connection-status">
-          <span
-            className={`connection-dot ${connected ? "connected" : "disconnected"}`}
-          />
-          {connected ? "Live" : "Reconnecting…"}
+        <div className="header-right">
+          <Link className="methodology-link" href="/graph/methodology">
+            Methodology
+          </Link>
+          <div className="connection-status" id="connection-status">
+            <span
+              className={`connection-dot ${connected ? "connected" : "disconnected"}`}
+            />
+            {connected ? "Live" : "Reconnecting…"}
+          </div>
         </div>
       </header>
 
@@ -271,10 +270,16 @@ export default function GraphPage() {
         </div>
 
         <EvidencePanel
-          selected={selected}
+          selection={selected}
           nodeMap={nodeMap}
           edgeMap={edgeMap}
           impacts={latestUpdate?.impacts ?? null}
+          lowConfidenceThreshold={seedData.low_confidence_threshold}
+          scenarioId={seedData.scenario_id}
+          backendUrl={BACKEND_URL}
+          severity={severity}
+          onSelectEdge={handleSelectEdge}
+          onSelectNode={handleSelectNode}
           onClose={handleDeselect}
         />
       </div>

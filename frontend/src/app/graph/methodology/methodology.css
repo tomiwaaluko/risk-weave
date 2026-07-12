@@ -1,0 +1,102 @@
+/* RIS-20 methodology / honesty page */
+
+.methodology-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+.methodology-body {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.methodology-intro {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.methodology-h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.method-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.method-card {
+  padding: 0.85rem;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 0.5rem;
+}
+
+.method-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.method-version {
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
+.method-card-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 0.4rem;
+}
+
+.method-card-summary {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0 0 0.5rem;
+}
+
+.method-card-source {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.methodology-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.methodology-list.limitations li {
+  color: #e2e8f0;
+}
+
+.spike-error-inline {
+  color: #ef4444;
+  font-size: 0.8rem;
+}

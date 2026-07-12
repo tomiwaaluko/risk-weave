@@ -28,3 +28,16 @@ confidence is shown visibly and never changes the underlying deterministic math.
 Switch to replay mode. The UI labels that state explicitly and serves the
 precomputed frozen bundle tied to a snapshot id, graph version, engine version,
 prompt version, and seed.
+
+## Is this data live?
+
+No. For the hackathon demo the graph is a reduced, curated fixture with
+real-filing-sourced, pre-baked provenance. The live pieces are Gemini parsing
+the trusted shock prompt and generating the evidence-bound explanation from the
+computed payload. The full live-ingested snapshot freeze is deferred.
+
+## What is the fallback recording for?
+
+It is the last-resort delivery artifact if the room, browser, or network fails.
+It must show the same fixture bundle, replay label, provenance drill, and judge
+Q&A path as the live script.

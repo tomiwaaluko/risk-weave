@@ -15,6 +15,4 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr
     fred_api_key: SecretStr | None = None
     sec_user_agent: str = "RiskWeave contact@example.com"
-    cors_allow_origin_regex: str = (
-        r"^https://riskweave.*\.vercel\.app$|^http://localhost:3000$"
-    )
+    cors_allow_origin_regex: str = r"^https://riskweave.*\.vercel\.app$|^http://localhost:3000$"

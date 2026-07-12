@@ -308,9 +308,9 @@ const scenarios: ScenarioBundle[] = [
     title: "CRE refinancing squeeze",
     pack: "Commercial real estate",
     nlInput:
-      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists six quarters.",
-    snapshotId: "snap-demo-2026-07-11",
-    graphVersion: "1.1.0",
+      "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, and stress persists 6 quarters.",
+    snapshotId: "cre-demo-2026-07-11",
+    graphVersion: "1.0.0",
     engineVersion: "adr-001-simple-path-v1",
     replayReady: true,
     replayLabel: "Replay mode: precomputed results from frozen bundle",
@@ -323,8 +323,8 @@ const scenarios: ScenarioBundle[] = [
     pack: "Energy transmission",
     nlInput:
       "Oil prices jump 25%, jet fuel costs stay elevated for two quarters, and airlines pass only part of the shock through to fares.",
-    snapshotId: "snap-demo-2026-07-11",
-    graphVersion: "1.1.0",
+    snapshotId: "cre-demo-2026-07-11",
+    graphVersion: "1.0.0",
     engineVersion: "adr-001-simple-path-v1",
     replayReady: true,
     replayLabel: "Replay mode: precomputed results from frozen bundle",

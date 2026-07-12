@@ -9,17 +9,32 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from riskweave.explain import (
+    ExplanationTransport,
+    build_node_context,
+    generate_node_explanation,
+)
 from riskweave.scenario import ParsedScenario, ScenarioStatus, list_templates, parse_shock_text
+from riskweave.scenario.presets import get_preset, list_presets
 from riskweave.scenario.validation import validate_scenario as validate_structured_scenario
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
-from riskweave_api.dependencies import get_redis, get_store
+from riskweave_api.dependencies import (
+    get_explanation_transport,
+    get_redis,
+    get_shock_parser,
+    get_store,
+)
+from riskweave_api.extraction.shock_parser import GeminiShockParser
 from riskweave_api.models import (
+    CitationOut,
+    ExplanationOut,
     NodeImpactOut,
     RunRequest,
     RunResult,
     ScenarioCreateRequest,
     ScenarioRecord,
     ScenarioState,
+    StructuredNumberOut,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore, TransitionError
 
@@ -30,6 +45,26 @@ router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
 class ParseScenarioRequest(BaseModel):
     text: str
+
+
+class PresetOut(BaseModel):
+    """A clickable preset shock prompt (reduced RIS-18 demo path)."""
+
+    preset_id: str
+    label: str
+    prompt_text: str
+
+
+class PresetParseResponse(BaseModel):
+    """A parsed preset plus the provenance of how it was produced."""
+
+    preset_id: str
+    source: str
+    model_alias: str
+    prompt_version: str
+    attempts: int
+    fallback_reason: str | None
+    scenario: ParsedScenario
 
 
 def _scenario_config_json(req: ScenarioCreateRequest) -> str:
@@ -53,6 +88,43 @@ def scenario_templates() -> tuple[ParsedScenario, ...]:
 def parse_scenario(req: ParseScenarioRequest) -> ParsedScenario:
     """Parse untrusted natural-language shock text into a reviewable scenario."""
     return parse_shock_text(req.text)
+
+
+@router.get("/presets", response_model=list[PresetOut])
+def scenario_presets() -> list[PresetOut]:
+    """List the clickable preset shock prompts (`RW-FR-002`, reduced RIS-18)."""
+    return [
+        PresetOut(preset_id=p.preset_id, label=p.label, prompt_text=p.prompt_text)
+        for p in list_presets()
+    ]
+
+
+@router.post("/presets/{preset_id}/parse", response_model=PresetParseResponse)
+def parse_preset_endpoint(
+    preset_id: str,
+    parser: GeminiShockParser = Depends(get_shock_parser),
+) -> PresetParseResponse:
+    """Parse a preset through a real Gemini structured call, with committed fallback.
+
+    Gemini finds the factors already written in the trusted sentence and echoes
+    magnitudes verbatim (`RW-AI-010`); a schema-invalid or non-verbatim response
+    retries once then falls back to the committed pre-parse so the demo never
+    white-screens.
+    """
+    try:
+        preset = get_preset(preset_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="unknown preset") from exc
+    result = parser.parse_preset(preset)
+    return PresetParseResponse(
+        preset_id=preset_id,
+        source=result.source,
+        model_alias=result.model_alias,
+        prompt_version=result.prompt_version,
+        attempts=result.attempts,
+        fallback_reason=result.fallback_reason,
+        scenario=result.scenario,
+    )
 
 
 @router.post("/review/validate", response_model=ParsedScenario)
@@ -197,6 +269,85 @@ async def ranked_impacts(
 ) -> list[NodeImpactOut]:
     result = await get_results(scenario_id, severity, store, redis)
     return [result.impacts[eid] for eid in result.ranked_entity_ids if eid in result.impacts]
+
+
+@router.get("/{scenario_id}/explanation/{node_id}", response_model=ExplanationOut)
+def explain_node(
+    scenario_id: str,
+    node_id: str,
+    severity: float = 1.0,
+    store: ScenarioStore = Depends(get_store),
+    transport: ExplanationTransport = Depends(get_explanation_transport),
+) -> ExplanationOut:
+    """Generate a guarded, evidence-bound explanation of one node's impact.
+
+    Gemini writes the prose from the computation payload + pre-baked provenance;
+    the deterministic numeric-containment guard (`RW-AI-011`) rejects any prose
+    introducing an unbacked number, regenerating once before falling back to
+    labeled verified figures. No number here ever originates from Gemini.
+    """
+    try:
+        record = store.get(scenario_id)
+        result, _ = store.propagate_scenario(scenario_id, severity)
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail="scenario or snapshot not found") from exc
+
+    if node_id not in result.impacts:
+        raise HTTPException(
+            status_code=404, detail="node not impacted at this severity or not found"
+        )
+
+    snapshot = store.get_snapshot(record.snapshot_id)
+    node_names = {n.node_id: n.name for n in snapshot.nodes}
+    node_types = {n.node_id: n.node_type for n in snapshot.nodes}
+    provenance = store.get_provenance(record.snapshot_id)
+
+    context, payload = build_node_context(
+        result,
+        node_id,
+        node_name=node_names.get(node_id, node_id),
+        node_type=node_types.get(node_id, "entity"),
+        provenance_by_edge=provenance,
+        node_names=node_names,
+    )
+
+    try:
+        generated = generate_node_explanation(context, payload, transport)
+    except Exception as exc:  # transport/network failure — surface, don't crash the demo
+        logger.warning("explanation generation failed for %s/%s: %s", scenario_id, node_id, exc)
+        raise HTTPException(status_code=502, detail="explanation provider unavailable") from exc
+
+    return ExplanationOut(
+        node_id=generated.node_id,
+        node_name=context.node_name,
+        prose=generated.prose,
+        used_fallback=generated.used_fallback,
+        attempts=generated.attempts,
+        guard_violations=list(generated.guard_violations),
+        model=generated.model,
+        citations=[
+            CitationOut(
+                citation_id=c.citation_id,
+                edge_id=c.edge_id,
+                source_name=c.source_name,
+                target_name=c.target_name,
+                relationship_type=c.relationship_type,
+                method_id=c.method_id,
+                source_document_id=c.source_document_id,
+                source_passage=c.source_passage,
+                char_start=c.char_start,
+                char_end=c.char_end,
+                filing_date=c.filing_date,
+                data_timestamp=c.data_timestamp,
+                extraction_confidence=c.extraction_confidence,
+            )
+            for c in generated.citations
+        ],
+        structured_numbers=[
+            StructuredNumberOut(label=s.label, value=s.value, citation_ids=list(s.citation_ids))
+            for s in generated.structured_numbers
+        ],
+    )
 
 
 @router.get("/{scenario_id}/paths/{node_id}", response_model=list[dict])
