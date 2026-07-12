@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 
 from .models import DataSnapshot, Document, SnapshotMember
@@ -48,9 +48,24 @@ class Repository:
             )
         )
 
+    _MEMBER_BATCH = 10000
+
     def create_snapshot(self, name: str, members: list[tuple[str, str, str]]) -> DataSnapshot:
         manifest = sorted(members)
-        digest = hashlib.sha256(json.dumps(manifest, separators=(",", ":")).encode()).hexdigest()
+        # Stream the manifest digest instead of materializing one large JSON
+        # string: a multi-million-member run otherwise builds a several-hundred-MB
+        # string and OOM-kills the 8 GB batch container (ADR-009). The byte
+        # sequence matches ``json.dumps(manifest, separators=(",", ":"))``.
+        hasher = hashlib.sha256()
+        hasher.update(b"[")
+        counts: dict[str, int] = {}
+        for index, member in enumerate(manifest):
+            if index:
+                hasher.update(b",")
+            hasher.update(json.dumps(list(member), separators=(",", ":")).encode())
+            counts[member[0]] = counts.get(member[0], 0) + 1
+        hasher.update(b"]")
+        digest = hasher.hexdigest()
         by_name = self.session.scalar(select(DataSnapshot).where(DataSnapshot.name == name))
         if by_name:
             if by_name.manifest_hash != digest:
@@ -63,14 +78,33 @@ class Repository:
         )
         if existing:
             return existing
+        # Store a compact summary rather than the full member list: nothing reads
+        # the list back, the SnapshotMember rows are the source of truth, and
+        # manifest_hash provides immutability (RW-FR-015).
         snapshot = DataSnapshot(
-            name=name, manifest_hash=digest, manifest_json={"members": manifest}
+            name=name,
+            manifest_hash=digest,
+            manifest_json={"member_count": len(manifest), "counts_by_type": counts},
         )
         self.session.add(snapshot)
         self.session.flush()
+        # Bulk-insert members in batches instead of adding millions of ORM
+        # instances to the identity map at once (ADR-009).
+        batch: list[dict[str, object]] = []
         for record_type, record_id, content_hash in manifest:
-            self.add_snapshot_member(snapshot.id, record_type, record_id, content_hash)
-        self.session.flush()
+            batch.append(
+                {
+                    "snapshot_id": snapshot.id,
+                    "record_type": record_type,
+                    "record_id": record_id,
+                    "content_hash": content_hash,
+                }
+            )
+            if len(batch) >= self._MEMBER_BATCH:
+                self.session.execute(insert(SnapshotMember), batch)
+                batch.clear()
+        if batch:
+            self.session.execute(insert(SnapshotMember), batch)
         snapshot.frozen_at = datetime.now(UTC)
         self.session.flush()
         return snapshot

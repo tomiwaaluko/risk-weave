@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 
 from alembic.config import Config
@@ -46,6 +47,7 @@ def main() -> int:
     logger.info("applying database migrations")
     command.upgrade(config, "head")
     logger.info("starting ingestion snapshot=%s universe=%s", args.snapshot, args.universe)
+    started = time.monotonic()
     try:
         with session_factory(database_url)() as session:
             result = IngestionService(session, SecClient(sec_user_agent), FredClient(fred_key)).run(
@@ -53,8 +55,13 @@ def main() -> int:
             )
     except ProviderError as exc:
         parser.error(str(exc))
-    logger.info("ingestion complete %s", json.dumps(result, sort_keys=True))
-    print(json.dumps(result, sort_keys=True), flush=True)
+    duration_seconds = round(time.monotonic() - started, 1)
+    logger.info(
+        "ingestion complete duration_seconds=%s %s",
+        duration_seconds,
+        json.dumps(result, sort_keys=True),
+    )
+    print(json.dumps({**result, "duration_seconds": duration_seconds}, sort_keys=True), flush=True)
     return 0
 
 

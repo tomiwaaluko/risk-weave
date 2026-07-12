@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .canonicalize import canonicalize_filing_html
@@ -72,15 +72,27 @@ class IngestionService:
             snapshot = self.repository.create_snapshot(snapshot_name, members)
             snapshot_id = snapshot.id
             manifest_hash = snapshot.manifest_hash
+            counts = {
+                "documents": self._count(Document),
+                "document_chunks": self._count(DocumentChunk),
+                "xbrl_facts": self._count(XbrlFact),
+                "macro_series": self._count(MacroSeries),
+                "macro_observations": self._count(MacroObservation),
+            }
             run = self.session.get(IngestionRun, run_id)
             run.status = "completed"
             run.completed_at = datetime.now(UTC)
-            run.metadata_json = {"members": len(members), "snapshot_id": snapshot_id}
+            run.metadata_json = {
+                "members": len(members),
+                "snapshot_id": snapshot_id,
+                "counts": counts,
+            }
             self.session.commit()
             return {
                 "snapshot_id": snapshot_id,
                 "manifest_hash": manifest_hash,
                 "members": len(members),
+                "counts": counts,
             }
         except Exception:
             self.session.rollback()
@@ -90,6 +102,9 @@ class IngestionService:
                 failed_run.completed_at = datetime.now(UTC)
                 self.session.commit()
             raise
+
+    def _count(self, model: type) -> int:
+        return self.session.scalar(select(func.count()).select_from(model)) or 0
 
     @staticmethod
     def _rows(columns: dict[str, list[object]]) -> list[dict[str, object]]:

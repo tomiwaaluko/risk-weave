@@ -33,6 +33,14 @@ list retains only small `(record_type, record_id, content_hash)` identity tuples
 which are cheap. The immutable snapshot is still created **once at the end** from
 the full `members` set and frozen atomically in the final commit.
 
+`create_snapshot` is made memory-bounded for the same reason: the manifest digest
+is streamed rather than built as one large JSON string, `SnapshotMember` rows are
+bulk-inserted in batches instead of adding millions of ORM instances at once, and
+`manifest_json` stores a compact summary (`member_count`, `counts_by_type`) rather
+than the full member list — nothing reads the list back, and `manifest_hash` plus
+the `SnapshotMember` rows already provide immutability and the source of truth.
+The run summary additionally reports exact per-table row counts and duration.
+
 Remove the cross-run database lock entirely. The original transaction-scoped
 advisory lock (`pg_try_advisory_xact_lock`) was released by the initial
 `IngestionRun` commit, leaving the bulk of the run unguarded. A session-level
