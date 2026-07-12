@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from riskweave_api.routers import graph, registry, scenarios, slider, spike
+from riskweave_api.extraction.shock_parser import GeminiShockParser
+from riskweave_api.routers import registry, scenarios, slider, spike
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.settings import Settings
 
@@ -22,6 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = Settings()
     app.state.settings = settings
     app.state.store = ScenarioStore()
+    app.state.shock_parser = GeminiShockParser.from_settings(settings)
 
     redis_client: aioredis.Redis | None = None
     try:

@@ -20,6 +20,8 @@ from pathlib import Path
 import pytest
 from pydantic import SecretStr
 
+from riskweave.scenario.models import ScenarioStatus
+from riskweave.scenario.presets import get_preset
 from riskweave_api.extraction.gemini import (
     GEMINI_PARSING_MODEL,
     GeminiExtractionClient,
@@ -29,6 +31,7 @@ from riskweave_api.extraction.schemas import (
     CovenantThresholdExtractionBatch,
     RelationshipExtractionBatch,
 )
+from riskweave_api.extraction.shock_parser import GeminiShockParser
 
 pytestmark = pytest.mark.live_gemini
 
@@ -141,3 +144,24 @@ def test_live_pro_tier_structured_parse_of_demo_shock_sentence(live_key: SecretS
     assert set(parsed) == {"shock_type", "target_sector", "magnitude_text", "direction"}
     assert parsed["direction"] == "decline"
     assert "30" in parsed["magnitude_text"]
+
+
+@pytest.mark.parametrize("preset_id", ["cre", "oil"])
+def test_live_shock_parser_parses_preset_from_real_gemini(
+    live_key: SecretStr, preset_id: str
+) -> None:
+    # RIS-18: the preset parse endpoint must actually exercise the live client,
+    # not just a fake. Each trusted preset should round-trip through Gemini into a
+    # READY scenario whose magnitudes are echoed verbatim from the sentence.
+    parser = GeminiShockParser(GeminiRestTransport(live_key))
+
+    result = parser.parse_preset(get_preset(preset_id))
+
+    assert result.source == "gemini", f"expected live parse, got fallback: {result.fallback_reason}"
+    assert result.scenario.status is ScenarioStatus.READY
+    assert result.scenario.factors
+    source_digits = result.scenario.original_text.replace(",", "")
+    for factor in result.scenario.factors:
+        magnitude = factor.magnitude
+        token = str(int(magnitude)) if magnitude.is_integer() else str(magnitude)
+        assert token in source_digits
