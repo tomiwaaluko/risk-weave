@@ -69,6 +69,19 @@ This is rate-limit bound (SEC 10 req/s) and takes a while — start it early and
 let it run unattended. Capture the run summary (documents fetched, chunks,
 XBRL facts, macro observations, duration) and post it on RIS-8.
 
+### Running it as a Railway one-off job
+
+`railway.ingest.json` defines a batch job that builds the same
+`backend/Dockerfile` image but runs the ingestion CLI once
+(`restartPolicyType: NEVER`, no healthcheck). Create a second service from this
+repo, set its **config-as-code path to `railway.ingest.json`** (so it does not
+inherit the backend's uvicorn start command from `railway.json`), and give it
+the same `DATABASE_URL` / `FRED_API_KEY` / `SEC_USER_AGENT` variables plus
+`RISKWEAVE_ALEMBIC_INI=/app/alembic.ini` (the CLI otherwise looks for the
+alembic config at a repo-checkout path that does not exist in the flattened
+container layout). The job writes into the same Railway Postgres over the
+private network, runs once, and stops.
+
 ## Verify the live path
 
 - `GET https://<backend-domain>/health` returns healthy.
