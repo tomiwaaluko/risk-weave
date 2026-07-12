@@ -770,6 +770,38 @@ body::after {
   padding: 0 12px;
   color: #3d3d3d;
 }
+.terminal-aux {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 38px minmax(0, 1fr);
+  border-top: 1px solid #292929;
+  background: #050505;
+}
+.terminal-aux__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  border-bottom: 1px solid #1c1c1c;
+  color: #5d5d5d;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+.terminal-aux__header strong {
+  display: block;
+  margin-top: 2px;
+  color: #ababab;
+  font-size: 10px;
+}
+.terminal-aux__body {
+  min-height: 0;
+  overflow: auto;
+  background: #0f1411;
+}
+.terminal-aux__body .app-shell {
+  min-height: 100%;
+}
 @keyframes thumb-pulse {
   50% {
     box-shadow: 0 0 15px var(--bb-orange);

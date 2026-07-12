@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ContagionGraph from "@/components/ContagionGraph";
-import EntityDetail from "@/components/EntityDetail";
-import MetricsTicker from "@/components/MetricsTicker";
-import ScenarioPanel from "@/components/ScenarioPanel";
-import StatusBar from "@/components/StatusBar";
+import ContagionGraph from "../components/ContagionGraph";
+import EntityDetail from "../components/EntityDetail";
+import MetricsTicker from "../components/MetricsTicker";
+import ScenarioPanel from "../components/ScenarioPanel";
+import StatusBar from "../components/StatusBar";
 import { useLiveSlider } from "./graph/useLiveSlider";
 import type { SelectedElement, SpikeSeedResponse } from "./spike/types";
+import { EvidenceWorkbench } from "./workbench";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
@@ -192,6 +193,18 @@ export default function Home() {
         update={latestUpdate}
         latencyMs={latencyMs}
       />
+      <section className="terminal-aux" aria-label="Evidence review workbench">
+        <div className="terminal-aux__header">
+          <div>
+            <span className="micro-label">EVIDENCE TRACE</span>
+            <strong>ANALYST WORKBENCH / FROZEN DEMO</strong>
+          </div>
+          <span>REPLAY + PROVENANCE DRILLDOWN</span>
+        </div>
+        <div className="terminal-aux__body">
+          <EvidenceWorkbench />
+        </div>
+      </section>
     </main>
   );
 }

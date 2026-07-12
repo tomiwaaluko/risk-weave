@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import Home from "./page";
 import MetricsTicker from "../components/MetricsTicker";
 import ScenarioPanel from "../components/ScenarioPanel";
 import StatusBar from "../components/StatusBar";
@@ -48,5 +49,19 @@ describe("RiskWeave terminal", () => {
     expect(status).toContain("LIVE");
     expect(ticker).toContain("PROPAGATION SUMMARY");
     expect(ticker).toContain("NOT INVESTMENT ADVICE");
+  });
+
+  it("keeps the evidence workbench available under the terminal shell", () => {
+    const markup = renderToStaticMarkup(<Home />);
+
+    expect(markup).toContain("RISKWEAVE");
+    expect(markup).toContain(
+      "Trace any visible number to its source in under 30 seconds.",
+    );
+    expect(markup).toContain("Breach-distance block");
+    expect(markup).toContain("Methodology / honesty page");
+    expect(markup).toContain("Exact quoted span with surrounding context");
+    expect(markup).toContain("Replay fallback");
+    expect(markup).toContain("snap-demo-2026-07-11");
   });
 });
