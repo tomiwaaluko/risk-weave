@@ -5,7 +5,7 @@
     "dockerfilePath": "backend/Dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c \"uvicorn riskweave_api.main:app --app-dir src --host 0.0.0.0 --port ${PORT:-8000}\"",
+    "startCommand": "sh -c \"PYTHONPATH=/app/src:/app uvicorn riskweave_api.main:app --host 0.0.0.0 --port ${PORT:-8000}\"",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",
