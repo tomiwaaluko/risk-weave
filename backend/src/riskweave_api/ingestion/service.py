@@ -36,42 +36,66 @@ class IngestionService:
         self.repository = Repository(session)
 
     def run(self, universe_path: Path, snapshot_name: str) -> dict[str, object]:
-        if (
-            self.session.bind
-            and self.session.bind.dialect.name == "postgresql"
-            and not self.session.scalar(text("SELECT pg_try_advisory_xact_lock(7492831)"))
-        ):
+        is_postgres = bool(self.session.bind) and self.session.bind.dialect.name == "postgresql"
+        # Best-effort concurrency guard. Unlike the previous transaction-level
+        # lock (which the initial commit below released almost immediately), a
+        # session-level advisory lock survives the per-batch commits. Each
+        # ingestion runs as a fresh single-replica process, so the lock is
+        # released at process exit even if the explicit unlock in ``finally``
+        # runs on a swapped pool connection (ADR-009).
+        if is_postgres and not self.session.scalar(text("SELECT pg_try_advisory_lock(7492831)")):
             raise RuntimeError("another ingestion run is active")
-        run = IngestionRun(started_at=datetime.now(UTC), status="running", metadata_json={})
-        self.session.add(run)
-        self.session.commit()
         try:
-            entities = json.loads(universe_path.read_text(encoding="utf-8"))["entities"]
-            ciks = sorted({entity["cik"] for entity in entities if entity.get("cik")})
-            members: list[tuple[str, str, str]] = []
-            for cik in ciks:
-                members.extend(self._ingest_sec(cik))
-            for series_id in FRED_SERIES:
-                members.extend(self._ingest_fred(series_id))
-            snapshot = self.repository.create_snapshot(snapshot_name, members)
-            run.status = "completed"
-            run.completed_at = datetime.now(UTC)
-            run.metadata_json = {"members": len(members), "snapshot_id": snapshot.id}
+            run = IngestionRun(started_at=datetime.now(UTC), status="running", metadata_json={})
+            self.session.add(run)
             self.session.commit()
-            return {
-                "snapshot_id": snapshot.id,
-                "manifest_hash": snapshot.manifest_hash,
-                "members": len(members),
-            }
-        except Exception:
             run_id = run.id
-            self.session.rollback()
-            failed_run = self.session.get(IngestionRun, run_id)
-            if failed_run:
-                failed_run.status = "failed"
-                failed_run.completed_at = datetime.now(UTC)
+            try:
+                entities = json.loads(universe_path.read_text(encoding="utf-8"))["entities"]
+                ciks = sorted({entity["cik"] for entity in entities if entity.get("cik")})
+                members: list[tuple[str, str, str]] = []
+                # Commit and expunge after each provider unit so filings, chunks,
+                # and XBRL facts do not accumulate in the identity map across the
+                # whole universe. Holding the entire run in one transaction grew
+                # memory monotonically and OOM-killed the 8 GB batch container
+                # (ADR-009). ``members`` holds only small identity tuples.
+                for cik in ciks:
+                    members.extend(self._ingest_sec(cik))
+                    self.session.commit()
+                    self.session.expunge_all()
+                for series_id in FRED_SERIES:
+                    members.extend(self._ingest_fred(series_id))
+                    self.session.commit()
+                    self.session.expunge_all()
+                snapshot = self.repository.create_snapshot(snapshot_name, members)
+                snapshot_id = snapshot.id
+                manifest_hash = snapshot.manifest_hash
+                run = self.session.get(IngestionRun, run_id)
+                run.status = "completed"
+                run.completed_at = datetime.now(UTC)
+                run.metadata_json = {"members": len(members), "snapshot_id": snapshot_id}
                 self.session.commit()
-            raise
+                return {
+                    "snapshot_id": snapshot_id,
+                    "manifest_hash": manifest_hash,
+                    "members": len(members),
+                }
+            except Exception:
+                self.session.rollback()
+                failed_run = self.session.get(IngestionRun, run_id)
+                if failed_run:
+                    failed_run.status = "failed"
+                    failed_run.completed_at = datetime.now(UTC)
+                    self.session.commit()
+                raise
+        finally:
+            if is_postgres:
+                try:
+                    self.session.rollback()
+                    self.session.execute(text("SELECT pg_advisory_unlock(7492831)"))
+                    self.session.commit()
+                except Exception:
+                    self.session.rollback()
 
     @staticmethod
     def _rows(columns: dict[str, list[object]]) -> list[dict[str, object]]:
