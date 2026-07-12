@@ -26,7 +26,10 @@ def main() -> int:
     sec_user_agent = os.environ.get("SEC_USER_AGENT")
     if not database_url or not fred_key or not sec_user_agent:
         parser.error("DATABASE_URL, FRED_API_KEY, and SEC_USER_AGENT are required")
-    config = Config(str(REPO_ROOT / "backend/alembic.ini"))
+    alembic_ini = os.environ.get(
+        "RISKWEAVE_ALEMBIC_INI", str(REPO_ROOT / "backend/alembic.ini")
+    )
+    config = Config(alembic_ini)
     config.set_main_option(
         "sqlalchemy.url", database_url.replace("postgresql://", "postgresql+psycopg://", 1)
     )
