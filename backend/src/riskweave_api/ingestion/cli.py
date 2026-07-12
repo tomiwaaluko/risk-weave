@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
+import sys
 from pathlib import Path
 
 from alembic.config import Config
@@ -15,25 +17,35 @@ from .service import IngestionService
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
+logger = logging.getLogger("riskweave_api.ingestion")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the RiskWeave pre-demo batch ingestion")
     parser.add_argument("--snapshot", required=True)
     parser.add_argument("--universe", type=Path, default=REPO_ROOT / "data/universe/entities.json")
     args = parser.parse_args()
+    # Log to stderr so batch progress is visible in the platform log stream even
+    # for short-lived one-off containers whose final stdout line can be dropped
+    # on teardown; the machine-readable summary still goes to stdout.
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stderr,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     database_url = os.environ.get("DATABASE_URL")
     fred_key = os.environ.get("FRED_API_KEY")
     sec_user_agent = os.environ.get("SEC_USER_AGENT")
     if not database_url or not fred_key or not sec_user_agent:
         parser.error("DATABASE_URL, FRED_API_KEY, and SEC_USER_AGENT are required")
-    alembic_ini = os.environ.get(
-        "RISKWEAVE_ALEMBIC_INI", str(REPO_ROOT / "backend/alembic.ini")
-    )
+    alembic_ini = os.environ.get("RISKWEAVE_ALEMBIC_INI", str(REPO_ROOT / "backend/alembic.ini"))
     config = Config(alembic_ini)
     config.set_main_option(
         "sqlalchemy.url", database_url.replace("postgresql://", "postgresql+psycopg://", 1)
     )
+    logger.info("applying database migrations")
     command.upgrade(config, "head")
+    logger.info("starting ingestion snapshot=%s universe=%s", args.snapshot, args.universe)
     try:
         with session_factory(database_url)() as session:
             result = IngestionService(session, SecClient(sec_user_agent), FredClient(fred_key)).run(
@@ -41,7 +53,8 @@ def main() -> int:
             )
     except ProviderError as exc:
         parser.error(str(exc))
-    print(json.dumps(result, sort_keys=True))
+    logger.info("ingestion complete %s", json.dumps(result, sort_keys=True))
+    print(json.dumps(result, sort_keys=True), flush=True)
     return 0
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -22,6 +23,8 @@ from .models import (
     XbrlFact,
 )
 from .repository import Repository
+
+logger = logging.getLogger("riskweave_api.ingestion")
 
 
 def _hash(value: object) -> str:
@@ -59,14 +62,18 @@ class IngestionService:
                 # whole universe. Holding the entire run in one transaction grew
                 # memory monotonically and OOM-killed the 8 GB batch container
                 # (ADR-009). ``members`` holds only small identity tuples.
-                for cik in ciks:
+                logger.info("ingesting SEC filings and XBRL facts for %d CIKs", len(ciks))
+                for index, cik in enumerate(ciks, start=1):
                     members.extend(self._ingest_sec(cik))
                     self.session.commit()
                     self.session.expunge_all()
+                    logger.info("SEC %d/%d cik=%s members=%d", index, len(ciks), cik, len(members))
+                logger.info("ingesting %d FRED series", len(FRED_SERIES))
                 for series_id in FRED_SERIES:
                     members.extend(self._ingest_fred(series_id))
                     self.session.commit()
                     self.session.expunge_all()
+                    logger.info("FRED series=%s members=%d", series_id, len(members))
                 snapshot = self.repository.create_snapshot(snapshot_name, members)
                 snapshot_id = snapshot.id
                 manifest_hash = snapshot.manifest_hash
