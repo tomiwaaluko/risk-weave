@@ -26,6 +26,8 @@ WORKDIR /app
 COPY --from=builder /app/.venv ./.venv
 COPY backend/src ./src
 COPY backend/riskweave ./riskweave
+COPY backend/alembic ./alembic
+COPY backend/alembic.ini ./alembic.ini
 COPY data/universe ./data/universe
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
