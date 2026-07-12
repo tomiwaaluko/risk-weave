@@ -18,13 +18,15 @@ FROM python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/.venv/bin:$PATH"
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app:/app/src"
 
 WORKDIR /app
 
 COPY --from=builder /app/.venv ./.venv
 COPY backend/src ./src
 COPY backend/riskweave ./riskweave
+COPY backend/data/fixtures ./data/fixtures
 COPY data/universe ./data/universe
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
