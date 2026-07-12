@@ -14,7 +14,7 @@ from riskweave.scenario.validation import validate_scenario
 TEMPLATE_TEXTS = {
     "cre": (
         "Commercial real-estate values fall 20%, refinancing rates rise "
-        "150 basis points, stress persists six quarters."
+        "150 basis points, stress persists 6 quarters."
     ),
     "oil": (
         "Oil rises to $140 per barrel for six quarters, pressuring "
