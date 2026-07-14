@@ -15,4 +15,10 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr
     fred_api_key: SecretStr | None = None
     sec_user_agent: str = "RiskWeave contact@example.com"
-    cors_allow_origin_regex: str = r"^https://riskweave.*\.vercel\.app$|^http://localhost:3000$"
+    # Matches the project's Vercel origins (production alias + git/preview
+    # subdomains, all under the ``risk-weave`` prefix) and local dev. The
+    # subdomain body is restricted to Vercel hostname characters rather than
+    # ``.*`` so the allowlist can't be widened by a stray path or scheme.
+    cors_allow_origin_regex: str = (
+        r"^https://risk-weave[a-z0-9-]*\.vercel\.app$|^http://localhost:3000$"
+    )
