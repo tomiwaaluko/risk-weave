@@ -102,6 +102,18 @@ def test_configured_key_rejects_anonymous_explanation(keyed_client: TestClient) 
     assert resp.status_code == 401
 
 
+def test_configured_key_rejects_anonymous_freeform_parse(keyed_client: TestClient) -> None:
+    resp = keyed_client.post("/scenarios/parse/live", json={"text": "CRE values fall 20%."})
+    assert resp.status_code == 401
+
+
+def test_configured_key_rejects_anonymous_qa(keyed_client: TestClient) -> None:
+    resp = keyed_client.post(
+        "/scenarios/cre-demo/qa", json={"question": "why?", "severity": 1.0, "audience": "analyst"}
+    )
+    assert resp.status_code == 401
+
+
 def test_configured_key_does_not_gate_health(keyed_client: TestClient) -> None:
     resp = keyed_client.get("/health")
     assert resp.status_code == 200
