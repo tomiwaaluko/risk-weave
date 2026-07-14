@@ -15,7 +15,13 @@ from .assembly import (
 )
 from .centrality import transmission_centrality
 from .fixture import DEFAULT_FIXTURE_PATH, FixtureError, load_graph_fixture
-from .store import Neo4jGraphStore, Neo4jUnavailableError
+from .store import (
+    Neo4jGraphStore,
+    Neo4jUnavailableError,
+    Neo4jWriteError,
+    coverage_report,
+    validate_edge_row,
+)
 
 __all__ = [
     "AssembledGraph",
@@ -30,4 +36,7 @@ __all__ = [
     "load_graph_fixture",
     "Neo4jGraphStore",
     "Neo4jUnavailableError",
+    "Neo4jWriteError",
+    "coverage_report",
+    "validate_edge_row",
 ]

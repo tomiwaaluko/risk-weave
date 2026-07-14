@@ -53,19 +53,32 @@ validated `Provenance`, then `assemble()`. A fixture edge missing any provenance
 field is rejected at load (`test_missing_provenance_field_is_rejected`). So the
 fixture is pre-baked, not un-provenanced.
 
-## Neo4j store
+## Neo4j store — the second write gate
 
-`store.Neo4jGraphStore` writes and reads the assembled graph:
+`store.Neo4jGraphStore` writes and reads the assembled graph, and is the graph's
+independent **write-time** gate:
 
+- `validate_edge_row(row)` — re-checks every Graft 2 field on the flat property
+  map actually handed to Cypher, so a row built by hand (bypassing `ProposedEdge`)
+  cannot store an un-provenanced or raw-float weight
+  (`test_rejects_edge_without_provenance`, `test_rejects_edge_with_raw_weight` in
+  `test_graph_write_gate.py`). Raw floats are unstorable: an edge is only writable
+  if its `method_id` resolves in the registered `DER-*` registry. `seed()` runs
+  this gate on every edge before any Cypher executes.
 - `seed(graph)` — **drop-then-reload in one transaction**, so re-running
-  reproduces the same graph (`test_reseed_reproduces_the_same_graph`). Every
-  edge is written with its full provenance fields; the source `AssembledGraph`
-  cannot contain an un-provenanced edge, so neither can the database.
+  reproduces the same graph (`test_reseed_reproduces_the_same_graph`,
+  `test_reseed_is_byte_identical`) and a partial seed is never observable.
+- `coverage_report(graph)` — the per-run provenance-coverage report (100% by
+  construction, since the gate drops anything else); feeds the RIS-21 dashboard
+  and is printed by `seed.py`.
+- `read_centrality(pack=None)` — structural centrality (`RW-FR-019`) queried on
+  its own, separate from scenario impact.
 - `read_snapshot(pack=None)` — the engine read API: adjacency + signed weights +
   provenance refs as a `GraphSnapshot`, optionally filtered to one pack.
 
 The `neo4j` driver is imported lazily, so this package imports and unit-tests
-without the driver or a database. Seed the local stack with:
+without the driver or a database; CI exercises the real `seed` path through an
+injected recording driver. Seed the local stack with:
 
 ```
 docker compose up --wait          # brings up the Neo4j service
