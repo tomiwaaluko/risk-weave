@@ -10,6 +10,7 @@ import { useLiveSlider } from "./graph/useLiveSlider";
 import type { SelectedElement, SpikeSeedResponse } from "./spike/types";
 import { EvidenceWorkbench } from "./workbench";
 import { ShockParserPanel } from "./ShockParserPanel";
+import { FreeformShockPanel } from "./FreeformShockPanel";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
@@ -203,7 +204,8 @@ export default function Home() {
           <span>REPLAY + PROVENANCE DRILLDOWN</span>
         </div>
         <div className="terminal-aux__body">
-          <ShockParserPanel />
+          <FreeformShockPanel backendUrl={BACKEND_URL} />
+          <ShockParserPanel backendUrl={BACKEND_URL} />
           <EvidenceWorkbench />
         </div>
       </section>
