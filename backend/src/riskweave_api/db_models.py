@@ -56,3 +56,12 @@ class ScenarioRun(Base):
     latency_ms: Mapped[float] = mapped_column(Float)
     result_json: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class QaSession(Base):
+    """One persisted run-scoped Q&A session — audit log for RW-FR-024."""
+
+    __tablename__ = "qa_sessions"
+    session_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    answer_json: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

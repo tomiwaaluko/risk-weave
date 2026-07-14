@@ -20,6 +20,11 @@ from pydantic import ValidationError
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
 from riskweave_api.dependencies import _get_redis_direct, _get_store_direct
 from riskweave_api.models import SliderMessage, SliderUpdate
+from riskweave_api.security import (
+    new_slider_message_bucket,
+    release_slider_connection,
+    try_reserve_slider_connection,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,23 +33,32 @@ router = APIRouter(tags=["slider"])
 
 @router.websocket("/scenarios/{scenario_id}/slider")
 async def slider_ws(scenario_id: str, websocket: WebSocket) -> None:
+    if not try_reserve_slider_connection(websocket.app.state):
+        await websocket.close(code=4029, reason="too many slider connections")
+        return
+
     await websocket.accept()
     store = _get_store_direct(websocket.app)
     redis = await _get_redis_direct(websocket.app)
+    message_bucket = new_slider_message_bucket()
 
     try:
-        store.get(scenario_id)
-    except KeyError:
-        await websocket.close(code=4004, reason="scenario not found")
-        return
+        try:
+            store.get(scenario_id)
+        except KeyError:
+            await websocket.close(code=4004, reason="scenario not found")
+            return
 
-    config = store.get_config(scenario_id)
-    record = store.get(scenario_id)
-    config_json = json.dumps(config, sort_keys=True)
+        config = store.get_config(scenario_id)
+        record = store.get(scenario_id)
+        config_json = json.dumps(config, sort_keys=True)
 
-    try:
         while True:
             raw = await websocket.receive_text()
+            if not message_bucket.consume():
+                await websocket.send_text(json.dumps({"error": "rate limited"}))
+                continue
+
             try:
                 msg = SliderMessage.model_validate_json(raw)
             except ValidationError as exc:
@@ -107,3 +121,5 @@ async def slider_ws(scenario_id: str, websocket: WebSocket) -> None:
 
     except WebSocketDisconnect:
         pass
+    finally:
+        release_slider_connection(websocket.app.state)

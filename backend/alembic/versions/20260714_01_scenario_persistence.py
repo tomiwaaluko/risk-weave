@@ -1,4 +1,4 @@
-"""RIS-30 scenario, run, and graph snapshot persistence."""
+"""RIS-30 scenario, run, and graph snapshot persistence (+ RIS-19 Q&A session audit log)."""
 
 import sqlalchemy as sa
 
@@ -52,9 +52,16 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_index("ix_scenario_runs_scenario_id", "scenario_runs", ["scenario_id"])
+    op.create_table(
+        "qa_sessions",
+        sa.Column("session_id", sa.String(128), primary_key=True),
+        sa.Column("answer_json", sa.JSON(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    )
 
 
 def downgrade() -> None:
+    op.drop_table("qa_sessions")
     op.drop_index("ix_scenario_runs_scenario_id", table_name="scenario_runs")
     op.drop_table("scenario_runs")
     op.drop_table("stored_scenarios")

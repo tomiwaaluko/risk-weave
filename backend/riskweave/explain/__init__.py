@@ -3,6 +3,7 @@
 from .generation import (
     DEFAULT_EXPLANATION_MODEL,
     EXPLANATION_PROMPT_VERSION,
+    Audience,
     EdgeEvidence,
     ExplanationTransport,
     GeneratedExplanation,
@@ -21,10 +22,34 @@ from .guard import (
     guard_explanation,
 )
 from .payload import payload_for_node, payload_for_run
+from .qa import (
+    DEFAULT_MAX_TOOL_CALLS,
+    QA_PROMPT_VERSION,
+    QaAnswer,
+    QaToolTransport,
+    ToolCallAudit,
+    answer_question,
+)
+from .tools import (
+    TOOL_NAMES,
+    ClosedToolRegistry,
+    RunToolContext,
+    SecurityTerms,
+    ToolArgumentError,
+    ToolResult,
+    ToolSpec,
+    UnknownToolError,
+    build_registry,
+)
 
 __all__ = [
     "DEFAULT_EXPLANATION_MODEL",
+    "DEFAULT_MAX_TOOL_CALLS",
     "EXPLANATION_PROMPT_VERSION",
+    "QA_PROMPT_VERSION",
+    "TOOL_NAMES",
+    "Audience",
+    "ClosedToolRegistry",
     "EdgeEvidence",
     "ExplanationPayload",
     "ExplanationTransport",
@@ -32,8 +57,19 @@ __all__ = [
     "GuardResult",
     "NodeExplanationContext",
     "PathSummary",
+    "QaAnswer",
+    "QaToolTransport",
+    "RunToolContext",
+    "SecurityTerms",
     "StructuredNumber",
+    "ToolArgumentError",
+    "ToolCallAudit",
+    "ToolResult",
+    "ToolSpec",
+    "UnknownToolError",
+    "answer_question",
     "build_node_context",
+    "build_registry",
     "citation_markers_in",
     "extract_numeric_tokens",
     "generate_node_explanation",

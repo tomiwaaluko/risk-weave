@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,3 +22,8 @@ class Settings(BaseSettings):
     # Defaults to the in-memory fixture/test/offline-demo backend; Railway
     # (ADR-008) sets this to "postgres" so scenarios/runs survive restarts.
     scenario_store_backend: Literal["memory", "postgres"] = "memory"
+
+    # RIS-31 / ADR-010: unset (local dev, CI, Docker Compose) leaves the API
+    # open, matching today's behavior. Railway production always sets this.
+    api_key: SecretStr | None = Field(default=None, validation_alias="RISKWEAVE_API_KEY")
+    rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")

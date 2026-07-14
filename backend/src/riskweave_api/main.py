@@ -13,6 +13,7 @@ from riskweave_api.ingestion.database import session_factory
 from riskweave_api.postgres_scenario_store import PostgresScenarioStore
 from riskweave_api.routers import graph, registry, scenarios, slider, spike
 from riskweave_api.scenario_store import InMemoryScenarioStore, ScenarioStore
+from riskweave_api.security import RateLimiter
 from riskweave_api.settings import Settings
 
 
@@ -33,6 +34,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.settings = settings
     app.state.store = _build_store(settings)
     app.state.shock_parser = GeminiShockParser.from_settings(settings)
+    app.state.rate_limiter = RateLimiter()
+    app.state.slider_connections = 0
 
     redis_client: aioredis.Redis | None = None
     try:

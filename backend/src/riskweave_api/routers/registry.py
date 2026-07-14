@@ -31,8 +31,11 @@ from riskweave_api.models import (
     RunRequest,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore
+from riskweave_api.security import default_rate_limit
 
-router = APIRouter(prefix="/registry", tags=["registry"])
+router = APIRouter(
+    prefix="/registry", tags=["registry"], dependencies=[Depends(default_rate_limit)]
+)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
 

@@ -16,10 +16,10 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session, sessionmaker
 
-from riskweave.explain import EdgeEvidence
+from riskweave.explain import Audience, EdgeEvidence, QaAnswer, ToolCallAudit
 from riskweave.propagation import ENGINE_VERSION, GraphEdge, GraphNode, GraphSnapshot
 
-from .db_models import ScenarioRun, StoredGraphSnapshot, StoredScenario
+from .db_models import QaSession, ScenarioRun, StoredGraphSnapshot, StoredScenario
 from .models import (
     RunResult,
     ScenarioCreateRequest,
@@ -169,6 +169,31 @@ class PostgresScenarioStore(ScenarioStore):
             return {"factors": row.factors_json, "seed": row.seed}
 
     # ------------------------------------------------------------------
+    # Run-scoped Q&A sessions (RW-FR-024)
+    # ------------------------------------------------------------------
+
+    def record_qa_session(self, answer: QaAnswer) -> None:
+        with self._session_factory() as session:
+            stmt = pg_insert(QaSession).values(
+                session_id=answer.session_id,
+                answer_json=_qa_answer_to_json(answer),
+                created_at=datetime.now(UTC),
+            )
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["session_id"],
+                set_={"answer_json": stmt.excluded.answer_json},
+            )
+            session.execute(stmt)
+            session.commit()
+
+    def get_qa_session(self, session_id: str) -> QaAnswer:
+        with self._session_factory() as session:
+            row = session.get(QaSession, session_id)
+            if row is None:
+                raise NotFoundError(session_id)
+            return _qa_answer_from_json(row.answer_json)
+
+    # ------------------------------------------------------------------
     # Run (propagate) — persisted audit records
     # ------------------------------------------------------------------
 
@@ -227,6 +252,40 @@ def _record_from_row(row: StoredScenario) -> ScenarioRecord:
         seed=row.seed,
         config=row.config_json,
         state=ScenarioState(row.state),
+    )
+
+
+def _qa_answer_to_json(answer: QaAnswer) -> dict[str, Any]:
+    return {
+        "session_id": answer.session_id,
+        "question": answer.question,
+        "audience": answer.audience.value,
+        "answer": answer.answer,
+        "withheld": answer.withheld,
+        "reason": answer.reason,
+        "citations": [asdict(c) for c in answer.citations],
+        "audit": [asdict(a) for a in answer.audit],
+        "tool_call_count": answer.tool_call_count,
+        "answer_attempts": answer.answer_attempts,
+        "guard_violations": list(answer.guard_violations),
+        "model": answer.model,
+    }
+
+
+def _qa_answer_from_json(fields: dict[str, Any]) -> QaAnswer:
+    return QaAnswer(
+        session_id=fields["session_id"],
+        question=fields["question"],
+        audience=Audience(fields["audience"]),
+        answer=fields["answer"],
+        withheld=fields["withheld"],
+        reason=fields["reason"],
+        citations=tuple(EdgeEvidence(**c) for c in fields["citations"]),
+        audit=tuple(ToolCallAudit(**a) for a in fields["audit"]),
+        tool_call_count=fields["tool_call_count"],
+        answer_attempts=fields["answer_attempts"],
+        guard_violations=tuple(fields["guard_violations"]),
+        model=fields["model"],
     )
 
 

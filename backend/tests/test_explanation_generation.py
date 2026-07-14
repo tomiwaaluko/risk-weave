@@ -16,7 +16,10 @@ from __future__ import annotations
 import json
 from decimal import Decimal
 
+import pytest
+
 from riskweave.explain import (
+    Audience,
     EdgeEvidence,
     build_node_context,
     generate_node_explanation,
@@ -126,6 +129,29 @@ def test_explanation_numbers_all_in_payload() -> None:
     guard = guard_explanation(strip_citation_markers(generated.prose), payload)
     assert guard.ok
     assert guard.unsupported == ()
+
+
+@pytest.mark.parametrize("audience", [Audience.ANALYST, Audience.STUDENT, Audience.RETAIL])
+def test_explanation_numbers_all_in_payload_for_every_audience(audience: Audience) -> None:
+    # RW-FR-022: all three audience variants are held to the identical guard and
+    # generate with 0 numeric violations (AC #1). The voice differs; the numbers
+    # do not.
+    context, payload = _context()
+    text = (
+        f"Boston Properties carries a risk score of {context.risk_score:.1f} "
+        f"driven by {context.path_count} transmission path from the office shock [cit-1]."
+    )
+    transport = FakeTransport([{"explanation": text, "citations": ["cit-1"]}])
+
+    generated = generate_node_explanation(context, payload, transport, audience=audience)
+
+    assert generated.audience is audience
+    assert not generated.used_fallback
+    assert generated.guard_violations == ()
+    guard = guard_explanation(strip_citation_markers(generated.prose), payload)
+    assert guard.ok and guard.unsupported == ()
+    # The audience framing reached the prompt, not the guarded numbers.
+    assert audience.value in str(transport.calls[0]["input"]).lower()
 
 
 def test_generation_is_a_real_transport_call() -> None:
