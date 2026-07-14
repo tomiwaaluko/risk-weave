@@ -42,7 +42,9 @@ interface ShockParserPanelProps {
   backendUrl?: string;
 }
 
-const DEFAULT_BACKEND_URL = "http://localhost:8000";
+// Same-origin proxy (RIS-31 / ADR-010) so the server-side RISKWEAVE_API_KEY
+// gating this Gemini-calling endpoint never reaches the client bundle.
+const DEFAULT_BACKEND_URL = "/api/backend";
 
 /**
  * Reduced RIS-18 demo beat 1: offer clickable preset shock prompts, send the

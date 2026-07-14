@@ -37,6 +37,7 @@ from riskweave_api.models import (
     StructuredNumberOut,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore, TransitionError
+from riskweave_api.security import default_rate_limit, gemini_rate_limit, require_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -78,19 +79,23 @@ def _scenario_config_json(req: ScenarioCreateRequest) -> str:
     return json.dumps(payload, sort_keys=True)
 
 
-@router.get("/templates", response_model=tuple[ParsedScenario, ...])
+@router.get(
+    "/templates",
+    response_model=tuple[ParsedScenario, ...],
+    dependencies=[Depends(default_rate_limit)],
+)
 def scenario_templates() -> tuple[ParsedScenario, ...]:
     """Return editable, prevalidated CRE and oil demo templates (`RW-FR-002`)."""
     return list_templates()
 
 
-@router.post("/parse", response_model=ParsedScenario)
+@router.post("/parse", response_model=ParsedScenario, dependencies=[Depends(default_rate_limit)])
 def parse_scenario(req: ParseScenarioRequest) -> ParsedScenario:
     """Parse untrusted natural-language shock text into a reviewable scenario."""
     return parse_shock_text(req.text)
 
 
-@router.get("/presets", response_model=list[PresetOut])
+@router.get("/presets", response_model=list[PresetOut], dependencies=[Depends(default_rate_limit)])
 def scenario_presets() -> list[PresetOut]:
     """List the clickable preset shock prompts (`RW-FR-002`, reduced RIS-18)."""
     return [
@@ -99,7 +104,11 @@ def scenario_presets() -> list[PresetOut]:
     ]
 
 
-@router.post("/presets/{preset_id}/parse", response_model=PresetParseResponse)
+@router.post(
+    "/presets/{preset_id}/parse",
+    response_model=PresetParseResponse,
+    dependencies=[Depends(require_api_key), Depends(gemini_rate_limit)],
+)
 def parse_preset_endpoint(
     preset_id: str,
     parser: GeminiShockParser = Depends(get_shock_parser),
@@ -127,14 +136,18 @@ def parse_preset_endpoint(
     )
 
 
-@router.post("/review/validate", response_model=ParsedScenario)
+@router.post(
+    "/review/validate",
+    response_model=ParsedScenario,
+    dependencies=[Depends(default_rate_limit)],
+)
 def validate_review_scenario(scenario: ParsedScenario) -> ParsedScenario:
     """Revalidate edited structured factors without re-invoking parsing (`RW-FR-005`)."""
     validation = validate_structured_scenario(scenario)
     return scenario.model_copy(update={"validation": validation, "status": validation.status})
 
 
-@router.post("/review/run")
+@router.post("/review/run", dependencies=[Depends(default_rate_limit)])
 def run_review_scenario(scenario: ParsedScenario) -> dict[str, str | bool]:
     """Gate reviewed scenario execution on deterministic validation (`RW-FR-004`)."""
     validation = validate_structured_scenario(scenario)
@@ -142,7 +155,12 @@ def run_review_scenario(scenario: ParsedScenario) -> dict[str, str | bool]:
     return {"scenario_id": scenario.scenario_id, "accepted": accepted}
 
 
-@router.post("", response_model=ScenarioRecord, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ScenarioRecord,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 def create_scenario(
     req: ScenarioCreateRequest,
     store: ScenarioStore = Depends(get_store),
@@ -151,7 +169,9 @@ def create_scenario(
     return record
 
 
-@router.get("/{scenario_id}", response_model=ScenarioRecord)
+@router.get(
+    "/{scenario_id}", response_model=ScenarioRecord, dependencies=[Depends(default_rate_limit)]
+)
 def get_scenario(
     scenario_id: str,
     store: ScenarioStore = Depends(get_store),
@@ -162,7 +182,11 @@ def get_scenario(
         raise HTTPException(status_code=404, detail="scenario not found") from exc
 
 
-@router.post("/{scenario_id}/validate", response_model=ScenarioRecord)
+@router.post(
+    "/{scenario_id}/validate",
+    response_model=ScenarioRecord,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 def validate_scenario(
     scenario_id: str,
     store: ScenarioStore = Depends(get_store),
@@ -177,7 +201,11 @@ def validate_scenario(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
-@router.post("/{scenario_id}/run", response_model=RunResult)
+@router.post(
+    "/{scenario_id}/run",
+    response_model=RunResult,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 async def run_scenario(
     scenario_id: str,
     body: RunRequest = RunRequest(),
@@ -231,7 +259,11 @@ async def run_scenario(
     return run_result
 
 
-@router.get("/{scenario_id}/results", response_model=RunResult)
+@router.get(
+    "/{scenario_id}/results",
+    response_model=RunResult,
+    dependencies=[Depends(default_rate_limit)],
+)
 async def get_results(
     scenario_id: str,
     severity: float = 1.0,
@@ -260,7 +292,11 @@ async def get_results(
     return run_result
 
 
-@router.get("/{scenario_id}/impacts", response_model=list[NodeImpactOut])
+@router.get(
+    "/{scenario_id}/impacts",
+    response_model=list[NodeImpactOut],
+    dependencies=[Depends(default_rate_limit)],
+)
 async def ranked_impacts(
     scenario_id: str,
     severity: float = 1.0,
@@ -271,7 +307,11 @@ async def ranked_impacts(
     return [result.impacts[eid] for eid in result.ranked_entity_ids if eid in result.impacts]
 
 
-@router.get("/{scenario_id}/explanation/{node_id}", response_model=ExplanationOut)
+@router.get(
+    "/{scenario_id}/explanation/{node_id}",
+    response_model=ExplanationOut,
+    dependencies=[Depends(require_api_key), Depends(gemini_rate_limit)],
+)
 def explain_node(
     scenario_id: str,
     node_id: str,
@@ -350,7 +390,11 @@ def explain_node(
     )
 
 
-@router.get("/{scenario_id}/paths/{node_id}", response_model=list[dict])
+@router.get(
+    "/{scenario_id}/paths/{node_id}",
+    response_model=list[dict],
+    dependencies=[Depends(default_rate_limit)],
+)
 async def paths_for_entity(
     scenario_id: str,
     node_id: str,

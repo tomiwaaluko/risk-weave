@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from riskweave_api.extraction.shock_parser import GeminiShockParser
 from riskweave_api.routers import graph, registry, scenarios, slider, spike
 from riskweave_api.scenario_store import ScenarioStore
+from riskweave_api.security import RateLimiter
 from riskweave_api.settings import Settings
 
 
@@ -24,6 +25,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.settings = settings
     app.state.store = ScenarioStore()
     app.state.shock_parser = GeminiShockParser.from_settings(settings)
+    app.state.rate_limiter = RateLimiter()
+    app.state.slider_connections = 0
 
     redis_client: aioredis.Redis | None = None
     try:

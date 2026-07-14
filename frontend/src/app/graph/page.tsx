@@ -18,6 +18,11 @@ import "./graph.css";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+// REST calls route through the same-origin proxy so the server-side
+// RISKWEAVE_API_KEY (RIS-31 / ADR-010) never reaches the client bundle. The
+// WebSocket slider stays on the direct backend URL (unauthenticated,
+// rate/connection-capped — see ADR-010).
+const PROXY_BASE = "/api/backend";
 
 export default function GraphPage() {
   const [seedData, setSeedData] = useState<GraphSeedResponse | null>(null);
@@ -52,7 +57,7 @@ export default function GraphPage() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch(`${BACKEND_URL}/graph/seed`, { method: "POST" });
+      const resp = await fetch(`${PROXY_BASE}/graph/seed`, { method: "POST" });
       if (!resp.ok)
         throw new Error(`Seed failed: ${resp.status} ${resp.statusText}`);
       const data: GraphSeedResponse = await resp.json();
@@ -276,7 +281,7 @@ export default function GraphPage() {
           impacts={latestUpdate?.impacts ?? null}
           lowConfidenceThreshold={seedData.low_confidence_threshold}
           scenarioId={seedData.scenario_id}
-          backendUrl={BACKEND_URL}
+          backendUrl={PROXY_BASE}
           severity={severity}
           onSelectEdge={handleSelectEdge}
           onSelectNode={handleSelectNode}
