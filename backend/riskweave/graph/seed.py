@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 from .fixture import DEFAULT_FIXTURE_PATH, load_graph_fixture
-from .store import Neo4jGraphStore, Neo4jUnavailableError
+from .store import Neo4jGraphStore, Neo4jUnavailableError, coverage_report
 
 
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -74,6 +74,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         counts = store.seed(graph)
         print(f"seeded {counts['nodes']} nodes and {counts['edges']} edges into Neo4j at {uri}")
+        report = coverage_report(graph)
+        print(
+            f"provenance coverage: {report['coverage']:.0%} "
+            f"({report['provenanced_edges']}/{report['total_edges']} edges) "
+            f"by method {report['edges_by_method']}"
+        )
         snapshot = store.read_snapshot(pack=args.pack)
         print(
             f"read-back snapshot {snapshot.snapshot_id} v{snapshot.graph_version}: "
