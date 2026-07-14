@@ -108,3 +108,86 @@ def test_run_accepts_parsed_preset_scenario(client):
 
     assert resp.status_code == 200
     assert resp.json()["accepted"] is True
+
+
+# ---------------------------------------------------------------------------
+# Freeform (untrusted) live parse endpoint -- RW-FR-001
+# ---------------------------------------------------------------------------
+
+_FREEFORM_TEXT = "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points."
+
+_FREEFORM_PAYLOAD = json.dumps(
+    {
+        "scenario_pack": "cre",
+        "factors": [
+            {
+                "factor_id": "cre_property_value",
+                "direction": "down",
+                "magnitude": 20,
+                "unit": "percent",
+                "horizon": "6 quarters",
+                "geography": "United States",
+                "sector_scope": "cre",
+                "source_quote": "Commercial real-estate values fall 20%",
+            },
+            {
+                "factor_id": "refinancing_rate",
+                "direction": "up",
+                "magnitude": 150,
+                "unit": "basis_points",
+                "horizon": "6 quarters",
+                "geography": "United States",
+                "sector_scope": "cre",
+                "source_quote": "refinancing rates rise 150 basis points",
+            },
+        ],
+    }
+)
+
+
+def test_freeform_endpoint_returns_gemini_sourced_scenario(client):
+    _use_transport(client, _FREEFORM_PAYLOAD)
+
+    resp = client.post("/scenarios/parse/live", json={"text": _FREEFORM_TEXT})
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["source"] == "gemini"
+    factor_ids = [f["factor_id"] for f in payload["scenario"]["factors"]]
+    assert factor_ids == ["cre_property_value", "refinancing_rate"]
+    assert payload["scenario"]["factors"][0]["magnitude"] == 20
+
+
+def test_freeform_endpoint_renders_assumption_registry(client):
+    _use_transport(client, _FREEFORM_PAYLOAD)
+
+    resp = client.post("/scenarios/parse/live", json={"text": _FREEFORM_TEXT})
+
+    kinds = {a["kind"] for a in resp.json()["scenario"]["assumptions"]}
+    assert {"user", "ai_inferred", "source_derived", "default"} <= kinds
+
+
+def test_freeform_endpoint_falls_back_without_white_screen(client):
+    _use_transport(client, "garbage", "still garbage")
+
+    resp = client.post("/scenarios/parse/live", json={"text": _FREEFORM_TEXT})
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["source"] == "fallback"
+    assert payload["fallback_reason"]
+    assert payload["scenario"]["factors"]
+
+
+def test_freeform_endpoint_edit_revalidates_without_reparsing(client):
+    """A reviewed edit is revalidated via /review/validate, never re-parsed."""
+    _use_transport(client, _FREEFORM_PAYLOAD)
+    scenario = client.post("/scenarios/parse/live", json={"text": _FREEFORM_TEXT}).json()[
+        "scenario"
+    ]
+    scenario["factors"][0]["magnitude"] = 25
+
+    resp = client.post("/scenarios/review/validate", json=scenario)
+
+    assert resp.status_code == 200
+    assert resp.json()["factors"][0]["magnitude"] == 25

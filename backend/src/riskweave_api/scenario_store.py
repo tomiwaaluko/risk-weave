@@ -12,6 +12,7 @@ import threading
 from typing import Any
 
 from riskweave.explain import EdgeEvidence
+from riskweave.explain.qa import QaAnswer
 from riskweave.propagation import (
     ENGINE_VERSION,
     GraphSnapshot,
@@ -50,6 +51,9 @@ class ScenarioStore:
         # snapshot_id -> {edge_id -> EdgeEvidence}; the pre-baked provenance an
         # explanation cites (RIS-19). Registered alongside the snapshot.
         self._provenance: dict[str, dict[str, EdgeEvidence]] = {}
+        # session_id -> QaAnswer; the per-session run-scoped Q&A record, kept so
+        # its tool-call audit log is retrievable per session (RIS-19, RW-FR-024).
+        self._qa_sessions: dict[str, QaAnswer] = {}
 
     # ------------------------------------------------------------------
     # Snapshot management
@@ -76,6 +80,22 @@ class ScenarioStore:
         """Per-edge provenance for a snapshot; empty if none was registered."""
         with self._lock:
             return dict(self._provenance.get(snapshot_id, {}))
+
+    # ------------------------------------------------------------------
+    # Run-scoped Q&A sessions (RW-FR-024)
+    # ------------------------------------------------------------------
+
+    def record_qa_session(self, answer: QaAnswer) -> None:
+        """Persist a completed Q&A session so its audit log is retrievable."""
+        with self._lock:
+            self._qa_sessions[answer.session_id] = answer
+
+    def get_qa_session(self, session_id: str) -> QaAnswer:
+        """Return a recorded Q&A session, or raise :class:`NotFoundError`."""
+        with self._lock:
+            if session_id not in self._qa_sessions:
+                raise NotFoundError(session_id)
+            return self._qa_sessions[session_id]
 
     # ------------------------------------------------------------------
     # Scenario lifecycle (RW-FR-009)
