@@ -247,9 +247,7 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
 
     # Overwrite any previous demo scenario so re-seeding is idempotent.
-    with store._lock:
-        store._records.pop(GRAPH_SCENARIO_ID, None)
-        store._configs.pop(GRAPH_SCENARIO_ID, None)
+    store.delete_scenario(GRAPH_SCENARIO_ID)
 
     req = ScenarioCreateRequest(
         scenario_id=GRAPH_SCENARIO_ID,

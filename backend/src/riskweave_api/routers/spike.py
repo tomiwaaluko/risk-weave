@@ -338,9 +338,7 @@ def seed_spike(
     store.register_snapshot(snapshot)
 
     # Remove any previous spike scenario so re-seeding works.
-    with store._lock:
-        store._records.pop(SPIKE_SCENARIO_ID, None)
-        store._configs.pop(SPIKE_SCENARIO_ID, None)
+    store.delete_scenario(SPIKE_SCENARIO_ID)
 
     req = ScenarioCreateRequest(
         scenario_id=SPIKE_SCENARIO_ID,

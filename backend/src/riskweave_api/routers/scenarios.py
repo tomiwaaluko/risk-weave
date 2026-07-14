@@ -31,6 +31,7 @@ from riskweave_api.models import (
     NodeImpactOut,
     RunRequest,
     RunResult,
+    RunSummaryOut,
     ScenarioCreateRequest,
     ScenarioRecord,
     ScenarioState,
@@ -212,7 +213,7 @@ async def run_scenario(
     try:
         store.transition(scenario_id, ScenarioState.QUEUED)
         store.transition(scenario_id, ScenarioState.RUNNING)
-        run_result, latency_ms = store.run(scenario_id, body.severity)
+        run_result, latency_ms = store.run_and_record(scenario_id, body.severity)
         store.transition(scenario_id, ScenarioState.COMPLETED)
     except (NotFoundError, TransitionError) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -258,6 +259,45 @@ async def get_results(
 
     run_result, _ = store.run(scenario_id, severity)
     return run_result
+
+
+@router.get("/{scenario_id}/runs", response_model=list[RunSummaryOut])
+def list_scenario_runs(
+    scenario_id: str,
+    store: ScenarioStore = Depends(get_store),
+) -> list[RunSummaryOut]:
+    """List persisted runs for a scenario, newest first (`RW-FR-015`).
+
+    A run re-fetched here after a process restart is byte-identical to what
+    was returned at run time — the point of persisting it (RIS-30).
+    """
+    return [
+        RunSummaryOut(
+            run_id=r.run_id,
+            scenario_id=r.scenario_id,
+            snapshot_id=r.snapshot_id,
+            graph_version=r.graph_version,
+            engine_version=r.engine_version,
+            seed=r.seed,
+            severity=r.severity,
+            latency_ms=r.latency_ms,
+            created_at=r.created_at,
+        )
+        for r in store.list_runs(scenario_id)
+    ]
+
+
+@router.get("/{scenario_id}/runs/{run_id}", response_model=RunResult)
+def get_scenario_run(
+    scenario_id: str,
+    run_id: int,
+    store: ScenarioStore = Depends(get_store),
+) -> RunResult:
+    """Fetch one persisted run's exact stored result payload (`RW-FR-015`)."""
+    try:
+        return store.get_run(scenario_id, run_id).result
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail="run not found") from exc
 
 
 @router.get("/{scenario_id}/impacts", response_model=list[NodeImpactOut])
