@@ -25,6 +25,7 @@ from riskweave.propagation import (
 from riskweave_api.dependencies import get_store
 from riskweave_api.models import ScenarioCreateRequest, ScenarioState, ShockFactorIn
 from riskweave_api.scenario_store import ScenarioStore
+from riskweave_api.security import default_rate_limit, require_api_key
 
 router = APIRouter(prefix="/spike", tags=["spike"])
 StoreDependency = Annotated[ScenarioStore, Depends(get_store)]
@@ -319,7 +320,12 @@ def _build_synthetic_graph() -> tuple[
 # ---------------------------------------------------------------------------
 
 
-@router.post("/seed", response_model=SpikeSeedResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/seed",
+    response_model=SpikeSeedResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 def seed_spike(
     store: StoreDependency,
 ) -> SpikeSeedResponse:
@@ -386,7 +392,11 @@ def seed_spike(
     )
 
 
-@router.post("/run", response_model=SpikeRunResponse)
+@router.post(
+    "/run",
+    response_model=SpikeRunResponse,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 def run_spike(
     store: StoreDependency,
     severity: float = 1.0,
