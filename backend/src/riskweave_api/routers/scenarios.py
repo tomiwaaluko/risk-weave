@@ -5,14 +5,22 @@ from __future__ import annotations
 import contextlib
 import json
 import logging
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from riskweave.explain import (
+    Audience,
     ExplanationTransport,
+    QaAnswer,
+    QaToolTransport,
+    RunToolContext,
+    answer_question,
     build_node_context,
+    build_registry,
     generate_node_explanation,
+    payload_for_run,
 )
 from riskweave.scenario import ParsedScenario, ScenarioStatus, list_templates, parse_shock_text
 from riskweave.scenario.presets import get_preset, list_presets
@@ -20,6 +28,7 @@ from riskweave.scenario.validation import validate_scenario as validate_structur
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
 from riskweave_api.dependencies import (
     get_explanation_transport,
+    get_qa_transport,
     get_redis,
     get_shock_parser,
     get_store,
@@ -29,12 +38,15 @@ from riskweave_api.models import (
     CitationOut,
     ExplanationOut,
     NodeImpactOut,
+    QaAnswerOut,
+    QaRequest,
     RunRequest,
     RunResult,
     ScenarioCreateRequest,
     ScenarioRecord,
     ScenarioState,
     StructuredNumberOut,
+    ToolCallAuditOut,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore, TransitionError
 
@@ -311,6 +323,7 @@ def explain_node(
     scenario_id: str,
     node_id: str,
     severity: float = 1.0,
+    audience: Audience = Audience.ANALYST,
     store: ScenarioStore = Depends(get_store),
     transport: ExplanationTransport = Depends(get_explanation_transport),
 ) -> ExplanationOut:
@@ -319,7 +332,9 @@ def explain_node(
     Gemini writes the prose from the computation payload + pre-baked provenance;
     the deterministic numeric-containment guard (`RW-AI-011`) rejects any prose
     introducing an unbacked number, regenerating once before falling back to
-    labeled verified figures. No number here ever originates from Gemini.
+    labeled verified figures. No number here ever originates from Gemini. The
+    ``audience`` query parameter selects the analyst/student/retail voice variant
+    (`RW-FR-022`); all three are held to the identical guard.
     """
     try:
         record = store.get(scenario_id)
@@ -347,7 +362,7 @@ def explain_node(
     )
 
     try:
-        generated = generate_node_explanation(context, payload, transport)
+        generated = generate_node_explanation(context, payload, transport, audience=audience)
     except Exception as exc:  # transport/network failure — surface, don't crash the demo
         logger.warning("explanation generation failed for %s/%s: %s", scenario_id, node_id, exc)
         raise HTTPException(status_code=502, detail="explanation provider unavailable") from exc
@@ -355,6 +370,7 @@ def explain_node(
     return ExplanationOut(
         node_id=generated.node_id,
         node_name=context.node_name,
+        audience=generated.audience.value,
         prose=generated.prose,
         used_fallback=generated.used_fallback,
         attempts=generated.attempts,
@@ -398,3 +414,128 @@ async def paths_for_entity(
     if impact is None:
         raise HTTPException(status_code=404, detail="node not impacted or not found")
     return [c.model_dump() for c in impact.contributions]
+
+
+# ---------------------------------------------------------------------------
+# Run-scoped Q&A (RW-FR-024, RW-AI-002, RW-SEC-002)
+# ---------------------------------------------------------------------------
+
+
+def _audience_from(value: str) -> Audience:
+    try:
+        return Audience(value)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"unknown audience {value!r}") from exc
+
+
+def _qa_answer_to_out(answer: QaAnswer) -> QaAnswerOut:
+    return QaAnswerOut(
+        session_id=answer.session_id,
+        question=answer.question,
+        audience=answer.audience.value,
+        answer=answer.answer,
+        withheld=answer.withheld,
+        reason=answer.reason,
+        citations=[
+            CitationOut(
+                citation_id=c.citation_id,
+                edge_id=c.edge_id,
+                source_name=c.source_name,
+                target_name=c.target_name,
+                relationship_type=c.relationship_type,
+                method_id=c.method_id,
+                source_document_id=c.source_document_id,
+                source_passage=c.source_passage,
+                char_start=c.char_start,
+                char_end=c.char_end,
+                filing_date=c.filing_date,
+                data_timestamp=c.data_timestamp,
+                extraction_confidence=c.extraction_confidence,
+            )
+            for c in answer.citations
+        ],
+        audit=[
+            ToolCallAuditOut(
+                tool_name=e.tool_name,
+                args=e.args,
+                result_hash=e.result_hash,
+                status=e.status,
+                timestamp=e.timestamp,
+            )
+            for e in answer.audit
+        ],
+        tool_call_count=answer.tool_call_count,
+        answer_attempts=answer.answer_attempts,
+        guard_violations=list(answer.guard_violations),
+        model=answer.model,
+    )
+
+
+@router.post("/{scenario_id}/qa", response_model=QaAnswerOut)
+def ask_run_scoped_question(
+    scenario_id: str,
+    req: QaRequest,
+    store: ScenarioStore = Depends(get_store),
+    transport: QaToolTransport = Depends(get_qa_transport),
+) -> QaAnswerOut:
+    """Answer a free-text question about a run via Gemini tool orchestration.
+
+    Gemini may call only the closed §13.2 registry, bound to this run's approved
+    state (`RW-AI-002`, `RW-SEC-002`); unknown tools and schema-invalid arguments
+    are refused server-side. The answer is held to the same numeric-containment +
+    citation guard as explanations (`RW-AI-011`); anything it cannot ground is
+    explicitly withheld, never improvised. Every tool call — executed or refused —
+    is captured in the returned per-session audit log (`RW-FR-024`).
+    """
+    audience = _audience_from(req.audience)
+    try:
+        record = store.get(scenario_id)
+        result, _ = store.propagate_scenario(scenario_id, req.severity)
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail="scenario or snapshot not found") from exc
+
+    snapshot = store.get_snapshot(record.snapshot_id)
+    node_names = {n.node_id: n.name for n in snapshot.nodes}
+    node_types = {n.node_id: n.node_type for n in snapshot.nodes}
+    provenance = store.get_provenance(record.snapshot_id)
+
+    context = RunToolContext(
+        scenario_id=scenario_id,
+        result=result,
+        snapshot=snapshot,
+        provenance_by_edge=provenance,
+        node_names=node_names,
+        node_types=node_types,
+    )
+    registry = build_registry(context)
+    session_id = f"qa-{uuid.uuid4().hex[:12]}"
+
+    try:
+        answer = answer_question(
+            req.question,
+            registry,
+            transport,
+            session_id=session_id,
+            base_payload=payload_for_run(result),
+            audience=audience,
+        )
+    except Exception as exc:  # transport/network failure — surface, don't crash the demo
+        logger.warning("Q&A failed for %s: %s", scenario_id, exc)
+        raise HTTPException(status_code=502, detail="Q&A provider unavailable") from exc
+
+    store.record_qa_session(answer)
+    return _qa_answer_to_out(answer)
+
+
+@router.get("/{scenario_id}/qa/sessions/{session_id}", response_model=QaAnswerOut)
+def get_qa_session(
+    scenario_id: str,
+    session_id: str,
+    store: ScenarioStore = Depends(get_store),
+) -> QaAnswerOut:
+    """Retrieve a recorded Q&A session, including its full tool-call audit log."""
+    try:
+        answer = store.get_qa_session(session_id)
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail="q&a session not found") from exc
+    return _qa_answer_to_out(answer)

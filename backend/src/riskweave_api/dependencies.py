@@ -6,8 +6,9 @@ import redis.asyncio as aioredis
 from fastapi import FastAPI, Request
 
 from riskweave.explain import ExplanationTransport
+from riskweave.explain.qa import QaToolTransport
 
-from .extraction.gemini import GeminiRestTransport
+from .extraction.gemini import GeminiRestTransport, GeminiToolTransport
 from .extraction.shock_parser import GeminiShockParser
 from .scenario_store import ScenarioStore
 
@@ -28,6 +29,20 @@ def get_explanation_transport(request: Request) -> ExplanationTransport:
         return override
     settings = request.app.state.settings
     return GeminiRestTransport(settings.gemini_api_key)
+
+
+def get_qa_transport(request: Request) -> QaToolTransport:
+    """Gemini function-calling transport for run-scoped Q&A (RIS-19).
+
+    Tests inject a fake by setting ``app.state.qa_transport``; otherwise a real
+    tool transport is built from the server-only Gemini key so orchestration is a
+    genuine Gemini function-calling session (`RW-AI-002`, `RW-AI-003`).
+    """
+    override = getattr(request.app.state, "qa_transport", None)
+    if override is not None:
+        return override
+    settings = request.app.state.settings
+    return GeminiToolTransport(settings.gemini_api_key)
 
 
 def get_shock_parser(request: Request) -> GeminiShockParser:
