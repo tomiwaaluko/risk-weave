@@ -20,8 +20,11 @@ The module is transport-agnostic: it depends only on the ``create_interaction``
 shape shared with :class:`riskweave_api.extraction.gemini.GeminiTransport`, so
 unit tests inject a fake and the live path passes the real REST transport.
 
-This is deliberately the *reduced* RIS-19 scope: one audience variant, no
-run-scoped Q&A, and no Gemini tool orchestration (deferred, see the ticket).
+Explanations come in the three audience variants the spec requires (`RW-FR-022`,
+:class:`Audience`); the voice differs but the numeric-containment guard is
+identical across all three. The second half of the RIS-19 AI surface —
+run-scoped Q&A via Gemini tool orchestration against the closed §13.2 registry —
+lives in :mod:`riskweave.explain.qa` and :mod:`riskweave.explain.tools`.
 """
 
 from __future__ import annotations
@@ -29,6 +32,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Protocol
 
 from riskweave.propagation import PropagationResult
@@ -48,6 +52,39 @@ DEFAULT_TOP_PATHS = 4
 # Citation markers look like ``[cit-1]``. They are stripped before the numeric
 # guard runs so a marker's own digits never count as an unsupported number.
 _CITATION_MARKER_RE = re.compile(r"\[(cit-[A-Za-z0-9_-]+)\]")
+
+
+class Audience(StrEnum):
+    """The three explanation audiences the spec requires (`RW-FR-022`).
+
+    Only the framing/voice line of the prompt varies by audience; the numeric
+    payload, the evidence, and the numeric-containment guard (`RW-AI-011`) are
+    identical across all three — a student explanation is held to the same
+    "only payload numbers" invariant as an analyst one.
+    """
+
+    ANALYST = "analyst"
+    STUDENT = "student"
+    RETAIL = "retail"
+
+
+# Audience-specific voice guidance. These change tone and framing only; they
+# never relax the HARD RULES or introduce numbers.
+_AUDIENCE_VOICE: dict[Audience, str] = {
+    Audience.ANALYST: (
+        "for a financial analyst. Be precise and terse; use the sector/credit "
+        "transmission vocabulary an analyst expects."
+    ),
+    Audience.STUDENT: (
+        "for a finance student learning how contagion propagates. Briefly name the "
+        "mechanism (e.g. sector concentration, credit exposure) in plain terms so "
+        "the 'why' is instructive, without adding any figure that is not listed."
+    ),
+    Audience.RETAIL: (
+        "for a non-expert retail reader. Use plain, jargon-free language and explain "
+        "what the transmission means in everyday terms. Do not give advice."
+    ),
+}
 
 
 class ExplanationTransport(Protocol):
@@ -146,6 +183,7 @@ class GeneratedExplanation:
     attempts: int
     guard_violations: tuple[str, ...]
     model: str
+    audience: Audience = Audience.ANALYST
 
 
 # --------------------------------------------------------------------------- #
@@ -244,6 +282,7 @@ def generate_node_explanation(
     payload: ExplanationPayload,
     transport: ExplanationTransport,
     *,
+    audience: Audience = Audience.ANALYST,
     model: str = DEFAULT_EXPLANATION_MODEL,
     max_attempts: int = 2,
 ) -> GeneratedExplanation:
@@ -252,6 +291,8 @@ def generate_node_explanation(
     ``max_attempts`` is the initial call plus retries (2 → one regeneration, the
     RIS-19 policy). Every attempt is guarded for numeric containment
     (`RW-AI-011`) and citation resolvability; the first passing attempt wins.
+    ``audience`` selects the voice variant (`RW-FR-022`); it changes only the
+    prompt's framing line, never the guard.
     """
     if max_attempts < 1:
         raise ValueError("max_attempts must be positive")
@@ -261,7 +302,7 @@ def generate_node_explanation(
     correction: str | None = None
 
     for attempt in range(1, max_attempts + 1):
-        prompt = _build_prompt(context, correction)
+        prompt = _build_prompt(context, correction, audience)
         response = transport.create_interaction(
             model=model,
             input=prompt,
@@ -292,6 +333,7 @@ def generate_node_explanation(
                 attempts=attempt,
                 guard_violations=(),
                 model=model,
+                audience=audience,
             )
         last_violations = violations
         correction = (
@@ -310,6 +352,7 @@ def generate_node_explanation(
         attempts=max_attempts,
         guard_violations=last_violations,
         model=model,
+        audience=audience,
     )
 
 
@@ -402,14 +445,19 @@ def _structured_numbers(context: NodeExplanationContext) -> tuple[StructuredNumb
 # --------------------------------------------------------------------------- #
 # Prompt construction                                                          #
 # --------------------------------------------------------------------------- #
-def _build_prompt(context: NodeExplanationContext, correction: str | None) -> str:
+def _build_prompt(
+    context: NodeExplanationContext,
+    correction: str | None,
+    audience: Audience = Audience.ANALYST,
+) -> str:
     figures = _figures_block(context)
     evidence = _evidence_block(context)
     correction_block = f"\nCORRECTION:\n{correction}\n" if correction else ""
+    voice = _AUDIENCE_VOICE[audience]
     return (
         "You are RiskWeave's explanation writer. Write a short, plain explanation "
         "(2-4 sentences) of why the entity below carries the computed scenario risk, "
-        "for a financial analyst.\n\n"
+        f"{voice}\n\n"
         "HARD RULES:\n"
         "- Use ONLY numbers that appear verbatim under FIGURES. Never invent, estimate, "
         "combine, or round-derive any other number. This is a strict requirement.\n"
