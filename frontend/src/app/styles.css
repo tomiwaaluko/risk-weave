@@ -1,38 +1,22 @@
+/* ===========================================================================
+   Analyst workbench + shock-parser panels (RIS-27)
+   Reskinned onto the RiskWeave design system so the panels embedded in the
+   terminal aux rail read as one product instead of a stray light theme.
+   Declares only theme variables (never global element resets) so it can be
+   imported alongside globals.css without conflict.
+   =========================================================================== */
+
 :root {
-  --bg: #f3efe6;
-  --panel: rgba(255, 252, 246, 0.78);
-  --panel-border: rgba(44, 54, 43, 0.14);
-  --ink: #112015;
-  --muted: #55645b;
-  --accent: #0d6b4f;
-  --accent-strong: #083f31;
-  --warning: #8f3d1f;
-  --warning-bg: rgba(196, 107, 56, 0.14);
-  --shadow: 0 24px 60px rgba(34, 42, 33, 0.12);
-  color-scheme: dark;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #0f1411;
-  color: #f4f7f5;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  min-height: 100vh;
-  margin: 0;
-}
-
-button,
-textarea,
-input,
-select {
-  font: inherit;
+  --bg: var(--rw-surface-0);
+  --panel: rgba(17, 18, 20, 0.72);
+  --panel-border: var(--rw-line);
+  --ink: var(--rw-text);
+  --muted: var(--rw-text-muted);
+  --accent: var(--rw-accent);
+  --accent-strong: var(--rw-accent-hi);
+  --warning: var(--rw-amber);
+  --warning-bg: rgba(251, 191, 36, 0.14);
+  --shadow: var(--rw-elev-2);
 }
 
 .workspace {
@@ -47,9 +31,9 @@ select {
 .statusPane,
 .factorTable,
 .assumptionRegistry {
-  border: 1px solid #2d3d35;
-  border-radius: 8px;
-  background: #151d19;
+  border: 1px solid var(--rw-line);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface-2);
 }
 
 .topbar {
@@ -62,7 +46,7 @@ select {
 
 .workspace .eyebrow {
   margin: 0 0 0.35rem;
-  color: #8fa69a;
+  color: var(--rw-text-dim);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -72,6 +56,7 @@ select {
 .workspace h2 {
   margin: 0;
   letter-spacing: 0;
+  color: var(--rw-text-hi);
 }
 
 .workspace h1 {
@@ -86,23 +71,26 @@ select {
   display: inline-flex;
   gap: 0.35rem;
   padding: 0.25rem;
-  border: 1px solid #34473d;
-  border-radius: 8px;
+  border: 1px solid var(--rw-line);
+  border-radius: var(--rw-radius-lg);
 }
 
 .templateSwitch button {
   min-width: 4rem;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--rw-radius-md);
   padding: 0.5rem 0.75rem;
   background: transparent;
-  color: #dce8e1;
+  color: var(--rw-text);
   cursor: pointer;
+  transition:
+    background var(--rw-dur) var(--rw-ease),
+    color var(--rw-dur) var(--rw-ease);
 }
 
 .templateSwitch button.active {
-  background: #cdebd7;
-  color: #102017;
+  background: var(--rw-accent);
+  color: var(--rw-accent-ink);
 }
 
 .graphLink {
@@ -110,15 +98,16 @@ select {
   align-items: center;
   margin-left: 0.5rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 6px;
-  background: var(--accent);
-  color: #f4f7f5;
+  border-radius: var(--rw-radius-md);
+  background: var(--rw-accent);
+  color: var(--rw-accent-ink);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
+  transition: background var(--rw-dur) var(--rw-ease);
 }
 
 .graphLink:hover {
-  background: var(--accent-strong);
+  background: var(--rw-accent-hi);
 }
 
 .reviewGrid {
@@ -131,25 +120,31 @@ select {
 .promptPane {
   display: grid;
   gap: 0.5rem;
-  color: #9fb1a8;
+  color: var(--rw-text-dim);
   font-size: 0.85rem;
   font-weight: 700;
 }
 
-textarea {
+.workspace textarea,
+.shockParser textarea {
   min-height: 8rem;
   resize: vertical;
 }
 
-textarea,
-input,
-select {
+.workspace :is(textarea, input, select),
+.shockParser :is(textarea, input, select) {
   width: 100%;
-  border: 1px solid #3c5146;
-  border-radius: 6px;
-  background: #0f1411;
-  color: #f4f7f5;
+  border: 1px solid var(--rw-line-strong);
+  border-radius: var(--rw-radius-md);
+  background: var(--rw-surface-0);
+  color: var(--rw-text);
   padding: 0.55rem 0.65rem;
+  transition: border-color var(--rw-dur) var(--rw-ease);
+}
+
+.workspace :is(textarea, input, select):hover,
+.shockParser :is(textarea, input, select):hover {
+  border-color: var(--rw-text-muted);
 }
 
 .statusPane {
@@ -161,26 +156,29 @@ select {
 
 .statusPane p {
   margin: 0;
-  color: #c8d8d0;
+  color: var(--rw-text);
 }
 
 .ready,
 .invalid {
   width: max-content;
-  border-radius: 999px;
+  border: 1px solid transparent;
+  border-radius: var(--rw-radius-pill);
   padding: 0.35rem 0.6rem;
   font-size: 0.75rem;
   font-weight: 800;
 }
 
 .ready {
-  background: #cdebd7;
-  color: #102017;
+  background: rgba(52, 211, 153, 0.16);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: var(--rw-green);
 }
 
 .invalid {
-  background: #ffd3cc;
-  color: #3d1510;
+  background: rgba(255, 59, 92, 0.16);
+  border-color: rgba(255, 59, 92, 0.4);
+  color: var(--rw-red);
 }
 
 .factorTable {
@@ -199,18 +197,23 @@ select {
 }
 
 .tableHeader {
-  color: #9fb1a8;
+  color: var(--rw-text-dim);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .factorRow {
-  border-top: 1px solid #293831;
+  border-top: 1px solid var(--rw-line);
 }
 
 .factorRow strong {
   font-size: 0.9rem;
+  color: var(--rw-text-hi);
+}
+
+.factorRow.editable input {
+  font-size: 0.82rem;
 }
 
 .assumptionRegistry {
@@ -224,12 +227,12 @@ select {
   gap: 0.75rem;
   align-items: baseline;
   margin: 0;
-  color: #d8e5df;
+  color: var(--rw-text);
 }
 
 .assumptionRegistry span {
   min-width: 7.5rem;
-  color: #8fa69a;
+  color: var(--rw-text-dim);
   font-size: 0.76rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -239,6 +242,7 @@ select {
   width: min(1400px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 1rem 0 4rem;
+  color: var(--rw-text);
 }
 
 .app-shell,
@@ -263,7 +267,7 @@ select {
 .app-shell .hero-kicker,
 .app-shell .hop-index {
   margin: 0;
-  font-family: "Courier New", monospace;
+  font-family: var(--rw-font-mono);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -273,22 +277,23 @@ select {
 .app-shell .eyebrow,
 .app-shell .panel-eyebrow,
 .app-shell .hero-kicker {
-  color: var(--accent);
+  color: var(--rw-accent);
 }
 
 .app-shell h1,
 .app-shell h2,
 .app-shell h3,
 .app-shell strong {
-  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-family: var(--rw-font-sans);
+  color: var(--rw-text-hi);
 }
 
 .app-shell h1 {
   margin: 0.3rem 0 0.75rem;
-  font-size: clamp(2.8rem, 5vw, 5.8rem);
-  line-height: 0.95;
-  letter-spacing: -0.05em;
-  max-width: 10ch;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  max-width: 16ch;
 }
 
 .app-shell h2,
@@ -299,7 +304,7 @@ select {
 
 .app-shell .hero-copy {
   max-width: 58ch;
-  color: var(--muted);
+  color: var(--rw-text-dim);
   font-size: 1.05rem;
   line-height: 1.6;
 }
@@ -311,11 +316,11 @@ select {
 .app-shell .callout,
 .app-shell .path-card,
 .app-shell .hop-card {
-  border: 1px solid var(--panel-border);
-  border-radius: 24px;
+  border: 1px solid var(--rw-line);
+  border-radius: var(--rw-radius-lg);
   background: var(--panel);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--rw-elev-1);
 }
 
 .app-shell .hero-card {
@@ -331,7 +336,7 @@ select {
 }
 
 .app-shell .hero-card span {
-  color: var(--muted);
+  color: var(--rw-text-dim);
 }
 
 .app-shell .demo-toolbar {
@@ -347,7 +352,7 @@ select {
 }
 
 .app-shell .toolbar-copy {
-  color: var(--muted);
+  color: var(--rw-text-dim);
   line-height: 1.6;
 }
 
@@ -359,23 +364,33 @@ select {
 }
 
 .app-shell .pill {
-  border: 1px solid rgba(13, 107, 79, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--accent-strong);
+  border: 1px solid var(--rw-line-strong);
+  border-radius: var(--rw-radius-pill);
+  background: var(--rw-surface-3);
+  color: var(--rw-text-dim);
   padding: 0.65rem 0.95rem;
   cursor: pointer;
+  transition:
+    background var(--rw-dur) var(--rw-ease),
+    color var(--rw-dur) var(--rw-ease),
+    border-color var(--rw-dur) var(--rw-ease);
+}
+
+.app-shell .pill:hover {
+  border-color: var(--rw-text-muted);
+  color: var(--rw-text);
 }
 
 .app-shell .pill.active {
-  background: var(--accent-strong);
-  color: #f4f7f5;
+  background: var(--rw-accent);
+  border-color: var(--rw-accent);
+  color: var(--rw-accent-ink);
 }
 
 .app-shell .bundle-meta span {
-  font-family: "Courier New", monospace;
+  font-family: var(--rw-font-mono);
   font-size: 0.82rem;
-  color: var(--muted);
+  color: var(--rw-text-dim);
 }
 
 .app-shell .workspace-grid {
@@ -414,21 +429,22 @@ select {
   align-items: center;
   justify-content: center;
   padding: 0.45rem 0.8rem;
-  border-radius: 999px;
-  font-family: "Courier New", monospace;
+  border-radius: var(--rw-radius-pill);
+  font-family: var(--rw-font-mono);
   font-size: 0.78rem;
   font-weight: 700;
-  background: rgba(13, 107, 79, 0.12);
-  color: var(--accent-strong);
+  background: var(--rw-accent-wash);
+  color: var(--rw-accent);
 }
 
 .app-shell .badge.warning {
-  color: var(--warning);
+  color: var(--rw-amber);
   background: var(--warning-bg);
 }
 
 .app-shell .badge.ok {
-  color: var(--accent-strong);
+  color: var(--rw-green);
+  background: rgba(52, 211, 153, 0.14);
 }
 
 .app-shell .metrics-grid {
@@ -448,7 +464,7 @@ select {
 .app-shell .callout p,
 .app-shell .path-button small,
 .app-shell .method-card p {
-  color: var(--muted);
+  color: var(--rw-text-dim);
 }
 
 .app-shell .metric span,
@@ -469,7 +485,7 @@ select {
 }
 
 .app-shell .callout.subtle {
-  background: rgba(17, 32, 21, 0.04);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .app-shell .callout strong {
@@ -523,17 +539,20 @@ select {
   display: grid;
   gap: 0.2rem;
   padding: 0.9rem 1rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.62);
+  border-radius: var(--rw-radius-md);
+  background: var(--rw-surface-3);
+  transition:
+    background var(--rw-dur) var(--rw-ease),
+    outline-color var(--rw-dur) var(--rw-ease);
 }
 
 .app-shell .hop-card.active {
-  outline: 2px solid rgba(13, 107, 79, 0.32);
-  background: rgba(223, 240, 231, 0.92);
+  outline: 1px solid rgba(255, 106, 0, 0.5);
+  background: var(--rw-accent-wash);
 }
 
 .app-shell .hop-route {
-  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-family: var(--rw-font-sans);
   font-size: 1.25rem;
 }
 
@@ -544,13 +563,14 @@ select {
 
 .app-shell .detail-grid div {
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(44, 54, 43, 0.09);
+  border-bottom: 1px solid var(--rw-line-faint);
 }
 
 .app-shell .detail-grid dd {
   margin: 0;
-  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-family: var(--rw-font-sans);
   font-size: 1.15rem;
+  color: var(--rw-text);
 }
 
 .app-shell .methodology-link {
@@ -560,27 +580,28 @@ select {
 }
 
 .app-shell .methodology-link a {
-  color: var(--accent-strong);
+  color: var(--rw-accent);
   font-weight: 700;
 }
 
 .app-shell .passage-meta {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 1rem;
-  font-family: "Courier New", monospace;
+  font-family: var(--rw-font-mono);
   font-size: 0.8rem;
 }
 
 .app-shell .passage {
   font-size: 1.06rem;
   line-height: 1.75;
+  color: var(--rw-text);
 }
 
 .app-shell mark {
-  background: rgba(255, 208, 96, 0.55);
+  background: rgba(251, 191, 36, 0.32);
   color: inherit;
   padding: 0.1rem 0.2rem;
-  border-radius: 0.35rem;
+  border-radius: var(--rw-radius-sm);
 }
 
 .app-shell .methodology-panel {
@@ -672,25 +693,43 @@ select {
   }
 }
 
-/* Live shock parser (reduced RIS-18) */
+/* ---------------------------------------------------------------------------
+   Live freeform shock parser (RIS-18) + editable structured review
+   --------------------------------------------------------------------------- */
+
 .shockParser {
   display: grid;
   gap: 0.85rem;
   padding: 1.25rem;
-  border: 1px solid var(--panel-border);
-  border-radius: 16px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--rw-line);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface-2);
+  box-shadow: var(--rw-elev-1);
+  color: var(--rw-text);
 }
 
 .shockParserHead h2 {
   margin: 0.25rem 0;
+  color: var(--rw-text-hi);
 }
 
 .shockParserCopy {
   margin: 0;
-  color: var(--muted);
+  color: var(--rw-text-dim);
   max-width: 60ch;
+}
+
+.shockParserField {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.shockParserField span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rw-text-dim);
 }
 
 .shockParser .pill-row {
@@ -701,17 +740,20 @@ select {
 
 .shockParser .pill {
   padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  border: 1px solid var(--panel-border);
+  border-radius: var(--rw-radius-pill);
+  border: 1px solid var(--rw-line-strong);
   background: transparent;
-  color: inherit;
+  color: var(--rw-text-dim);
   cursor: pointer;
+  transition:
+    background var(--rw-dur) var(--rw-ease),
+    color var(--rw-dur) var(--rw-ease);
 }
 
 .shockParser .pill.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--rw-accent);
+  border-color: var(--rw-accent);
+  color: var(--rw-accent-ink);
 }
 
 .shockParserStatus,
@@ -719,8 +761,12 @@ select {
   margin: 0;
 }
 
+.shockParserStatus {
+  color: var(--rw-text-dim);
+}
+
 .shockParserError {
-  color: var(--warning);
+  color: var(--rw-red);
 }
 
 .shockParserResult {
@@ -738,7 +784,7 @@ select {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--rw-text-muted);
 }
 
 .shockParserMeta {
@@ -747,22 +793,74 @@ select {
   gap: 0.5rem;
   align-items: center;
   font-size: 0.85rem;
+  color: var(--rw-text-dim);
 }
 
 .shockParser .badge {
   padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--panel-border);
+  border-radius: var(--rw-radius-pill);
+  border: 1px solid var(--rw-line-strong);
 }
 
 .shockParser .badge.ok {
-  background: rgba(13, 107, 79, 0.18);
-  color: var(--accent);
+  background: rgba(52, 211, 153, 0.16);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: var(--rw-green);
 }
 
 .shockParser .badge.warning {
   background: var(--warning-bg);
-  color: var(--warning);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: var(--rw-amber);
+}
+
+.validationIssues {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 59, 92, 0.3);
+  border-radius: var(--rw-radius-lg);
+  background: rgba(255, 59, 92, 0.06);
+}
+
+.validationIssues .eyebrow {
+  margin: 0;
+  color: var(--rw-red);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.validationIssues ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--rw-text);
+}
+
+.assumptionClass {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.assumptionKind {
+  color: var(--rw-text-dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.assumptionClass ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--rw-text);
 }
 
 .shockParserRun {
@@ -773,11 +871,17 @@ select {
 
 .shockParserRun button {
   padding: 0.5rem 1.1rem;
-  border-radius: 10px;
+  border-radius: var(--rw-radius-md);
   border: none;
-  background: var(--accent);
-  color: #fff;
+  background: var(--rw-accent);
+  color: var(--rw-accent-ink);
+  font-weight: 700;
   cursor: pointer;
+  transition: background var(--rw-dur) var(--rw-ease);
+}
+
+.shockParserRun button:hover:not(:disabled) {
+  background: var(--rw-accent-hi);
 }
 
 .shockParserRun button:disabled {

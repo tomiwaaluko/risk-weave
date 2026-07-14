@@ -11,6 +11,7 @@ import type { SelectedElement, SpikeSeedResponse } from "./spike/types";
 import { EvidenceWorkbench } from "./workbench";
 import { ShockParserPanel } from "./ShockParserPanel";
 import { FreeformShockPanel } from "./FreeformShockPanel";
+import "./styles.css";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
