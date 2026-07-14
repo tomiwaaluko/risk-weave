@@ -60,7 +60,9 @@ interface FreeformShockPanelProps {
   backendUrl?: string;
 }
 
-const DEFAULT_BACKEND_URL = "http://localhost:8000";
+// Same-origin proxy (RIS-31 / ADR-010) so the server-side RISKWEAVE_API_KEY
+// gating this Gemini-calling endpoint never reaches the client bundle.
+const DEFAULT_BACKEND_URL = "/api/backend";
 
 const ASSUMPTION_CLASSES: { kind: AssumptionKind; label: string }[] = [
   { kind: "user", label: "User" },
