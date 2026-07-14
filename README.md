@@ -1,6 +1,6 @@
 # RiskWeave
 
-AI-assisted financial contagion analysis for the Bloomberg Best FinTech Hack.
+AI-assisted financial contagion analysis.
 
 Describe a financial shock in natural language. RiskWeave parses it into a structured scenario, propagates impact through a curated knowledge graph with deterministic, data-derived edge weights, and renders an interactive graph with a live severity slider and per-edge evidence.
 
