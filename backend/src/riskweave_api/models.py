@@ -87,6 +87,20 @@ class RunRequest(BaseModel):
     severity: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class RunSummaryOut(BaseModel):
+    """One persisted run's audit metadata, without the full result payload."""
+
+    run_id: int
+    scenario_id: str
+    snapshot_id: str
+    graph_version: str
+    engine_version: str
+    seed: int
+    severity: float
+    latency_ms: float
+    created_at: str
+
+
 # ---------------------------------------------------------------------------
 # Propagation results
 # ---------------------------------------------------------------------------

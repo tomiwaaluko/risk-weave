@@ -9,8 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from riskweave_api.extraction.shock_parser import GeminiShockParser
+from riskweave_api.ingestion.database import session_factory
+from riskweave_api.postgres_scenario_store import PostgresScenarioStore
 from riskweave_api.routers import graph, registry, scenarios, slider, spike
-from riskweave_api.scenario_store import ScenarioStore
+from riskweave_api.scenario_store import InMemoryScenarioStore, ScenarioStore
 from riskweave_api.security import RateLimiter
 from riskweave_api.settings import Settings
 
@@ -19,11 +21,18 @@ class HealthResponse(BaseModel):
     status: Literal["ok"]
 
 
+def _build_store(settings: Settings) -> ScenarioStore:
+    """Select the ScenarioStore backend the settings ask for (RIS-30)."""
+    if settings.scenario_store_backend == "postgres":
+        return PostgresScenarioStore(session_factory(settings.database_url))
+    return InMemoryScenarioStore()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = Settings()
     app.state.settings = settings
-    app.state.store = ScenarioStore()
+    app.state.store = _build_store(settings)
     app.state.shock_parser = GeminiShockParser.from_settings(settings)
     app.state.rate_limiter = RateLimiter()
     app.state.slider_connections = 0

@@ -38,4 +38,8 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "riskweave_api.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000"]
+# Apply migrations before serving so a fresh Postgres (e.g. docker compose's
+# postgres service) has the scenario/run/snapshot tables RIS-30 needs before
+# the app can use SCENARIO_STORE_BACKEND=postgres. Railway's railway.json
+# start command does the same; this keeps docker compose in parity.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn riskweave_api.main:app --app-dir src --host 0.0.0.0 --port 8000"]
