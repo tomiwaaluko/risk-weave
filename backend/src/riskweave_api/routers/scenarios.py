@@ -67,6 +67,17 @@ class PresetParseResponse(BaseModel):
     scenario: ParsedScenario
 
 
+class FreeformParseResponse(BaseModel):
+    """A freeform NL parse plus the provenance of how it was produced."""
+
+    source: str
+    model_alias: str
+    prompt_version: str
+    attempts: int
+    fallback_reason: str | None
+    scenario: ParsedScenario
+
+
 def _scenario_config_json(req: ScenarioCreateRequest) -> str:
     payload = {
         "scenario_id": req.scenario_id,
@@ -86,8 +97,32 @@ def scenario_templates() -> tuple[ParsedScenario, ...]:
 
 @router.post("/parse", response_model=ParsedScenario)
 def parse_scenario(req: ParseScenarioRequest) -> ParsedScenario:
-    """Parse untrusted natural-language shock text into a reviewable scenario."""
+    """Parse shock text deterministically into a reviewable scenario (no Gemini call)."""
     return parse_shock_text(req.text)
+
+
+@router.post("/parse/live", response_model=FreeformParseResponse)
+def parse_scenario_live(
+    req: ParseScenarioRequest,
+    parser: GeminiShockParser = Depends(get_shock_parser),
+) -> FreeformParseResponse:
+    """Parse untrusted freeform NL shock text via live Gemini Pro (`RW-FR-001`).
+
+    The user's text is treated as data, never instructions (`RW-SEC-003`);
+    magnitudes are echoed verbatim (`RW-AI-010`). Unsupported or malformed input
+    is returned as an INVALID scenario with explained issues (`RW-FR-007`) rather
+    than forced to READY; only a transport/schema integrity failure falls back to
+    the committed deterministic parse.
+    """
+    result = parser.parse_freeform(req.text)
+    return FreeformParseResponse(
+        source=result.source,
+        model_alias=result.model_alias,
+        prompt_version=result.prompt_version,
+        attempts=result.attempts,
+        fallback_reason=result.fallback_reason,
+        scenario=result.scenario,
+    )
 
 
 @router.get("/presets", response_model=list[PresetOut])
