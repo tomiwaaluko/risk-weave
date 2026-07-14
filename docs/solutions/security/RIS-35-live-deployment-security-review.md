@@ -99,15 +99,15 @@ Inspected via the Railway and Vercel MCP integrations (read-only).
   real frontend origin. (`allow_credentials` is not enabled and methods/headers
   are `*`, which is acceptable without credentials; the defect is purely the
   origin pattern.) One-line fix candidate; ticketed for a deliberate change.
-- **`SEC_USER_AGENT` — FINDING F4 (Low):** the code default is the placeholder
-  `RiskWeave contact@example.com`. In the deployed env this var is stored as a
-  masked variable, so its value could not be read via API and could **not** be
-  confirmed to be a real identifying contact. SEC fair-access policy expects a
-  genuine contact; must be verified/replaced in both the backend and ingestion
-  Railway services (RW-DATA-005). The ingestion CLI does require the var to be set
-  (it reads `SEC_USER_AGENT` from the environment and errors if missing), and the
-  SEC client rejects a user agent without an `@` — but the placeholder would pass
-  that check, so a manual dashboard confirmation is required.
+- **`SEC_USER_AGENT` — CONFIRMED (was finding F4, now resolved):** the code
+  default is the placeholder `RiskWeave contact@example.com`, and the deployed
+  value is stored as a masked variable so it could not be read via API. Confirmed
+  manually against the Railway dashboard: the deployed value is
+  `RiskWeave tomiwaaluko02@gmail.com` — a real identifying contact, satisfying SEC
+  fair-access policy (RW-DATA-005). No deployment change needed. Optional code
+  hardening remains (RIS-42): the `settings.py` default is still a placeholder and
+  the `SecClient` accepts an `example.com` address, so a stricter validation could
+  reject obvious placeholders — a nice-to-have, not a live risk.
 - **Exposed ports:** covered in §4 (Neo4j clean; Postgres/Redis exposed → F1/F2).
 
 ### 6. Dependency audit — PASS
@@ -159,7 +159,7 @@ Inspected via the Railway and Vercel MCP integrations (read-only).
 | F1 | High | Postgres publicly reachable via Railway TCP proxy (`:5432`) | New ticket; disable public proxy or restrict, rotate password |
 | F2 | Medium | Redis publicly reachable via Railway TCP proxy (`:6379`), password-set | New ticket; disable public proxy |
 | F3 | Medium | Backend CORS default regex matches no real Vercel origin (`riskweave` vs `risk-weave`); no env override set | New ticket; fix pattern + set explicit `CORS_ALLOW_ORIGIN_REGEX` |
-| F4 | Low | `SEC_USER_AGENT` unverifiable via API; code default is placeholder | New ticket / manual confirm real contact in Railway |
+| F4 | Low | `SEC_USER_AGENT` unverifiable via API; code default is placeholder | **Resolved** — deployed value confirmed a real contact (`RiskWeave tomiwaaluko02@gmail.com`). RIS-42 retained only for optional code hardening |
 
 Passing, no action: history secret scan, client-bundle secret check, log audit,
 Neo4j port exposure, dependency audits (backend + frontend), RW-SEC-002 closure
@@ -170,8 +170,8 @@ Neo4j port exposure, dependency audits (backend + frontend), RW-SEC-002 closure
 - [x] History-wide secret scan run; result recorded (clean; nothing to rotate)
 - [x] Client-bundle inspection shows zero server secrets (`RW-SEC-001`)
 - [x] Log audit shows zero secret-material paths (`RW-SEC-001`)
-- [~] Real `SEC_USER_AGENT` in deployed envs — value is masked from API; **manual
-  dashboard confirmation required** (F4). CORS + exposed-ports review recorded
-  (F1/F2/F3).
+- [x] Real `SEC_USER_AGENT` in deployed envs — confirmed via Railway dashboard
+  (`RiskWeave tomiwaaluko02@gmail.com`, a genuine contact). CORS + exposed-ports
+  review recorded (F1/F2/F3).
 - [x] Dependency audit clean (backend `uv.lock` + frontend `package-lock.json`)
 - [x] RW-SEC-002 closure test exists and passes
