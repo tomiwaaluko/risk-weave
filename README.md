@@ -1,6 +1,8 @@
 # RiskWeave
 
-AI-assisted financial contagion analysis.
+Evidence-backed financial contagion and scenario analysis platform.
+
+RiskWeave turns public financial filings, structured company facts, macroeconomic data, and validated company relationships into an interactive map of how shocks can propagate through the financial system.
 
 Describe a financial shock in natural language. RiskWeave parses it into a structured scenario, propagates impact through a curated knowledge graph with deterministic, data-derived edge weights, and renders an interactive graph with a live severity slider and per-edge evidence.
 
@@ -117,4 +119,4 @@ Never commit API keys, credentials, or sensitive financial data. Keep secrets se
 
 ## License
 
-Private / hackathon project unless otherwise stated.
+Private project unless otherwise stated.
