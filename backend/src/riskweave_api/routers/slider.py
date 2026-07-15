@@ -20,6 +20,7 @@ from pydantic import ValidationError
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
 from riskweave_api.dependencies import _get_redis_direct, _get_store_direct
 from riskweave_api.models import SliderMessage, SliderUpdate
+from riskweave_api.observability.metrics import PROPAGATION_RECOMPUTE, record_latency
 from riskweave_api.security import (
     new_slider_message_bucket,
     release_slider_connection,
@@ -91,6 +92,7 @@ async def slider_ws(scenario_id: str, websocket: WebSocket) -> None:
             t0 = time.perf_counter()
             run_result, latency_ms = store.run(scenario_id, severity)
             total_ms = (time.perf_counter() - t0) * 1000.0
+            record_latency(PROPAGATION_RECOMPUTE, total_ms)
 
             if total_ms > 500:
                 logger.warning(
