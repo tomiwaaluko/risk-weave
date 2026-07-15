@@ -78,7 +78,9 @@ export default function EvaluationDashboard({
                         <span className={chip.cls}>{chip.text}</span>
                       </div>
                       <div className="eval-row-numbers">
-                        <span className="eval-actual">{row.actual_display}</span>
+                        <span className="eval-actual">
+                          {row.actual_display}
+                        </span>
                         <span className="eval-target">
                           target {row.target_display}
                         </span>

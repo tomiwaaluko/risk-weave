@@ -62,9 +62,9 @@ export default function EvaluationPage() {
 
       <main className="evaluation-main">
         <p className="evaluation-intro">
-          Internal quality metrics (spec §15) — computed from committed
-          fixtures and deterministic runs, not hand-entered. This is the &ldquo;not
-          a wrapper&rdquo; view: every number is scored against a target, and any
+          Internal quality metrics (spec §15) — computed from committed fixtures
+          and deterministic runs, not hand-entered. This is the &ldquo;not a
+          wrapper&rdquo; view: every number is scored against a target, and any
           miss is flagged red rather than hidden.
         </p>
 
