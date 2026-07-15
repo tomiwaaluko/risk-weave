@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI, Request
+from sqlalchemy.orm import Session, sessionmaker
 
 from riskweave.explain import ExplanationTransport
 from riskweave.explain.qa import QaToolTransport
 
+from .accounting.service import GeminiAccountingService
 from .extraction.gemini import GeminiRestTransport, GeminiToolTransport
 from .extraction.shock_parser import GeminiShockParser
 from .scenario_store import ScenarioStore
@@ -47,6 +49,14 @@ def get_qa_transport(request: Request) -> QaToolTransport:
 
 def get_shock_parser(request: Request) -> GeminiShockParser:
     return request.app.state.shock_parser
+
+
+def get_accounting(request: Request) -> GeminiAccountingService:
+    return request.app.state.accounting
+
+
+def get_accounting_session_factory(request: Request) -> sessionmaker[Session]:
+    return request.app.state.db_session_factory
 
 
 async def get_redis(request: Request) -> aioredis.Redis | None:

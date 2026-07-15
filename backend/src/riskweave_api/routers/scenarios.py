@@ -25,8 +25,11 @@ from riskweave.explain import (
 from riskweave.scenario import ParsedScenario, ScenarioStatus, list_templates, parse_shock_text
 from riskweave.scenario.presets import get_preset, list_presets
 from riskweave.scenario.validation import validate_scenario as validate_structured_scenario
+from riskweave_api.accounting.service import GeminiAccountingService
 from riskweave_api.cache import get_cached, make_cache_key, set_cached
 from riskweave_api.dependencies import (
+    get_accounting,
+    get_accounting_session_factory,
     get_explanation_transport,
     get_qa_transport,
     get_redis,
@@ -48,6 +51,13 @@ from riskweave_api.models import (
     ScenarioState,
     StructuredNumberOut,
     ToolCallAuditOut,
+)
+from riskweave_api.observability.metrics import (
+    EXPLANATION_GENERATION,
+    PROPAGATION_RECOMPUTE,
+    SCENARIO_PARSE,
+    latency_timer,
+    record_latency,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore, TransitionError
 from riskweave_api.security import default_rate_limit, gemini_rate_limit, require_api_key
@@ -136,7 +146,8 @@ def parse_scenario_live(
     than forced to READY; only a transport/schema integrity failure falls back to
     the committed deterministic parse.
     """
-    result = parser.parse_freeform(req.text)
+    with latency_timer(SCENARIO_PARSE):
+        result = parser.parse_freeform(req.text)
     return FreeformParseResponse(
         source=result.source,
         model_alias=result.model_alias,
@@ -176,7 +187,8 @@ def parse_preset_endpoint(
         preset = get_preset(preset_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="unknown preset") from exc
-    result = parser.parse_preset(preset)
+    with latency_timer(SCENARIO_PARSE):
+        result = parser.parse_preset(preset)
     return PresetParseResponse(
         preset_id=preset_id,
         source=result.source,
@@ -301,6 +313,7 @@ async def run_scenario(
             store.transition(scenario_id, ScenarioState.FAILED)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
+    record_latency(PROPAGATION_RECOMPUTE, latency_ms)
     logger.info(
         "recompute p50 %.1f ms scenario=%s severity=%.2f", latency_ms, scenario_id, body.severity
     )
@@ -418,6 +431,8 @@ def explain_node(
     audience: Audience = Audience.ANALYST,
     store: ScenarioStore = Depends(get_store),
     transport: ExplanationTransport = Depends(get_explanation_transport),
+    accounting: GeminiAccountingService = Depends(get_accounting),
+    accounting_session_factory=Depends(get_accounting_session_factory),
 ) -> ExplanationOut:
     """Generate a guarded, evidence-bound explanation of one node's impact.
 
@@ -454,10 +469,21 @@ def explain_node(
     )
 
     try:
-        generated = generate_node_explanation(context, payload, transport, audience=audience)
+        with latency_timer(EXPLANATION_GENERATION):
+            generated = generate_node_explanation(context, payload, transport, audience=audience)
     except Exception as exc:  # transport/network failure — surface, don't crash the demo
         logger.warning("explanation generation failed for %s/%s: %s", scenario_id, node_id, exc)
         raise HTTPException(status_code=502, detail="explanation provider unavailable") from exc
+
+    # RIS-34 / RW-DATA-005: best-effort accounting, never allowed to break an
+    # already-generated explanation response.
+    accounting.record_best_effort(
+        accounting_session_factory,
+        purpose="explanation",
+        model=generated.model,
+        input_tokens=generated.input_token_count,
+        output_tokens=generated.output_token_count,
+    )
 
     return ExplanationOut(
         node_id=generated.node_id,
@@ -577,6 +603,8 @@ def ask_run_scoped_question(
     req: QaRequest,
     store: ScenarioStore = Depends(get_store),
     transport: QaToolTransport = Depends(get_qa_transport),
+    accounting: GeminiAccountingService = Depends(get_accounting),
+    accounting_session_factory=Depends(get_accounting_session_factory),
 ) -> QaAnswerOut:
     """Answer a free-text question about a run via Gemini tool orchestration.
 
@@ -624,6 +652,15 @@ def ask_run_scoped_question(
         raise HTTPException(status_code=502, detail="Q&A provider unavailable") from exc
 
     store.record_qa_session(answer)
+    # RIS-34 / RW-DATA-005: best-effort accounting, never allowed to break an
+    # already-answered question.
+    accounting.record_best_effort(
+        accounting_session_factory,
+        purpose="qa",
+        model=answer.model,
+        input_tokens=answer.input_token_count,
+        output_tokens=answer.output_token_count,
+    )
     return _qa_answer_to_out(answer)
 
 

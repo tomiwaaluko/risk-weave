@@ -10,7 +10,7 @@ class RateLimiter:
 
     def __init__(
         self,
-        requests_per_second: int,
+        requests_per_second: float,
         *,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
