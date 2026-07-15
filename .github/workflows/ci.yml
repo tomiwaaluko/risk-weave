@@ -60,3 +60,26 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - run: docker compose --env-file .env.example config --quiet
       - run: docker compose --env-file .env.example build backend frontend
+
+  e2e:
+    name: Compose stack end-to-end round-trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      # Boot only the backend and its data dependencies (postgres/neo4j/redis);
+      # the frontend is not needed for the API round-trip. The placeholder
+      # .env.example key is fine — this path is deterministic and never calls
+      # Gemini (RIS-36). No secrets are used, so per-PR CI stays free and fast.
+      - name: Boot the backend stack
+        run: >-
+          docker compose --env-file .env.example up
+          --build --wait --wait-timeout 240 backend
+      - name: Deterministic seed -> run -> hash round-trip
+        run: python3 scripts/e2e_roundtrip.py http://localhost:8000
+      - name: Dump backend logs on failure
+        if: failure()
+        run: docker compose --env-file .env.example logs backend
+      - name: Tear down
+        if: always()
+        run: docker compose --env-file .env.example down -v

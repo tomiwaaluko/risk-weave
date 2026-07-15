@@ -115,6 +115,138 @@ class GeminiRestTransport:
         return text.replace(secret, "***") if secret and secret in text else text
 
 
+class GeminiToolTransport:
+    """Function-calling transport for run-scoped Q&A (RIS-19, `RW-AI-002`).
+
+    Satisfies :class:`riskweave.explain.qa.QaToolTransport`. It renders the
+    abstract Q&A conversation (see ``qa._render_messages``) into Gemini
+    ``contents``, attaches the closed §13.2 registry as ``functionDeclarations``,
+    and normalizes one turn of the response into either a function call
+    (``{"function_call": {"name", "args"}}``) or a final answer
+    (``{"output_text": str}``). It shares the key-redaction hygiene of
+    :class:`GeminiRestTransport`.
+
+    The Pro tier is the spec default for orchestration (`RW-AI-003`); the caller
+    passes ``model`` per turn.
+    """
+
+    def __init__(self, api_key: SecretStr, base_url: str = GEMINI_API_BASE) -> None:
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+
+    def create_tool_interaction(self, **kwargs: object) -> dict[str, object]:
+        model = str(kwargs["model"])
+        messages = kwargs.get("messages")
+        tools = kwargs.get("tools")
+        contents = _render_contents(messages if isinstance(messages, list) else [])
+        body_payload: dict[str, object] = {
+            "contents": contents,
+            "generationConfig": {"temperature": kwargs.get("temperature", 0)},
+        }
+        if isinstance(tools, list) and tools:
+            body_payload["tools"] = [{"functionDeclarations": tools}]
+        body = json.dumps(body_payload).encode()
+        request = urllib.request.Request(
+            f"{self.base_url}/models/{model}:generateContent",
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key.get_secret_value(),
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                raw_response = json.loads(response.read().decode())
+        except urllib.error.HTTPError as exc:
+            detail = self._redact(exc.read().decode(errors="replace"))
+            raise GeminiResponseError(f"Gemini API request failed: {detail}", 1, [detail]) from exc
+        except urllib.error.URLError as exc:
+            detail = self._redact(str(exc.reason))
+            raise GeminiResponseError(f"Gemini API request failed: {detail}", 1, [detail]) from exc
+        return self._parse_turn(raw_response)
+
+    def _parse_turn(self, raw_response: object) -> dict[str, object]:
+        raw = raw_response if isinstance(raw_response, dict) else {}
+        candidates = raw.get("candidates")
+        if not candidates:
+            detail = self._redact(json.dumps(raw.get("promptFeedback")))
+            raise GeminiResponseError(
+                f"Gemini returned no candidates (promptFeedback={detail})", 1, []
+            )
+        parts = candidates[0].get("content", {}).get("parts", [])
+        for part in parts:
+            if isinstance(part, dict) and isinstance(part.get("functionCall"), dict):
+                call = part["functionCall"]
+                args = call.get("args")
+                return {
+                    "function_call": {
+                        "name": str(call.get("name", "")),
+                        "args": args if isinstance(args, dict) else {},
+                    }
+                }
+        output_text = "".join(str(part.get("text", "")) for part in parts if isinstance(part, dict))
+        return {"output_text": output_text}
+
+    def _redact(self, text: str) -> str:
+        secret = self.api_key.get_secret_value()
+        return text.replace(secret, "***") if secret and secret in text else text
+
+
+def _render_contents(messages: list[object]) -> list[dict[str, object]]:
+    """Translate abstract Q&A turns into Gemini ``contents`` role/part records."""
+    contents: list[dict[str, object]] = []
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        kind = message.get("kind")
+        if kind == "user_text":
+            contents.append({"role": "user", "parts": [{"text": str(message.get("text", ""))}]})
+        elif kind == "model_call":
+            contents.append(
+                {
+                    "role": "model",
+                    "parts": [
+                        {
+                            "functionCall": {
+                                "name": str(message.get("name", "")),
+                                "args": message.get("args", {}),
+                            }
+                        }
+                    ],
+                }
+            )
+        elif kind == "tool_result":
+            contents.append(
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "functionResponse": {
+                                "name": str(message.get("name", "")),
+                                "response": message.get("response", {}),
+                            }
+                        }
+                    ],
+                }
+            )
+        elif kind == "tool_error":
+            contents.append(
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "functionResponse": {
+                                "name": str(message.get("name", "")),
+                                "response": {"error": str(message.get("error", ""))},
+                            }
+                        }
+                    ],
+                }
+            )
+    return contents
+
+
 @dataclass(frozen=True)
 class ExtractionResponse:
     payload: RelationshipExtractionBatch | CovenantThresholdExtractionBatch

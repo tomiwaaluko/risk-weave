@@ -31,8 +31,11 @@ from riskweave_api.models import (
     RunRequest,
 )
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore
+from riskweave_api.security import default_rate_limit
 
-router = APIRouter(prefix="/registry", tags=["registry"])
+router = APIRouter(
+    prefix="/registry", tags=["registry"], dependencies=[Depends(default_rate_limit)]
+)
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
@@ -76,7 +79,7 @@ def resolve_entity(
             )
 
     query = req.query.strip().lower()
-    for snapshot in store._snapshots.values():
+    for snapshot in store.list_snapshots():
         for node in snapshot.nodes:
             if node.name.lower().startswith(query) or query in node.name.lower():
                 return ResolveEntityResponse(
@@ -123,7 +126,7 @@ async def run_scenario_registry(
 ) -> PropagateShockResponse:
     """Run a registered scenario and return the propagation result."""
     try:
-        run_result, _ = store.run(scenario_id, body.severity)
+        run_result, _ = store.run_and_record(scenario_id, body.severity)
     except NotFoundError as exc:
         raise HTTPException(status_code=404, detail="scenario not found") from exc
     return PropagateShockResponse(result=run_result)

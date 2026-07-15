@@ -87,6 +87,20 @@ class RunRequest(BaseModel):
     severity: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class RunSummaryOut(BaseModel):
+    """One persisted run's audit metadata, without the full result payload."""
+
+    run_id: int
+    scenario_id: str
+    snapshot_id: str
+    graph_version: str
+    engine_version: str
+    seed: int
+    severity: float
+    latency_ms: float
+    created_at: str
+
+
 # ---------------------------------------------------------------------------
 # Propagation results
 # ---------------------------------------------------------------------------
@@ -166,12 +180,64 @@ class ExplanationOut(BaseModel):
 
     node_id: str
     node_name: str
+    audience: str
     prose: str | None
     used_fallback: bool
     attempts: int
     guard_violations: list[str]
     citations: list[CitationOut]
     structured_numbers: list[StructuredNumberOut]
+    model: str
+
+
+# ---------------------------------------------------------------------------
+# Run-scoped Q&A (RIS-19, RW-FR-024, RW-AI-002)
+# ---------------------------------------------------------------------------
+
+
+class QaRequest(BaseModel):
+    """A run-scoped question about a completed scenario run."""
+
+    question: str = Field(..., min_length=1)
+    severity: float = Field(default=1.0, ge=0.0, le=1.0)
+    audience: str = "analyst"
+
+
+class ToolCallAuditOut(BaseModel):
+    """One entry of the per-session tool-call audit log (`RW-FR-024`).
+
+    ``status`` is ``ok`` for an executed §13.2 tool, or ``unknown_tool`` /
+    ``invalid_args`` for a call refused server-side (`RW-SEC-002`).
+    """
+
+    tool_name: str
+    args: dict[str, Any]
+    result_hash: str
+    status: str
+    timestamp: str
+
+
+class QaAnswerOut(BaseModel):
+    """A guarded run-scoped Q&A answer, or an explicit withholding.
+
+    ``answer`` is present only when the generated text passed the same numeric
+    containment + citation guard as explanations (`RW-AI-011`). When it could not
+    be grounded, ``withheld`` is True, ``answer`` is null, and ``reason`` /
+    ``guard_violations`` explain why — the unsupported prose is never returned.
+    ``audit`` captures every tool call (executed or refused) for the session.
+    """
+
+    session_id: str
+    question: str
+    audience: str
+    answer: str | None
+    withheld: bool
+    reason: str | None
+    citations: list[CitationOut]
+    audit: list[ToolCallAuditOut]
+    tool_call_count: int
+    answer_attempts: int
+    guard_violations: list[str]
     model: str
 
 

@@ -1,0 +1,71 @@
+# Scheduled, out-of-band coverage for the live Gemini transport (RIS-36).
+#
+# The gated smokes in backend/tests/test_gemini_live.py call the real Gemini API
+# and are deselected from per-PR CI (which stays fast, free, and hermetic). ADR-006
+# warns that model aliases churn, so without this a breaking Gemini change would
+# surface in the demo, not in CI. This job runs the smokes weekly and on demand,
+# and opens/updates a tracking issue when they fail.
+name: Gemini live smokes
+
+on:
+  schedule:
+    # Weekly, Mondays 09:17 UTC (off the top of the hour to dodge scheduler load).
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write # open/update a tracking issue on failure
+
+concurrency:
+  group: gemini-live
+  cancel-in-progress: false
+
+jobs:
+  live-smokes:
+    name: Live Gemini transport smokes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.20"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - run: uv sync --frozen --dev
+      - name: Warn if the Gemini secret is unset
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::warning::GEMINI_API_KEY secret is not configured; the live smokes will auto-skip."
+          fi
+      # The key is passed only through the environment and consumed inside the
+      # client; it is never echoed (RW-SEC-001/004). GitHub also masks the secret
+      # value in logs. -rs surfaces skip reasons so an all-skip run is visible.
+      - name: Run gated live Gemini smokes
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: uv run pytest -m live_gemini -rs
+      - name: Open or update a failure tracking issue
+        if: failure()
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Gemini live smokes failing"
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body="The scheduled Gemini live smoke workflow failed. This usually means the live Gemini transport or a model alias (ADR-006) broke. Run: $run_url"
+          existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi

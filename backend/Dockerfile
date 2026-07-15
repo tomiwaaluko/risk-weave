@@ -29,10 +29,17 @@ COPY backend/riskweave ./riskweave
 COPY backend/alembic ./alembic
 COPY backend/alembic.ini ./alembic.ini
 COPY data/universe ./data/universe
+# The committed CRE demo fixture backs /graph/seed; the loader resolves it at
+# /app/data/fixtures/cre_graph.json, so it must ship in the image (RW-NFR-005).
+COPY backend/data/fixtures ./data/fixtures
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "riskweave_api.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000"]
+# Apply migrations before serving so a fresh Postgres (e.g. docker compose's
+# postgres service) has the scenario/run/snapshot tables RIS-30 needs before
+# the app can use SCENARIO_STORE_BACKEND=postgres. Railway's railway.json
+# start command does the same; this keeps docker compose in parity.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn riskweave_api.main:app --app-dir src --host 0.0.0.0 --port 8000"]

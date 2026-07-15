@@ -32,6 +32,7 @@ from riskweave.graph.fixture import load_graph_fixture
 from riskweave_api.dependencies import get_store
 from riskweave_api.models import ScenarioCreateRequest, ScenarioState, ShockFactorIn
 from riskweave_api.scenario_store import ScenarioStore
+from riskweave_api.security import default_rate_limit, require_api_key
 
 router = APIRouter(prefix="/graph", tags=["graph"])
 StoreDependency = Annotated[ScenarioStore, Depends(get_store)]
@@ -229,7 +230,12 @@ def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
 # ---------------------------------------------------------------------------
 
 
-@router.post("/seed", response_model=GraphSeedResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/seed",
+    response_model=GraphSeedResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
 def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     """Load the CRE fixture graph and register it as a runnable demo scenario.
 
@@ -247,9 +253,7 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
 
     # Overwrite any previous demo scenario so re-seeding is idempotent.
-    with store._lock:
-        store._records.pop(GRAPH_SCENARIO_ID, None)
-        store._configs.pop(GRAPH_SCENARIO_ID, None)
+    store.delete_scenario(GRAPH_SCENARIO_ID)
 
     req = ScenarioCreateRequest(
         scenario_id=GRAPH_SCENARIO_ID,
@@ -268,7 +272,11 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     return _serialize_graph(graph)
 
 
-@router.get("/methodology", response_model=MethodologyResponse)
+@router.get(
+    "/methodology",
+    response_model=MethodologyResponse,
+    dependencies=[Depends(default_rate_limit)],
+)
 def get_methodology() -> MethodologyResponse:
     """Human-readable derivation methods + data-source honesty notes.
 

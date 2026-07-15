@@ -5,8 +5,8 @@
   flex-direction: column;
   min-height: 100vh;
   background: #0f172a;
-  color: #e2e8f0;
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  color: var(--rw-text);
+  font-family: var(--rw-font-sans);
 }
 
 .methodology-body {
@@ -30,7 +30,7 @@
 .methodology-h2 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--rw-text-hi);
   margin: 0 0 0.75rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
@@ -57,14 +57,14 @@
 }
 
 .method-version {
-  color: #64748b;
+  color: var(--rw-text-muted);
   font-size: 0.68rem;
 }
 
 .method-card-name {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--rw-text-hi);
   margin: 0 0 0.4rem;
 }
 
@@ -77,7 +77,7 @@
 
 .method-card-source {
   font-size: 0.68rem;
-  color: #94a3b8;
+  color: var(--rw-text-dim);
   margin: 0;
 }
 
@@ -93,10 +93,10 @@
 }
 
 .methodology-list.limitations li {
-  color: #e2e8f0;
+  color: var(--rw-text);
 }
 
 .spike-error-inline {
-  color: #ef4444;
+  color: var(--rw-red);
   font-size: 0.8rem;
 }

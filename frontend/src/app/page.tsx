@@ -10,9 +10,16 @@ import { useLiveSlider } from "./graph/useLiveSlider";
 import type { SelectedElement, SpikeSeedResponse } from "./spike/types";
 import { EvidenceWorkbench } from "./workbench";
 import { ShockParserPanel } from "./ShockParserPanel";
+import { FreeformShockPanel } from "./FreeformShockPanel";
+import "./styles.css";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+// REST calls route through the same-origin proxy so the server-side
+// RISKWEAVE_API_KEY (RIS-31 / ADR-010) never reaches the client bundle. The
+// WebSocket slider stays on the direct backend URL above (unauthenticated,
+// rate/connection-capped — see ADR-010).
+const PROXY_BASE = "/api/backend";
 const DEFAULT_SCENARIO =
   "Commercial real-estate values fall 20%, refinancing rates rise 150 basis points, stress persists six quarters.";
 
@@ -30,7 +37,7 @@ export default function Home() {
     setState("loading");
     setError(null);
     try {
-      const response = await fetch(`${BACKEND_URL}/spike/seed`, {
+      const response = await fetch(`${PROXY_BASE}/spike/seed`, {
         method: "POST",
       });
       if (!response.ok)
@@ -203,7 +210,8 @@ export default function Home() {
           <span>REPLAY + PROVENANCE DRILLDOWN</span>
         </div>
         <div className="terminal-aux__body">
-          <ShockParserPanel />
+          <FreeformShockPanel backendUrl={PROXY_BASE} />
+          <ShockParserPanel backendUrl={PROXY_BASE} />
           <EvidenceWorkbench />
         </div>
       </section>

@@ -63,6 +63,9 @@ services:
       REDIS_URL: ${REDIS_URL}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       RISKWEAVE_UNIVERSE_PATH: /app/data/universe/entities.json
+      # RIS-30: the local stack has a real Postgres, so persist scenarios/runs
+      # there instead of the in-memory fixture backend.
+      SCENARIO_STORE_BACKEND: postgres
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
