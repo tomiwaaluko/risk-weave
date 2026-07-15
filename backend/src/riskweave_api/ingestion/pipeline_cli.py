@@ -27,14 +27,20 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 import time
 
+from pydantic import SecretStr
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from riskweave.graph.build_live import assemble_live_from_db, resolve_snapshot
-from riskweave_api.extraction.gemini import GeminiExtractionClient, GeminiResponseError
+from riskweave_api.extraction.gemini import (
+    GeminiExtractionClient,
+    GeminiResponseError,
+    GeminiRestTransport,
+)
 from riskweave_api.extraction.service import ExtractionService, OffsetMismatchError
 from riskweave_api.ingestion.database import session_factory
 from riskweave_api.ingestion.models import (
@@ -44,9 +50,15 @@ from riskweave_api.ingestion.models import (
     RelationshipExtraction,
     SnapshotMember,
 )
-from riskweave_api.settings import Settings
 
 logger = logging.getLogger("riskweave_api.pipeline")
+
+
+def _require_env(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        raise SystemExit(f"{name} is required for this command")
+    return value
 
 
 def _snapshot_chunk_ids(session: Session, snapshot_id: int) -> list[int]:
@@ -90,8 +102,8 @@ def _diagnose(session: Session, snapshot_id: int) -> int:
 
 
 def _extract(session: Session, snapshot_id: int, limit: int | None) -> int:
-    settings = Settings()
-    client = GeminiExtractionClient.from_settings(settings)
+    api_key = SecretStr(_require_env("GEMINI_API_KEY"))
+    client = GeminiExtractionClient(GeminiRestTransport(api_key), api_key=api_key)
     service = ExtractionService(session, client)
 
     snapshot = resolve_snapshot(session, snapshot_id=snapshot_id)
@@ -175,8 +187,8 @@ def main(argv: list[str] | None = None) -> int:
         stream=sys.stderr,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
-    settings = Settings()
-    with session_factory(settings.database_url)() as session:
+    database_url = _require_env("DATABASE_URL")
+    with session_factory(database_url)() as session:
         if args.command == "diagnose":
             return _diagnose(session, args.snapshot_id)
         if args.command == "extract":
