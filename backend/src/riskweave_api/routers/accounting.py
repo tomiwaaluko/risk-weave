@@ -103,5 +103,5 @@ def latest_provider_usage(
         return ProviderUsage(ingestion_run_id=None, provider_usage={})
     return ProviderUsage(
         ingestion_run_id=run.id,
-        provider_usage=run.metadata_json.get("provider_usage", {}),
+        provider_usage=(run.metadata_json or {}).get("provider_usage", {}),
     )

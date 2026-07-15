@@ -8,9 +8,10 @@ import type {
 } from "./types";
 import "../spike/styles.css";
 
-// RIS-34: provider cost/quota accounting panel. RIS-21's evaluation-dashboard
-// shell has not landed yet, so this stands alone for now; it is built to be
-// dropped into that dashboard as a panel once it exists.
+// RIS-34 / RW-DATA-005 / RW-AI-003: provider cost/quota accounting panel.
+// RIS-21's evaluation-dashboard shell has not landed yet, so this stands
+// alone for now; it is built to be dropped into that dashboard as a panel
+// once it exists.
 const PROXY_BASE = "/api/backend";
 
 export default function AccountingPage() {

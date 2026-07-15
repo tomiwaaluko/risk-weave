@@ -230,6 +230,42 @@ def test_extraction_service_refuses_further_calls_past_hard_budget() -> None:
         assert transport.calls == 0
 
 
+def test_extraction_service_snapshot_batch_halts_gracefully_past_hard_budget() -> None:
+    class _FixedTransport:
+        def create_interaction(self, **kwargs: object) -> dict[str, object]:
+            return {
+                "output_text": '{"relationships": []}',
+                "usage": {"input_tokens": 1_000_000, "output_tokens": 0},
+            }
+
+    accounting = GeminiAccountingService(
+        soft_daily_budget_usd=Decimal("5"), hard_daily_budget_usd=Decimal("0.075")
+    )
+    with _session() as session:
+        snapshot, chunk = _seed_snapshot(session)
+        second_chunk = DocumentChunk(
+            document_id=chunk.document_id,
+            ordinal=1,
+            text="No disclosed relationships here.",
+            char_start=200,
+            char_end=232,
+            overlap_start=None,
+            overlap_end=None,
+            content_hash="second-chunk-hash",
+        )
+        session.add(second_chunk)
+        session.flush()
+        client = GeminiExtractionClient(_FixedTransport())
+        service = ExtractionService(session, client=client, accounting=accounting)
+        # Must not raise: the batch halts gracefully once the first chunk's
+        # billed call reaches the hard threshold, instead of crashing the loop.
+        result = service.extract_relationships_for_snapshot(snapshot.id)
+        assert result.inserted == 0
+        # Only the first chunk was ever billed; the second was refused before
+        # any Gemini call was made.
+        assert session.query(GeminiUsageRecord).count() == 1
+
+
 def test_extraction_service_records_usage_after_a_successful_call() -> None:
     class _FixedTransport:
         def create_interaction(self, **kwargs: object) -> dict[str, object]:

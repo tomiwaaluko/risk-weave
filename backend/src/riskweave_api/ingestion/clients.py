@@ -107,7 +107,7 @@ class FredClient:
             raise ValueError("FRED_API_KEY is required")
         self._api_key = api_key
         self._rate_limit_requests_per_minute = rate_limit_requests_per_minute
-        self._limiter = limiter or RateLimiter(max(1, rate_limit_requests_per_minute / 60))
+        self._limiter = limiter or RateLimiter(rate_limit_requests_per_minute / 60)
         self._request_count = 0
 
     def _get(self, path: str, **params: str) -> dict[str, Any]:

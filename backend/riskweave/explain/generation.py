@@ -370,7 +370,7 @@ def generate_node_explanation(
 def _accumulate_usage(
     response: dict[str, object], input_total: int | None, output_total: int | None
 ) -> tuple[int | None, int | None]:
-    """Sum token usage across retries — every attempt is a real billed call (RIS-34)."""
+    """Sum token usage across retries (RIS-34, `RW-AI-003`) — every attempt bills."""
     usage = response.get("usage")
     if not isinstance(usage, dict):
         return input_total, output_total

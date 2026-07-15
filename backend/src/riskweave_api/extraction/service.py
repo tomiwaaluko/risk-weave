@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from riskweave_api.accounting.service import GeminiAccountingService
+from riskweave_api.accounting.service import BudgetExceededError, GeminiAccountingService
 from riskweave_api.ingestion.models import (
     CovenantThresholdExtraction,
     Document,
@@ -30,6 +31,8 @@ from .schemas import (
     CovenantThresholdExtractionBatch,
     RelationshipExtractionBatch,
 )
+
+logger = logging.getLogger("riskweave_api.extraction")
 
 
 class OffsetMismatchError(ValueError):
@@ -71,9 +74,10 @@ class ExtractionService:
             return ExtractionResult(inserted=0, skipped_existing=True)
         if self.client is None:
             raise RuntimeError("Gemini client is required for extraction")
-        # RIS-34: refuse to start further extraction calls once the hard daily
-        # budget is hit; the run stays "running" so a later invocation resumes
-        # it (`_get_or_create_run` only skips "completed" runs).
+        # RIS-34 / RW-AI-003: refuse to start further extraction calls once the
+        # hard daily budget is hit; the run stays "running" so a later
+        # invocation resumes it (`_get_or_create_run` only skips "completed"
+        # runs).
         if self.accounting is not None:
             self.accounting.check_budget_or_raise(self.session, purpose="extraction")
         chunk = self._chunk(chunk_id)
@@ -117,7 +121,14 @@ class ExtractionService:
         inserted = 0
         skipped_existing = 0
         for chunk_id in chunk_ids:
-            result = self.extract_relationships_for_chunk(snapshot_id, chunk_id)
+            try:
+                result = self.extract_relationships_for_chunk(snapshot_id, chunk_id)
+            except BudgetExceededError as exc:
+                # Halt gracefully so the caller can commit the chunks already
+                # completed above; the next invocation resumes at this chunk
+                # (`_get_or_create_run` only skips "completed" runs).
+                logger.warning("relationship extraction batch paused: %s", exc)
+                break
             inserted += result.inserted
             skipped_existing += int(result.skipped_existing)
         return BatchExtractionResult(
@@ -176,7 +187,11 @@ class ExtractionService:
         inserted = 0
         skipped_existing = 0
         for chunk_id in chunk_ids:
-            result = self.extract_covenants_for_chunk(snapshot_id, chunk_id)
+            try:
+                result = self.extract_covenants_for_chunk(snapshot_id, chunk_id)
+            except BudgetExceededError as exc:
+                logger.warning("covenant extraction batch paused: %s", exc)
+                break
             inserted += result.inserted
             skipped_existing += int(result.skipped_existing)
         return BatchExtractionResult(

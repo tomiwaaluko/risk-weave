@@ -205,10 +205,11 @@ class GeminiShockParser:
         )
 
     def _record_usage(self, response: dict[str, object]) -> None:
-        """Best-effort accounting for one live parse call (RIS-34, purpose="shock_parse").
+        """Best-effort accounting for one live parse call, purpose="shock_parse".
 
-        Never raises: an accounting hiccup must not break the interactive
-        shock-parsing path (reliable demo behavior outranks cost, spec §0.4).
+        RIS-34, `RW-DATA-005`. Never raises: an accounting hiccup must not
+        break the interactive shock-parsing path (reliable demo behavior
+        outranks cost, spec §0.4).
         """
         if self.accounting is None or self.accounting_session_factory is None:
             return

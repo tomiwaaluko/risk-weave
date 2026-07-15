@@ -1,4 +1,4 @@
-"""Provider cost/quota accounting persistence and rollups (RIS-34)."""
+"""Provider cost/quota accounting persistence and rollups (RIS-34, `RW-DATA-005`, `RW-AI-003`)."""
 
 from .models import GeminiUsageRecord
 from .service import (

@@ -1,4 +1,7 @@
-"""Gemini call accounting: per-call logging, daily rollups, budget gating (RIS-34)."""
+"""Gemini call accounting: per-call logging, daily rollups, budget gating.
+
+RIS-34, `RW-DATA-005`, `RW-AI-003`.
+"""
 
 from __future__ import annotations
 

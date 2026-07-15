@@ -464,8 +464,8 @@ def explain_node(
         logger.warning("explanation generation failed for %s/%s: %s", scenario_id, node_id, exc)
         raise HTTPException(status_code=502, detail="explanation provider unavailable") from exc
 
-    # RIS-34: best-effort accounting, never allowed to break an already-generated
-    # explanation response.
+    # RIS-34 / RW-DATA-005: best-effort accounting, never allowed to break an
+    # already-generated explanation response.
     accounting.record_best_effort(
         accounting_session_factory,
         purpose="explanation",
@@ -641,8 +641,8 @@ def ask_run_scoped_question(
         raise HTTPException(status_code=502, detail="Q&A provider unavailable") from exc
 
     store.record_qa_session(answer)
-    # RIS-34: best-effort accounting, never allowed to break an already-answered
-    # question.
+    # RIS-34 / RW-DATA-005: best-effort accounting, never allowed to break an
+    # already-answered question.
     accounting.record_best_effort(
         accounting_session_factory,
         purpose="qa",

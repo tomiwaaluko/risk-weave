@@ -1,12 +1,12 @@
-"""Estimate the Gemini cost of a full-extraction batch before running it (RIS-34).
+"""Estimate the Gemini cost of a full-extraction batch before running it.
 
-RIS-28 wires up the live pipeline's bulk extraction over the full chunk corpus
-(22,384 chunks at time of writing) — the single largest planned Gemini spend.
-This is a pre-execution estimate only: it multiplies the *measured* average
-chunk size by the registered per-model pricing (`riskweave.accounting.pricing`)
-to bound the expected cost before the batch runs, per RIS-34's acceptance
-criterion. It never substitutes for the real per-call accounting that RIS-28's
-run will produce (`gemini_usage_records`).
+RIS-34, `RW-AI-003`. RIS-28 wires up the live pipeline's bulk extraction over
+the full chunk corpus (22,384 chunks at time of writing) — the single largest
+planned Gemini spend. This is a pre-execution estimate only: it multiplies the
+*measured* average chunk size by the registered per-model pricing
+(`riskweave.accounting.pricing`) to bound the expected cost before the batch
+runs, per RIS-34's acceptance criterion. It never substitutes for the real
+per-call accounting that RIS-28's run will produce (`gemini_usage_records`).
 
 Assumptions (documented, not hidden):
 * Two Flash calls per chunk (relationship extraction + covenant extraction).

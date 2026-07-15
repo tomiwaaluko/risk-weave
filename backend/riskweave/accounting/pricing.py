@@ -1,4 +1,4 @@
-"""Deterministic Gemini cost estimation (RIS-34).
+"""Deterministic Gemini cost estimation (RIS-34, `RW-AI-003`).
 
 This module only turns already-measured token counts into a dollar figure; it
 never estimates or adjusts a token count itself (that stays in `.gemini`'s

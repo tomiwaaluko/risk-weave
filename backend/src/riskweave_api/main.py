@@ -35,9 +35,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = Settings()
     app.state.settings = settings
     app.state.store = _build_store(settings)
-    # RIS-34: DATABASE_URL is always configured, independent of the
-    # scenario-store backend, so Gemini cost accounting always has somewhere
-    # to write regardless of "memory" vs "postgres" scenario storage.
+    # RIS-34 / RW-DATA-005: DATABASE_URL is always configured, independent of
+    # the scenario-store backend, so Gemini cost accounting always has
+    # somewhere to write regardless of "memory" vs "postgres" scenario storage.
     app.state.db_session_factory = session_factory(settings.database_url)
     app.state.accounting = GeminiAccountingService(
         soft_daily_budget_usd=Decimal(str(settings.gemini_daily_soft_budget_usd)),
