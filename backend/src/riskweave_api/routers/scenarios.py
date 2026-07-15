@@ -52,6 +52,13 @@ from riskweave_api.models import (
     StructuredNumberOut,
     ToolCallAuditOut,
 )
+from riskweave_api.observability.metrics import (
+    EXPLANATION_GENERATION,
+    PROPAGATION_RECOMPUTE,
+    SCENARIO_PARSE,
+    latency_timer,
+    record_latency,
+)
 from riskweave_api.scenario_store import NotFoundError, ScenarioStore, TransitionError
 from riskweave_api.security import default_rate_limit, gemini_rate_limit, require_api_key
 
@@ -139,7 +146,8 @@ def parse_scenario_live(
     than forced to READY; only a transport/schema integrity failure falls back to
     the committed deterministic parse.
     """
-    result = parser.parse_freeform(req.text)
+    with latency_timer(SCENARIO_PARSE):
+        result = parser.parse_freeform(req.text)
     return FreeformParseResponse(
         source=result.source,
         model_alias=result.model_alias,
@@ -179,7 +187,8 @@ def parse_preset_endpoint(
         preset = get_preset(preset_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="unknown preset") from exc
-    result = parser.parse_preset(preset)
+    with latency_timer(SCENARIO_PARSE):
+        result = parser.parse_preset(preset)
     return PresetParseResponse(
         preset_id=preset_id,
         source=result.source,
@@ -304,6 +313,7 @@ async def run_scenario(
             store.transition(scenario_id, ScenarioState.FAILED)
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
+    record_latency(PROPAGATION_RECOMPUTE, latency_ms)
     logger.info(
         "recompute p50 %.1f ms scenario=%s severity=%.2f", latency_ms, scenario_id, body.severity
     )
@@ -459,7 +469,8 @@ def explain_node(
     )
 
     try:
-        generated = generate_node_explanation(context, payload, transport, audience=audience)
+        with latency_timer(EXPLANATION_GENERATION):
+            generated = generate_node_explanation(context, payload, transport, audience=audience)
     except Exception as exc:  # transport/network failure — surface, don't crash the demo
         logger.warning("explanation generation failed for %s/%s: %s", scenario_id, node_id, exc)
         raise HTTPException(status_code=502, detail="explanation provider unavailable") from exc
