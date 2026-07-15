@@ -17,12 +17,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from riskweave.graph.build_live import resolve_snapshot
-from riskweave_api.extraction.gemini import (
-    GeminiExtractionClient,
-    GeminiResponseError,
-    GeminiRestTransport,
-)
-from riskweave_api.extraction.service import ExtractionService, OffsetMismatchError
+from riskweave_api.extraction.gemini import GeminiExtractionClient, GeminiRestTransport
+from riskweave_api.extraction.service import ExtractionService
 from riskweave_api.ingestion.models import (
     Document,
     DocumentChunk,
@@ -133,11 +129,17 @@ def run_extraction(
             result = service.extract_relationships_for_chunk(snapshot.id, chunk_id)
             state.inserted += result.inserted
             state.skipped += int(result.skipped_existing)
-        except (GeminiResponseError, OffsetMismatchError) as exc:
+            session.commit()
+        except Exception as exc:
+            # A batch over tens of thousands of chunks must survive per-chunk
+            # failures — a transient Gemini 503/timeout, a schema-invalid
+            # response, an offset mismatch — without aborting the whole run.
+            # The chunk is left un-``completed`` so a re-run retries it
+            # (resumable); progress on prior chunks is already committed.
+            session.rollback()
             state.failed += 1
             state.last_error = f"chunk {chunk_id}: {type(exc).__name__}: {exc}"
             logger.warning("extraction chunk %s failed: %s", chunk_id, exc)
-        session.commit()
         state.processed += 1
         if progress is not None:
             progress(state)
