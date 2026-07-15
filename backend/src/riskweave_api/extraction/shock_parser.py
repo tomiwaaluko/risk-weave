@@ -32,6 +32,7 @@ from typing import Literal
 from uuid import NAMESPACE_URL, uuid5
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from sqlalchemy.orm import Session, sessionmaker
 
 from riskweave.scenario.catalog import (
     GEMINI_PRO_MODEL_ALIAS,
@@ -49,6 +50,7 @@ from riskweave.scenario.models import (
 from riskweave.scenario.parser import PROMPT_INJECTION_MARKERS, parse_shock_text
 from riskweave.scenario.presets import ShockPreset, preset_fallback
 from riskweave.scenario.validation import validate_scenario
+from riskweave_api.accounting.service import GeminiAccountingService
 from riskweave_api.settings import Settings
 
 from .gemini import (
@@ -175,6 +177,8 @@ class GeminiShockParser:
         model: str = GEMINI_PARSING_MODEL,
         max_attempts: int = 2,
         as_of_date: date = date(2026, 7, 11),
+        accounting: GeminiAccountingService | None = None,
+        accounting_session_factory: sessionmaker[Session] | None = None,
     ) -> None:
         if max_attempts < 1:
             raise ValueError("max_attempts must be positive")
@@ -182,12 +186,43 @@ class GeminiShockParser:
         self.model = model
         self.max_attempts = max_attempts
         self.as_of_date = as_of_date
+        self.accounting = accounting
+        self.accounting_session_factory = accounting_session_factory
 
     @classmethod
     def from_settings(
-        cls, settings: Settings, transport: GeminiTransport | None = None
+        cls,
+        settings: Settings,
+        transport: GeminiTransport | None = None,
+        *,
+        accounting: GeminiAccountingService | None = None,
+        accounting_session_factory: sessionmaker[Session] | None = None,
     ) -> GeminiShockParser:
-        return cls(transport or GeminiRestTransport(settings.gemini_api_key))
+        return cls(
+            transport or GeminiRestTransport(settings.gemini_api_key),
+            accounting=accounting,
+            accounting_session_factory=accounting_session_factory,
+        )
+
+    def _record_usage(self, response: dict[str, object]) -> None:
+        """Best-effort accounting for one live parse call, purpose="shock_parse".
+
+        RIS-34, `RW-DATA-005`. Never raises: an accounting hiccup must not
+        break the interactive shock-parsing path (reliable demo behavior
+        outranks cost, spec §0.4).
+        """
+        if self.accounting is None or self.accounting_session_factory is None:
+            return
+        usage = response.get("usage")
+        input_tokens = usage.get("input_tokens") if isinstance(usage, dict) else None
+        output_tokens = usage.get("output_tokens") if isinstance(usage, dict) else None
+        self.accounting.record_best_effort(
+            self.accounting_session_factory,
+            purpose="shock_parse",
+            model=self.model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+        )
 
     def parse_preset(self, preset: ShockPreset) -> ShockParseResult:
         """Parse a preset, falling back to the committed pre-parse on any failure."""
@@ -230,6 +265,7 @@ class GeminiShockParser:
             except GeminiResponseError as exc:
                 failures.append(str(exc))
                 continue
+            self._record_usage(response)
             output_text = str(response.get("output_text", ""))
             try:
                 extraction = ShockParseExtraction.model_validate_json(output_text)
@@ -367,6 +403,7 @@ class GeminiShockParser:
             except GeminiResponseError as exc:
                 failures.append(str(exc))
                 continue
+            self._record_usage(response)
             output_text = str(response.get("output_text", ""))
             try:
                 extraction = FreeformParseExtraction.model_validate_json(output_text)

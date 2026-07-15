@@ -79,6 +79,18 @@ class IngestionService:
                 "macro_series": self._count(MacroSeries),
                 "macro_observations": self._count(MacroObservation),
             }
+            # RIS-34 / RW-DATA-005: record what was actually sent against each
+            # provider's documented fair-use ceiling, so respecting those terms
+            # is provable from the run record rather than only enforced in code.
+            provider_usage = {
+                "sec_edgar": self.sec.usage_stats(),
+                "fred": self.fred.usage_stats(),
+            }
+            logger.info(
+                "provider usage sec=%s fred=%s",
+                provider_usage["sec_edgar"],
+                provider_usage["fred"],
+            )
             run = self.session.get(IngestionRun, run_id)
             run.status = "completed"
             run.completed_at = datetime.now(UTC)
@@ -86,6 +98,7 @@ class IngestionService:
                 "members": len(members),
                 "snapshot_id": snapshot_id,
                 "counts": counts,
+                "provider_usage": provider_usage,
             }
             self.session.commit()
             return {
@@ -93,6 +106,7 @@ class IngestionService:
                 "manifest_hash": manifest_hash,
                 "members": len(members),
                 "counts": counts,
+                "provider_usage": provider_usage,
             }
         except Exception:
             self.session.rollback()

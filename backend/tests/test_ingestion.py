@@ -93,6 +93,9 @@ class _FakeFred:
     def __init__(self, realtime: str = "2026-07-11") -> None:
         self.realtime = realtime
 
+    def usage_stats(self) -> dict:
+        return {"provider": "fred", "request_count": 0, "rate_limit_requests_per_minute": 120}
+
     def series(self, series_id: str) -> dict:
         return {
             "seriess": [
@@ -139,6 +142,14 @@ def test_fred_skips_missing_values_and_ignores_request_time_envelope() -> None:
 
 
 class _FakeSec:
+    def usage_stats(self) -> dict:
+        return {
+            "provider": "sec_edgar",
+            "user_agent": "RiskWeave test@example.com",
+            "request_count": 0,
+            "fair_use_requests_per_second": 10,
+        }
+
     def submissions(self, cik: str) -> dict:
         accessions = [f"{int(cik):010d}-24-{index:06d}" for index in range(1, 4)]
         return {

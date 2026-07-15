@@ -39,6 +39,8 @@ def main() -> int:
     sec_user_agent = os.environ.get("SEC_USER_AGENT")
     if not database_url or not fred_key or not sec_user_agent:
         parser.error("DATABASE_URL, FRED_API_KEY, and SEC_USER_AGENT are required")
+    sec_fair_use_rps = int(os.environ.get("SEC_FAIR_USE_REQUESTS_PER_SECOND", "10"))
+    fred_rate_limit_rpm = int(os.environ.get("FRED_RATE_LIMIT_REQUESTS_PER_MINUTE", "120"))
     alembic_ini = os.environ.get("RISKWEAVE_ALEMBIC_INI", str(REPO_ROOT / "backend/alembic.ini"))
     config = Config(alembic_ini)
     config.set_main_option(
@@ -50,7 +52,9 @@ def main() -> int:
     started = time.monotonic()
     try:
         with session_factory(database_url)() as session:
-            result = IngestionService(session, SecClient(sec_user_agent), FredClient(fred_key)).run(
+            sec_client = SecClient(sec_user_agent, fair_use_requests_per_second=sec_fair_use_rps)
+            fred_client = FredClient(fred_key, rate_limit_requests_per_minute=fred_rate_limit_rpm)
+            result = IngestionService(session, sec_client, fred_client).run(
                 args.universe, args.snapshot
             )
     except ProviderError as exc:

@@ -2,6 +2,7 @@ import logging
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from decimal import Decimal
 from typing import Literal
 
 import redis.asyncio as aioredis
@@ -10,12 +11,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from riskweave_api.accounting.service import GeminiAccountingService
 from riskweave_api.extraction.shock_parser import GeminiShockParser
 from riskweave_api.ingestion.database import session_factory
 from riskweave_api.observability import configure_logging, scrub_secrets
 from riskweave_api.observability.middleware import StructuredLoggingMiddleware
 from riskweave_api.postgres_scenario_store import PostgresScenarioStore
-from riskweave_api.routers import graph, observability, registry, scenarios, slider, spike
+from riskweave_api.routers import (
+    accounting,
+    graph,
+    observability,
+    registry,
+    scenarios,
+    slider,
+    spike,
+)
 from riskweave_api.scenario_store import InMemoryScenarioStore, ScenarioStore
 from riskweave_api.security import RateLimiter
 from riskweave_api.settings import Settings
@@ -64,7 +74,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = Settings()
     app.state.settings = settings
     app.state.store = _build_store(settings)
-    app.state.shock_parser = GeminiShockParser.from_settings(settings)
+    # RIS-34 / RW-DATA-005: DATABASE_URL is always configured, independent of
+    # the scenario-store backend, so Gemini cost accounting always has
+    # somewhere to write regardless of "memory" vs "postgres" scenario storage.
+    app.state.db_session_factory = session_factory(settings.database_url)
+    app.state.accounting = GeminiAccountingService(
+        soft_daily_budget_usd=Decimal(str(settings.gemini_daily_soft_budget_usd)),
+        hard_daily_budget_usd=Decimal(str(settings.gemini_daily_hard_budget_usd)),
+    )
+    app.state.shock_parser = GeminiShockParser.from_settings(
+        settings,
+        accounting=app.state.accounting,
+        accounting_session_factory=app.state.db_session_factory,
+    )
     app.state.rate_limiter = RateLimiter()
     app.state.slider_connections = 0
 
@@ -125,6 +147,7 @@ app.include_router(slider.router)
 app.include_router(registry.router)
 app.include_router(spike.router)
 app.include_router(graph.router)
+app.include_router(accounting.router)
 app.include_router(observability.router)
 
 
