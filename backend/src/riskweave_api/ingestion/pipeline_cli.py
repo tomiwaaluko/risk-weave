@@ -4,23 +4,18 @@ RIS-28 operational entry point. Runs the RIS-10 Gemini extraction pass over a
 frozen ingestion snapshot's chunks, then assembles the live graph (RIS-9/11/12)
 from the stored relationships. Designed to run as a Railway one-off in the
 ``ingestion``/``backend`` image, where ``DATABASE_URL`` and ``GEMINI_API_KEY``
-are present.
+are present. The same operations are exposed over HTTP by the guarded
+``/admin/pipeline`` endpoints (shared logic in :mod:`.pipeline`).
 
 Subcommands (run from ``backend/``)::
 
-    # cheap: print DB counts, no Gemini calls
     python -m riskweave_api.ingestion.pipeline_cli diagnose --snapshot-id 3
-
-    # run extraction (resumable; already-completed chunks are skipped)
     python -m riskweave_api.ingestion.pipeline_cli extract --snapshot-id 3
     python -m riskweave_api.ingestion.pipeline_cli extract --snapshot-id 3 --limit 200
-
-    # assemble + report the live graph from stored extractions (no writes)
     python -m riskweave_api.ingestion.pipeline_cli build --snapshot-id 3
 
-Extraction commits after every chunk, so a run that is interrupted resumes from
-where it stopped — re-running is safe and idempotent (per-chunk extraction runs
-are keyed and skipped once completed).
+Extraction commits after every chunk, so an interrupted run resumes where it
+stopped (already-completed per-chunk runs are skipped).
 """
 
 from __future__ import annotations
@@ -29,27 +24,13 @@ import argparse
 import logging
 import os
 import sys
-import time
 
 from pydantic import SecretStr
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from riskweave.graph.build_live import assemble_live_from_db, resolve_snapshot
-from riskweave_api.extraction.gemini import (
-    GeminiExtractionClient,
-    GeminiResponseError,
-    GeminiRestTransport,
-)
-from riskweave_api.extraction.service import ExtractionService, OffsetMismatchError
+from riskweave.graph.build_live import assemble_live_from_db
 from riskweave_api.ingestion.database import session_factory
-from riskweave_api.ingestion.models import (
-    Document,
-    DocumentChunk,
-    ExtractionRun,
-    RelationshipExtraction,
-    SnapshotMember,
-)
+from riskweave_api.ingestion.pipeline import ExtractionProgress, diagnose, run_extraction
 
 logger = logging.getLogger("riskweave_api.pipeline")
 
@@ -61,92 +42,39 @@ def _require_env(name: str) -> str:
     return value
 
 
-def _snapshot_chunk_ids(session: Session, snapshot_id: int) -> list[int]:
-    """Ordered chunk ids belonging to a snapshot (mirrors ExtractionService)."""
-    rows = session.execute(
-        select(DocumentChunk.id)
-        .join(Document, Document.id == DocumentChunk.document_id)
-        .where(
-            Document.accession_number.in_(
-                select(SnapshotMember.record_id).where(
-                    SnapshotMember.snapshot_id == snapshot_id,
-                    SnapshotMember.record_type == "document",
-                )
-            )
-        )
-        .order_by(Document.accession_number, DocumentChunk.ordinal)
-    )
-    return [row[0] for row in rows]
-
-
 def _diagnose(session: Session, snapshot_id: int) -> int:
-    snapshot = resolve_snapshot(session, snapshot_id=snapshot_id)
-    chunk_ids = _snapshot_chunk_ids(session, snapshot.id)
-    rel_total = session.scalar(select(func.count()).select_from(RelationshipExtraction))
-    rel_for_snapshot = session.scalar(
-        select(func.count())
-        .select_from(RelationshipExtraction)
-        .where(RelationshipExtraction.snapshot_id == snapshot.id)
-    )
-    run_rows = session.execute(
-        select(ExtractionRun.status, func.count())
-        .where(ExtractionRun.snapshot_id == snapshot.id)
-        .group_by(ExtractionRun.status)
-    ).all()
-    print(f"snapshot: id={snapshot.id} name={snapshot.name!r} frozen_at={snapshot.frozen_at}")
-    print(f"chunks in snapshot: {len(chunk_ids)}")
-    print(f"relationship_extractions total: {rel_total}")
-    print(f"relationship_extractions for snapshot {snapshot.id}: {rel_for_snapshot}")
-    print(f"extraction_runs by status: {dict(run_rows)}")
+    report = diagnose(session, snapshot_id)
+    for key, value in report.items():
+        print(f"{key}: {value}")
     return 0
+
+
+def _log_progress(state: ExtractionProgress) -> None:
+    if state.processed % 50 == 0 or state.processed == state.total:
+        logger.info(
+            "progress %s/%s inserted=%s skipped=%s failed=%s",
+            state.processed,
+            state.total,
+            state.inserted,
+            state.skipped,
+            state.failed,
+        )
 
 
 def _extract(session: Session, snapshot_id: int, limit: int | None) -> int:
     api_key = SecretStr(_require_env("GEMINI_API_KEY"))
-    client = GeminiExtractionClient(GeminiRestTransport(api_key), api_key=api_key)
-    service = ExtractionService(session, client)
-
-    snapshot = resolve_snapshot(session, snapshot_id=snapshot_id)
-    chunk_ids = _snapshot_chunk_ids(session, snapshot.id)
-    if limit is not None:
-        chunk_ids = chunk_ids[:limit]
-    total = len(chunk_ids)
-    logger.info("extracting relationships snapshot=%s chunks=%s", snapshot.id, total)
-
-    inserted = 0
-    skipped = 0
-    failed = 0
-    started = time.monotonic()
-    for index, chunk_id in enumerate(chunk_ids, start=1):
-        try:
-            result = service.extract_relationships_for_chunk(snapshot.id, chunk_id)
-            inserted += result.inserted
-            skipped += int(result.skipped_existing)
-        except (GeminiResponseError, OffsetMismatchError) as exc:
-            failed += 1
-            logger.warning("chunk %s failed: %s", chunk_id, exc)
-        # Commit after every chunk so the run is durable and resumable.
-        session.commit()
-        if index % 50 == 0 or index == total:
-            elapsed = time.monotonic() - started
-            logger.info(
-                "progress %s/%s inserted=%s skipped=%s failed=%s elapsed=%.0fs",
-                index,
-                total,
-                inserted,
-                skipped,
-                failed,
-                elapsed,
-            )
+    state = run_extraction(
+        session, snapshot_id, api_key=api_key, limit=limit, progress=_log_progress
+    )
     print(
-        f"extraction complete snapshot={snapshot.id} chunks={total} "
-        f"inserted={inserted} skipped_existing={skipped} failed={failed}"
+        f"extraction complete snapshot={state.snapshot_id} chunks={state.total} "
+        f"inserted={state.inserted} skipped_existing={state.skipped} failed={state.failed}"
     )
     return 0
 
 
 def _build(session: Session, snapshot_id: int, graph_version: str) -> int:
-    result, snapshot = assemble_live_from_db(
+    result, _snapshot = assemble_live_from_db(
         session, snapshot_id=snapshot_id, graph_version=graph_version
     )
     print(result.graph.stats_report())

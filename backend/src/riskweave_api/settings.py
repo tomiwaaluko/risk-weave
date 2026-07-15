@@ -33,3 +33,8 @@ class Settings(BaseSettings):
     # open, matching today's behavior. Railway production always sets this.
     api_key: SecretStr | None = Field(default=None, validation_alias="RISKWEAVE_API_KEY")
     rate_limit_enabled: bool = Field(default=True, validation_alias="RATE_LIMIT_ENABLED")
+
+    # RIS-28: guards the operational /admin/pipeline endpoints (run extraction +
+    # live-graph assembly over a snapshot). Unset disables those endpoints
+    # entirely (404); they are opt-in and never open by default.
+    admin_token: SecretStr | None = Field(default=None, validation_alias="RISKWEAVE_ADMIN_TOKEN")

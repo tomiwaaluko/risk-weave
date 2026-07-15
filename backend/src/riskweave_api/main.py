@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from riskweave_api.extraction.shock_parser import GeminiShockParser
 from riskweave_api.ingestion.database import session_factory
 from riskweave_api.postgres_scenario_store import PostgresScenarioStore
-from riskweave_api.routers import graph, registry, scenarios, slider, spike
+from riskweave_api.routers import admin, graph, registry, scenarios, slider, spike
 from riskweave_api.scenario_store import InMemoryScenarioStore, ScenarioStore
 from riskweave_api.security import RateLimiter
 from riskweave_api.settings import Settings
@@ -72,6 +72,7 @@ app.include_router(slider.router)
 app.include_router(registry.router)
 app.include_router(spike.router)
 app.include_router(graph.router)
+app.include_router(admin.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["operations"])
