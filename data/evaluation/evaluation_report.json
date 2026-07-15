@@ -1,0 +1,106 @@
+{
+  "snapshot_id": "cre-demo-2026-07-11",
+  "graph_version": "1.0.0",
+  "generated_at": "snapshot",
+  "all_passed": true,
+  "families": [
+    "Relationship extraction",
+    "Entity resolution",
+    "Explanation honesty",
+    "Citation correctness",
+    "Reproducibility",
+    "Latency"
+  ],
+  "rows": [
+    {
+      "key": "extraction_precision",
+      "label": "Extraction precision",
+      "family": "Relationship extraction",
+      "actual_display": "94.1%",
+      "target_display": "\u2265 90%",
+      "passed": true,
+      "detail": "32 true / 2 false-positive / 4 missed over 36 gold, 34 predicted relationships across both packs."
+    },
+    {
+      "key": "extraction_recall",
+      "label": "Extraction recall",
+      "family": "Relationship extraction",
+      "actual_display": "88.9%",
+      "target_display": "\u2265 80%",
+      "passed": true,
+      "detail": "F1 = 91.4%."
+    },
+    {
+      "key": "entity_resolution_accuracy",
+      "label": "Entity-resolution accuracy",
+      "family": "Entity resolution",
+      "actual_display": "100.0%",
+      "target_display": "\u2265 95%",
+      "passed": true,
+      "detail": "50 curated-universe mentions (RIS-11 hand-check sample)."
+    },
+    {
+      "key": "unsupported_claim_rate",
+      "label": "Unsupported-claim rate",
+      "family": "Explanation honesty",
+      "actual_display": "0.0%",
+      "target_display": "= 0%",
+      "passed": true,
+      "detail": "10 demo-path explanations checked; a number absent from the computation payload fails the guard (RW-AI-011)."
+    },
+    {
+      "key": "citation_correctness",
+      "label": "Citation correctness",
+      "family": "Citation correctness",
+      "actual_display": "100.0%",
+      "target_display": "\u2265 95%",
+      "passed": true,
+      "detail": "18/18 cited passages support their derived weight."
+    },
+    {
+      "key": "provenance_coverage",
+      "label": "Provenance coverage",
+      "family": "Citation correctness",
+      "actual_display": "100.0%",
+      "target_display": "\u2265 100%",
+      "passed": true,
+      "detail": "Fraction of edges carrying complete Graft-2 provenance (RW-ALG-032)."
+    },
+    {
+      "key": "scenario_stability",
+      "label": "Scenario stability",
+      "family": "Reproducibility",
+      "actual_display": "stable",
+      "target_display": "identical",
+      "passed": true,
+      "detail": "5 repeated runs of the demo scenario produced one identical result."
+    },
+    {
+      "key": "propagation_latency",
+      "label": "Propagation recompute (p95)",
+      "family": "Latency",
+      "actual_display": "0.07 ms",
+      "target_display": "\u2264 500 ms",
+      "passed": true,
+      "detail": "median 0.1 ms over 25 slider recomputes."
+    },
+    {
+      "key": "parse_latency",
+      "label": "Shock parse (p95)",
+      "family": "Latency",
+      "actual_display": "0.08 ms",
+      "target_display": "\u2264 3000 ms",
+      "passed": true,
+      "detail": "Deterministic demo parse path (Gemini live path validated in gated smokes)."
+    },
+    {
+      "key": "explanation_guard_latency",
+      "label": "Explanation numeric-guard (p95)",
+      "family": "Latency",
+      "actual_display": "0.0 ms",
+      "target_display": "informational",
+      "passed": null,
+      "detail": "Local RW-AI-011 guard latency; Gemini generation timed in live smokes."
+    }
+  ]
+}
