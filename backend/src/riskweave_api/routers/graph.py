@@ -25,7 +25,7 @@ import os
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
 from riskweave.derivations.registry import list_methods
@@ -52,6 +52,67 @@ DEFAULT_LIVE_GRAPH_PATH = Path(__file__).resolve().parents[3] / "data" / "live" 
 
 def _live_graph_path() -> Path:
     return Path(os.environ.get("RISKWEAVE_LIVE_GRAPH_PATH", str(DEFAULT_LIVE_GRAPH_PATH)))
+
+
+def _live_snapshot_selector() -> tuple[int | None, str | None]:
+    """Which ingestion snapshot the live endpoint binds to (`RW-FR-015`).
+
+    Set ``RISKWEAVE_LIVE_SNAPSHOT_ID`` (e.g. ``3``, the frozen Railway snapshot)
+    or ``RISKWEAVE_LIVE_SNAPSHOT_NAME`` to serve the graph built on demand from
+    Postgres. Unset leaves the endpoint on the artifact-file path.
+    """
+    raw_id = os.environ.get("RISKWEAVE_LIVE_SNAPSHOT_ID")
+    name = os.environ.get("RISKWEAVE_LIVE_SNAPSHOT_NAME")
+    snapshot_id = int(raw_id) if raw_id and raw_id.strip() else None
+    return snapshot_id, name
+
+
+def _build_live_from_db(
+    request: Request,
+) -> tuple[AssembledGraph, tuple[tuple[str, str, float], ...]] | None:
+    """Assemble the live graph on demand from the bound snapshot's extractions.
+
+    Returns ``None`` when no snapshot is configured (endpoint stays on the
+    artifact path). Raises 503 when a snapshot is configured but the database is
+    unreachable or has no extractions yet — the durable serving path for
+    Railway's ephemeral one-off extraction jobs.
+    """
+    snapshot_id, snapshot_name = _live_snapshot_selector()
+    if snapshot_id is None and snapshot_name is None:
+        return None
+
+    from riskweave.graph.build_live import SnapshotNotFoundError, assemble_live_from_db
+    from riskweave_api.ingestion.database import session_factory
+
+    settings = request.app.state.settings
+    graph_version = os.environ.get("RISKWEAVE_LIVE_GRAPH_VERSION", "live-1.0.0")
+    try:
+        factory = session_factory(settings.database_url)
+        with factory() as session:
+            result, _snapshot = assemble_live_from_db(
+                session,
+                snapshot_id=snapshot_id,
+                snapshot_name=snapshot_name,
+                graph_version=graph_version,
+            )
+    except SnapshotNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except Exception as exc:  # database unreachable / driver error
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"live graph database is unavailable: {exc}",
+        ) from exc
+
+    if not result.graph.edges:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "no relationships extracted for the bound snapshot yet; run the "
+                "extraction pass (python -m riskweave_api.ingestion.pipeline_cli "
+                "extract) before serving the live graph."
+            ),
+        )
+    return result.graph, result.default_factors
 
 
 # Deterministic CRE-decline demo shock (magnitudes chosen by code, not Gemini).
@@ -308,20 +369,32 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
 )
-def seed_live_graph(store: StoreDependency) -> GraphSeedResponse:
+def seed_live_graph(store: StoreDependency, request: Request) -> GraphSeedResponse:
     """Serve the *live* graph assembled from real extraction output (RIS-28).
 
-    Loads the artifact produced by ``python -m riskweave.graph.build_live`` over
-    a frozen ingestion snapshot — the output of running extraction (RIS-10) +
-    resolution (RIS-11) + derivation (RIS-9) + assembly (RIS-12) end-to-end, not
-    ``load_graph_fixture()``. Re-assembles it through the Graft 2 write gate on
-    load, so every *generated* edge still carries full provenance (`RW-ALG-032`),
-    then registers it as a runnable scenario so the slider round-trips unchanged.
+    Two sources, in priority order:
 
-    Returns 503 if the artifact has not been built yet; the curated CRE fixture
-    remains available at ``POST /graph/seed`` as the explicit offline/demo-freeze
-    fallback (`RW-NFR-005` spirit).
+    1. **Database (real, durable).** When ``RISKWEAVE_LIVE_SNAPSHOT_ID`` /
+       ``_NAME`` is set, assemble on demand from the bound ingestion snapshot's
+       ``relationship_extractions`` — the output of running extraction (RIS-10) +
+       resolution (RIS-11) + derivation (RIS-9) + assembly (RIS-12) end-to-end.
+       This is the path Railway serves, since a one-off extraction job's
+       filesystem is ephemeral.
+    2. **Artifact file (offline/demo-freeze).** Otherwise load the artifact
+       produced by ``python -m riskweave.graph.build_live``.
+
+    Either way the graph is assembled through the Graft 2 write gate, so every
+    *generated* edge carries full provenance (`RW-ALG-032`), and it is registered
+    as a runnable scenario so the slider round-trips unchanged. Returns 503 when
+    neither source is available; the curated CRE fixture remains at
+    ``POST /graph/seed`` as the explicit fallback (`RW-NFR-005` spirit).
     """
+    from_db = _build_live_from_db(request)
+    if from_db is not None:
+        graph, factors = from_db
+        _register_runnable_scenario(store, graph, GRAPH_LIVE_SCENARIO_ID, factors)
+        return _serialize_graph(graph, GRAPH_LIVE_SCENARIO_ID, factors)
+
     path = _live_graph_path()
     if not path.exists():
         raise HTTPException(

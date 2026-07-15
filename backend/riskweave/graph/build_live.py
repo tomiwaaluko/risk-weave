@@ -34,7 +34,7 @@ from riskweave_api.ingestion.database import session_factory
 from riskweave_api.ingestion.models import DataSnapshot, Document, RelationshipExtraction
 
 from .assembly import load_universe
-from .live import ExtractedRelationship, build_live_graph, graph_to_artifact
+from .live import ExtractedRelationship, LiveBuildResult, build_live_graph, graph_to_artifact
 
 # backend/riskweave/graph/build_live.py -> parents[3] is the repository root.
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -61,16 +61,61 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve_snapshot(session: Session, args: argparse.Namespace) -> DataSnapshot:
-    if args.snapshot_id is not None:
-        snapshot = session.get(DataSnapshot, args.snapshot_id)
+class SnapshotNotFoundError(LookupError):
+    """Raised when the requested ingestion snapshot does not exist."""
+
+
+def resolve_snapshot(
+    session: Session, *, snapshot_id: int | None = None, snapshot_name: str | None = None
+) -> DataSnapshot:
+    """Look up a ``DataSnapshot`` by numeric id or name."""
+    if snapshot_id is not None:
+        snapshot = session.get(DataSnapshot, snapshot_id)
+    elif snapshot_name is not None:
+        snapshot = session.scalar(select(DataSnapshot).where(DataSnapshot.name == snapshot_name))
     else:
-        snapshot = session.scalar(
-            select(DataSnapshot).where(DataSnapshot.name == args.snapshot_name)
-        )
+        raise ValueError("provide snapshot_id or snapshot_name")
     if snapshot is None:
-        raise SystemExit(f"snapshot not found: {args.snapshot_id or args.snapshot_name}")
+        raise SnapshotNotFoundError(f"snapshot not found: {snapshot_id or snapshot_name}")
     return snapshot
+
+
+def assemble_live_from_db(
+    session: Session,
+    *,
+    snapshot_id: int | None = None,
+    snapshot_name: str | None = None,
+    universe_path: Path = DEFAULT_UNIVERSE,
+    corrections_path: Path | None = None,
+    graph_version: str = "live-1.0.0",
+) -> tuple[LiveBuildResult, DataSnapshot]:
+    """Resolve a snapshot and assemble its live graph from stored extractions.
+
+    The single reusable entry point shared by the ``build_live`` CLI and the
+    ``/graph/live`` endpoint, so both derive the graph identically from the
+    database (`RW-FR-015`).
+    """
+    snapshot = resolve_snapshot(session, snapshot_id=snapshot_id, snapshot_name=snapshot_name)
+    universe_entities = load_universe(str(universe_path))
+    resolver = Resolver.from_universe_file(universe_path, corrections_path=corrections_path)
+    relationships = load_relationships(session, snapshot.id)
+    result = build_live_graph(
+        relationships,
+        resolver,
+        universe_entities,
+        snapshot_id=snapshot.name or f"snapshot-{snapshot.id}",
+        graph_version=graph_version,
+    )
+    return result, snapshot
+
+
+def _resolve_snapshot(session: Session, args: argparse.Namespace) -> DataSnapshot:
+    try:
+        return resolve_snapshot(
+            session, snapshot_id=args.snapshot_id, snapshot_name=args.snapshot_name
+        )
+    except SnapshotNotFoundError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def load_relationships(session: Session, snapshot_db_id: int) -> list[ExtractedRelationship]:

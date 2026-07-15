@@ -19,6 +19,7 @@ dependencies = [
 [project.scripts]
 riskweave-ingest = "riskweave_api.ingestion.cli:main"
 riskweave-resolve = "riskweave_api.ingestion.resolution_cli:main"
+riskweave-pipeline = "riskweave_api.ingestion.pipeline_cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
