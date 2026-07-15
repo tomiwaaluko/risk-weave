@@ -66,7 +66,7 @@ polled state (`redis_connected` / `postgres_connected`; `null` means "not
 applicable" for that backend), for alerting rules that prefer polling an
 endpoint over parsing logs.
 
-## Uptime monitoring setup (one-time, human/dashboard step)
+## Uptime monitoring setup
 
 Verified directly against Railway's own docs (2026-07-15) — corrects an
 earlier draft of this runbook that assumed `/health` was polled
@@ -79,21 +79,31 @@ continuously; it is not.
    ON_FAILURE` (5 retries) restarts the container any time the process
    crashes/exits, deploy or not. Neither of these catches a process that's
    alive but hung/deadlocked.
-2. **Deployment/crash notifications** (native Railway feature): Project
-   Settings → **Webhooks** → paste a Slack or Discord incoming-webhook URL
-   (Railway auto-formats the payload for either) — fires on deploy
-   success/failure/crash and on resource-monitor alerts. Account Settings
-   also has email/in-app notifications for deployment status changes.
-   Dashboard-only to configure; there's no public API for it.
+2. **Deployment/crash notifications** — **manual step still required**:
+   Railway's webhook config (Settings → Webhooks) has no public API, so it
+   cannot be set up from this repo or by an agent — confirmed directly
+   against the live project (2026-07-15: no webhook-creation mutation is
+   exposed to Railway's own MCP tooling). To finish this: open the
+   `risk-weave` project → **Settings** → **Webhooks** → paste your Discord
+   incoming-webhook URL → **Save Webhook**. Once saved, deploy
+   success/failure/crash and resource-monitor alerts post to that channel.
+   Follow [Railway's webhook guide](https://docs.railway.com/observability/webhooks)
+   if it ever needs to be recreated — never commit the webhook URL itself.
 3. **Resource monitors** (CPU/RAM/disk/network-egress thresholds, **Pro
    plan required**): Observability tab → any metric widget → ⋮ → "Add
-   monitor". These also fire through the same webhook.
-4. **Real continuous uptime monitoring** (the part items 1–3 don't cover):
-   Railway's own recommendation is to deploy the **Uptime Kuma** template
-   as a service in the project, pointed at the backend's public `/health`
-   URL — or use a free-tier external pinger (UptimeRobot, Better Uptime)
-   hitting the same URL every 1–5 minutes. Either way, no credentials for
-   this belong in the repo.
+   monitor". Not yet configured; these also fire through the same webhook
+   once set up.
+4. **Continuous uptime polling** — **done** (2026-07-15): the Uptime Kuma
+   template is deployed as a service (`Uptime Kuma`, service id
+   `763a0943-359c-4446-970f-100cebdcaf08`) in the `risk-weave` production
+   environment via `railway.com/deploy/p6dsil`. One remaining manual step:
+   open its dashboard (Railway → `Uptime Kuma` service → generate a domain
+   or open the service) and add a monitor for
+   `https://backend-production-b2dc.up.railway.app/health` (HTTP(S), 1–5
+   minute interval, expect `200`), then point its notification settings at
+   the same Discord webhook. Uptime Kuma's own UI/database isn't managed by
+   this repo — that config lives in its persistent volume on Railway, not
+   in git.
 5. **Error-rate alerting**: confirmed Railway does **not** collect
    application-level metrics (their docs: *"request latency, error rates...
    are not collected by Railway"*). The closest native substitute is a
