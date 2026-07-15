@@ -20,6 +20,9 @@ Shock magnitudes here are set by deterministic code, never by Gemini
 
 from __future__ import annotations
 
+import json
+import os
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -38,7 +41,18 @@ router = APIRouter(prefix="/graph", tags=["graph"])
 StoreDependency = Annotated[ScenarioStore, Depends(get_store)]
 
 GRAPH_SCENARIO_ID = "cre-demo"
+GRAPH_LIVE_SCENARIO_ID = "cre-live"
 SEED = 20260711
+
+# ``backend/src/riskweave_api/routers/graph.py`` -> parents[3] is ``backend``.
+# The live-graph artifact is produced by ``python -m riskweave.graph.build_live``
+# from a real ingestion snapshot; the path is overridable for tests/deploys.
+DEFAULT_LIVE_GRAPH_PATH = Path(__file__).resolve().parents[3] / "data" / "live" / "graph.json"
+
+
+def _live_graph_path() -> Path:
+    return Path(os.environ.get("RISKWEAVE_LIVE_GRAPH_PATH", str(DEFAULT_LIVE_GRAPH_PATH)))
+
 
 # Deterministic CRE-decline demo shock (magnitudes chosen by code, not Gemini).
 # Shocking the office sector cascades to REITs and their bank creditors; the
@@ -164,7 +178,11 @@ def _provenance_by_edge(graph: AssembledGraph) -> dict[str, EdgeEvidence]:
     return records
 
 
-def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
+def _serialize_graph(
+    graph: AssembledGraph,
+    scenario_id: str,
+    factors: tuple[tuple[str, str, float], ...],
+) -> GraphSeedResponse:
     from riskweave.derivations.registry import get_method
 
     nodes = [
@@ -208,12 +226,12 @@ def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
             )
         )
 
-    factors = [
-        GraphFactorOut(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in _DEMO_FACTORS
+    factor_out = [
+        GraphFactorOut(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in factors
     ]
 
     return GraphSeedResponse(
-        scenario_id=GRAPH_SCENARIO_ID,
+        scenario_id=scenario_id,
         snapshot_id=graph.snapshot_id,
         graph_version=graph.graph_version,
         state=ScenarioState.READY,
@@ -221,8 +239,40 @@ def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
         low_confidence_threshold=LOW_CONFIDENCE_THRESHOLD,
         nodes=nodes,
         edges=edges,
-        factors=factors,
+        factors=factor_out,
     )
+
+
+def _register_runnable_scenario(
+    store: ScenarioStore,
+    graph: AssembledGraph,
+    scenario_id: str,
+    factors: tuple[tuple[str, str, float], ...],
+) -> None:
+    """Register an assembled graph as a runnable scenario (idempotent).
+
+    Shared by the fixture (``/graph/seed``) and live (``/graph/live``) paths so
+    both drive the same propagation engine + WebSocket slider unchanged.
+    """
+    snapshot = graph.to_snapshot()
+    store.register_snapshot(snapshot)
+    store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
+
+    # Overwrite any previous scenario of this id so re-seeding is idempotent.
+    store.delete_scenario(scenario_id)
+
+    req = ScenarioCreateRequest(
+        scenario_id=scenario_id,
+        snapshot_id=snapshot.snapshot_id,
+        graph_version=snapshot.graph_version,
+        factors=[
+            ShockFactorIn(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in factors
+        ],
+        seed=SEED,
+    )
+    store.create(req)
+    store.transition(scenario_id, ScenarioState.VALIDATING)
+    store.transition(scenario_id, ScenarioState.READY)
 
 
 # ---------------------------------------------------------------------------
@@ -248,28 +298,60 @@ def seed_graph(store: StoreDependency) -> GraphSeedResponse:
     except GraphAssemblyError as exc:  # pragma: no cover - fixture is committed
         raise HTTPException(status_code=500, detail=f"fixture load failed: {exc}") from exc
 
-    snapshot = graph.to_snapshot()
-    store.register_snapshot(snapshot)
-    store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
+    _register_runnable_scenario(store, graph, GRAPH_SCENARIO_ID, _DEMO_FACTORS)
+    return _serialize_graph(graph, GRAPH_SCENARIO_ID, _DEMO_FACTORS)
 
-    # Overwrite any previous demo scenario so re-seeding is idempotent.
-    store.delete_scenario(GRAPH_SCENARIO_ID)
 
-    req = ScenarioCreateRequest(
-        scenario_id=GRAPH_SCENARIO_ID,
-        snapshot_id=snapshot.snapshot_id,
-        graph_version=snapshot.graph_version,
-        factors=[
-            ShockFactorIn(factor_id=fid, node_id=nid, magnitude=mag)
-            for fid, nid, mag in _DEMO_FACTORS
-        ],
-        seed=SEED,
+@router.post(
+    "/live",
+    response_model=GraphSeedResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
+)
+def seed_live_graph(store: StoreDependency) -> GraphSeedResponse:
+    """Serve the *live* graph assembled from real extraction output (RIS-28).
+
+    Loads the artifact produced by ``python -m riskweave.graph.build_live`` over
+    a frozen ingestion snapshot — the output of running extraction (RIS-10) +
+    resolution (RIS-11) + derivation (RIS-9) + assembly (RIS-12) end-to-end, not
+    ``load_graph_fixture()``. Re-assembles it through the Graft 2 write gate on
+    load, so every *generated* edge still carries full provenance (`RW-ALG-032`),
+    then registers it as a runnable scenario so the slider round-trips unchanged.
+
+    Returns 503 if the artifact has not been built yet; the curated CRE fixture
+    remains available at ``POST /graph/seed`` as the explicit offline/demo-freeze
+    fallback (`RW-NFR-005` spirit).
+    """
+    path = _live_graph_path()
+    if not path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "live graph not built; run "
+                "`uv run python -m riskweave.graph.build_live --snapshot-id <id>` "
+                "to assemble it from an ingestion snapshot. The CRE fixture "
+                "remains available at POST /graph/seed."
+            ),
+        )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        graph = load_graph_fixture(path)
+    except (GraphAssemblyError, ValueError, OSError) as exc:
+        raise HTTPException(
+            status_code=500, detail=f"live graph artifact is invalid: {exc}"
+        ) from exc
+
+    factors = tuple(
+        (f["factor_id"], f["node_id"], f["magnitude"]) for f in payload.get("factors", [])
     )
-    store.create(req)
-    store.transition(GRAPH_SCENARIO_ID, ScenarioState.VALIDATING)
-    store.transition(GRAPH_SCENARIO_ID, ScenarioState.READY)
+    if not factors:
+        raise HTTPException(
+            status_code=500,
+            detail="live graph artifact has no seed factors; rebuild with build_live.",
+        )
 
-    return _serialize_graph(graph)
+    _register_runnable_scenario(store, graph, GRAPH_LIVE_SCENARIO_ID, factors)
+    return _serialize_graph(graph, GRAPH_LIVE_SCENARIO_ID, factors)
 
 
 @router.get(
@@ -306,10 +388,15 @@ def get_methodology() -> MethodologyResponse:
         limitations=[
             "Equity-price sensitivities use limited free-tier history; betas are "
             "indicative, not risk-model grade (RW-DATA-002).",
-            "The demo graph is a reduced, curated CRE fixture (~15 entities); it "
-            "is not the full 100-200 entity universe.",
-            "Edge weights are pre-baked deterministic-method outputs from real "
-            "disclosures; the live Gemini extraction pipeline is deferred.",
+            "POST /graph/seed serves a reduced, curated CRE fixture (~15 entities) "
+            "as the explicit offline/demo-freeze fallback; POST /graph/live serves "
+            "the full universe assembled live from a real ingestion snapshot.",
+            "Live edge weights are deterministic-method outputs (Gemini finds the "
+            "disclosed sentence; registered DER-* code turns it into the number). "
+            "Live relationships currently derive via DER-CONCENTRATION from "
+            "disclosed magnitudes; XBRL/FRED numerator-denominator variants "
+            "(DER-CREDIT/GEO/COMMODITY, DER-BETA, DER-DURATION) activate as those "
+            "numeric joins are wired.",
             "Analytics only — no price predictions and no buy/sell/hold advice.",
         ],
     )

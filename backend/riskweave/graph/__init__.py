@@ -15,6 +15,13 @@ from .assembly import (
 )
 from .centrality import transmission_centrality
 from .fixture import DEFAULT_FIXTURE_PATH, FixtureError, load_graph_fixture
+from .live import (
+    ExtractedRelationship,
+    LiveBuildReport,
+    LiveBuildResult,
+    build_live_graph,
+    graph_to_artifact,
+)
 from .store import (
     Neo4jGraphStore,
     Neo4jUnavailableError,
@@ -34,6 +41,11 @@ __all__ = [
     "DEFAULT_FIXTURE_PATH",
     "FixtureError",
     "load_graph_fixture",
+    "ExtractedRelationship",
+    "LiveBuildReport",
+    "LiveBuildResult",
+    "build_live_graph",
+    "graph_to_artifact",
     "Neo4jGraphStore",
     "Neo4jUnavailableError",
     "Neo4jWriteError",
