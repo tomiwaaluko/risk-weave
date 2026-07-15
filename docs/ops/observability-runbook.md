@@ -29,8 +29,9 @@ alert means, and how to roll back a bad deploy. Companion to
 
 | Signal | Meaning | First action |
 | --- | --- | --- |
-| Railway health check failing (`healthcheckPath: /health` in `railway.json`) | Process is down or not accepting connections | Check **Logs** for a crash/exception at startup; check the **Deployments** tab for a failed build; roll back (below) if the previous deployment was healthy |
-| External uptime pinger reports `/health` unreachable | Full path (DNS/edge/Railway) is down, not just the process | Check Railway status page, then the service's own health check state |
+| A new deploy fails its healthcheck (`healthcheckPath: /health` in `railway.json`) | The **new** deployment never became healthy within 30 s, so Railway never cut traffic to it — the previous deployment keeps serving. This only fires during a deploy, not continuously (Railway does not poll `/health` after go-live) | Check **Deployments** → the failed deployment's **Logs** for a startup crash/exception; fix and redeploy, or stay on the previous (still-live) version |
+| Container crashes/exits at any time | `restartPolicyType: ON_FAILURE` (`railway.json`) restarts it automatically, up to 5 retries — this *is* continuous, but it's process-exit-triggered, not `/health`-triggered (a hung-but-alive process won't trip it) | Check **Logs** around the restart timestamp for the exception that caused the exit |
+| External uptime pinger / Uptime Kuma reports `/health` unreachable | Full path (DNS/edge/Railway/process) is down, or the process is alive but not responding — the one signal Railway itself doesn't give you post-deploy | Check Railway's status page, then **Deployments** for the current deployment's state |
 | A log line with `"logger": "riskweave_api.request"` and `"status" >= 500` | An endpoint returned a server error | Filter logs for the same `request_id` to find the paired `"unhandled exception"` line (includes a scrubbed traceback) and the failing `path` |
 | A log line with `"message": "unhandled exception"` | A route raised without its own error handling | Read the `exception` field; cross-reference `request_id` against the request log line for `method`/`path`/`duration_ms` |
 | `{"component": "redis", "state": "unavailable"}` at startup | Redis was unreachable when the process booted; the service is running **uncached/degraded**, not down (`RW-NFR-004` is best-effort) | Check the Redis plugin in the Railway project; a mid-session Redis outage after a successful startup will instead surface as 500s on cache-touching endpoints (see the row above) |
@@ -67,25 +68,41 @@ endpoint over parsing logs.
 
 ## Uptime monitoring setup (one-time, human/dashboard step)
 
-1. **Railway's own check** is already configured in `railway.json`:
-   `healthcheckPath: /health`, `healthcheckTimeout: 30`,
-   `restartPolicyType: ON_FAILURE` (5 retries). No action needed — this
-   restarts a crashed container automatically and is what backs the
-   "Railway health check failing" row above.
-2. **External pinger** (catches edge/DNS/regional outages Railway's own
-   check can't see): the operator picks a free-tier uptime service (e.g.
-   UptimeRobot, Better Uptime) and points a 1–5 minute HTTP(S) check at
-   `https://<railway-domain>/health`, expecting `200` and
-   `{"status": "ok"}`. Configure its alert to email and/or Slack — no
-   API keys or webhook URLs for this belong in the repo; they're entered
-   directly in the pinger's dashboard.
-3. **Error-rate alerting**: Railway → project → the `backend` service →
-   **Observability** (or a log drain, if the plan supports one) → add an
-   alert rule on `status>=500` or `level=ERROR` frequency (e.g. "5 or more
-   in 5 minutes"), notifying the same email/Slack channel. Railway's
-   built-in crash/deploy-failure notifications (Project Settings →
-   Notifications) should also be enabled — those catch a build/startup
-   failure quicker than log-rate alerting would.
+Verified directly against Railway's own docs (2026-07-15) — corrects an
+earlier draft of this runbook that assumed `/health` was polled
+continuously; it is not.
+
+1. **Railway's deploy-time check** is already configured in `railway.json`:
+   `healthcheckPath: /health`, `healthcheckTimeout: 30`. This only runs
+   during a new deploy, to decide whether to cut traffic to it — Railway
+   does **not** poll it after go-live. Separately, `restartPolicyType:
+   ON_FAILURE` (5 retries) restarts the container any time the process
+   crashes/exits, deploy or not. Neither of these catches a process that's
+   alive but hung/deadlocked.
+2. **Deployment/crash notifications** (native Railway feature): Project
+   Settings → **Webhooks** → paste a Slack or Discord incoming-webhook URL
+   (Railway auto-formats the payload for either) — fires on deploy
+   success/failure/crash and on resource-monitor alerts. Account Settings
+   also has email/in-app notifications for deployment status changes.
+   Dashboard-only to configure; there's no public API for it.
+3. **Resource monitors** (CPU/RAM/disk/network-egress thresholds, **Pro
+   plan required**): Observability tab → any metric widget → ⋮ → "Add
+   monitor". These also fire through the same webhook.
+4. **Real continuous uptime monitoring** (the part items 1–3 don't cover):
+   Railway's own recommendation is to deploy the **Uptime Kuma** template
+   as a service in the project, pointed at the backend's public `/health`
+   URL — or use a free-tier external pinger (UptimeRobot, Better Uptime)
+   hitting the same URL every 1–5 minutes. Either way, no credentials for
+   this belong in the repo.
+5. **Error-rate alerting**: confirmed Railway does **not** collect
+   application-level metrics (their docs: *"request latency, error rates...
+   are not collected by Railway"*). The closest native substitute is a
+   filtered **Logs** widget on the Observability dashboard for
+   `status>=500`, watched manually, or shipping logs to a third-party tool
+   via OpenTelemetry — genuinely out of scope for this ticket per the
+   "no Prometheus/Grafana" constraint. Until that's revisited, rely on the
+   crash/deploy-failure webhook (item 2) plus the `/metrics/latency` and
+   `/metrics/connectivity` endpoints below for spot checks.
 
 ## Rolling back a deploy
 
