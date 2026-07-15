@@ -47,7 +47,8 @@ _FUNCTION_CALL_RESPONSE = {
 _TEXT_RESPONSE = {
     "candidates": [
         {"content": {"role": "model", "parts": [{"text": '{"answer": "ok", "citations": []}'}]}}
-    ]
+    ],
+    "usageMetadata": {"promptTokenCount": 42, "candidatesTokenCount": 7},
 }
 
 
@@ -62,7 +63,10 @@ def test_parses_function_call_turn(monkeypatch: pytest.MonkeyPatch) -> None:
         tools=[{"name": "resolve_entity"}],
         temperature=0,
     )
-    assert turn == {"function_call": {"name": "resolve_entity", "args": {"name": "Boston"}}}
+    assert turn == {
+        "function_call": {"name": "resolve_entity", "args": {"name": "Boston"}},
+        "usage": {},
+    }
 
 
 def test_parses_final_answer_turn(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -75,7 +79,10 @@ def test_parses_final_answer_turn(monkeypatch: pytest.MonkeyPatch) -> None:
         tools=[],
         temperature=0,
     )
-    assert turn == {"output_text": '{"answer": "ok", "citations": []}'}
+    assert turn == {
+        "output_text": '{"answer": "ok", "citations": []}',
+        "usage": {"input_tokens": 42, "output_tokens": 7},
+    }
 
 
 def test_renders_turns_to_contents_and_attaches_tools(monkeypatch: pytest.MonkeyPatch) -> None:

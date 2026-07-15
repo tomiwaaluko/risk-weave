@@ -38,6 +38,7 @@ from .generation import (
     DEFAULT_EXPLANATION_MODEL,
     Audience,
     EdgeEvidence,
+    _accumulate_usage,
     _resolve_citations,
     _validate,
 )
@@ -122,6 +123,8 @@ class QaAnswer:
     answer_attempts: int
     guard_violations: tuple[str, ...]
     model: str
+    input_token_count: int | None = None
+    output_token_count: int | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -203,6 +206,8 @@ def answer_question(
     turns: list[dict[str, object]] = []
     tool_calls = 0
     answer_attempts = 0
+    input_tokens_total: int | None = None
+    output_tokens_total: int | None = None
 
     # Generous absolute bound so a pathological model can't loop forever.
     max_steps = max_tool_calls + max_answer_retries + 2
@@ -212,6 +217,9 @@ def answer_question(
             messages=_render_messages(question, turns),
             tools=registry.declarations(),
             temperature=0,
+        )
+        input_tokens_total, output_tokens_total = _accumulate_usage(
+            response, input_tokens_total, output_tokens_total
         )
 
         function_call = response.get("function_call")
@@ -276,6 +284,8 @@ def answer_question(
                 (parse_error,),
                 model,
                 reason="final answer was not valid JSON",
+                input_token_count=input_tokens_total,
+                output_token_count=output_tokens_total,
             )
 
         payload = ExplanationPayload(numbers=tuple(allowed_numbers))
@@ -295,6 +305,8 @@ def answer_question(
                 answer_attempts=answer_attempts,
                 guard_violations=(),
                 model=model,
+                input_token_count=input_tokens_total,
+                output_token_count=output_tokens_total,
             )
 
         if answer_attempts <= max_answer_retries:
@@ -321,6 +333,8 @@ def answer_question(
             violations,
             model,
             reason="answer failed the numeric-containment/citation guard",
+            input_token_count=input_tokens_total,
+            output_token_count=output_tokens_total,
         )
 
     # Tool-call budget exhausted without a grounded answer.
@@ -335,6 +349,8 @@ def answer_question(
         (),
         model,
         reason="tool-call budget exhausted without a grounded answer",
+        input_token_count=input_tokens_total,
+        output_token_count=output_tokens_total,
     )
 
 
@@ -350,6 +366,8 @@ def _withhold(
     model: str,
     *,
     reason: str,
+    input_token_count: int | None = None,
+    output_token_count: int | None = None,
 ) -> QaAnswer:
     return QaAnswer(
         session_id=session_id,
@@ -362,6 +380,8 @@ def _withhold(
         audit=tuple(audit),
         tool_call_count=tool_calls,
         answer_attempts=answer_attempts,
+        input_token_count=input_token_count,
+        output_token_count=output_token_count,
         guard_violations=violations,
         model=model,
     )

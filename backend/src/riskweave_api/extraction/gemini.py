@@ -174,6 +174,12 @@ class GeminiToolTransport:
             raise GeminiResponseError(
                 f"Gemini returned no candidates (promptFeedback={detail})", 1, []
             )
+        usage_metadata = raw.get("usageMetadata") or {}
+        usage: dict[str, object] = {}
+        if usage_metadata.get("promptTokenCount") is not None:
+            usage["input_tokens"] = usage_metadata["promptTokenCount"]
+        if usage_metadata.get("candidatesTokenCount") is not None:
+            usage["output_tokens"] = usage_metadata["candidatesTokenCount"]
         parts = candidates[0].get("content", {}).get("parts", [])
         for part in parts:
             if isinstance(part, dict) and isinstance(part.get("functionCall"), dict):
@@ -183,10 +189,11 @@ class GeminiToolTransport:
                     "function_call": {
                         "name": str(call.get("name", "")),
                         "args": args if isinstance(args, dict) else {},
-                    }
+                    },
+                    "usage": usage,
                 }
         output_text = "".join(str(part.get("text", "")) for part in parts if isinstance(part, dict))
-        return {"output_text": output_text}
+        return {"output_text": output_text, "usage": usage}
 
     def _redact(self, text: str) -> str:
         secret = self.api_key.get_secret_value()

@@ -184,6 +184,8 @@ class GeneratedExplanation:
     guard_violations: tuple[str, ...]
     model: str
     audience: Audience = Audience.ANALYST
+    input_token_count: int | None = None
+    output_token_count: int | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -300,6 +302,8 @@ def generate_node_explanation(
     known_citations = context.evidence_by_id()
     last_violations: tuple[str, ...] = ()
     correction: str | None = None
+    input_tokens_total: int | None = None
+    output_tokens_total: int | None = None
 
     for attempt in range(1, max_attempts + 1):
         prompt = _build_prompt(context, correction, audience)
@@ -312,6 +316,9 @@ def generate_node_explanation(
                 "mime_type": "application/json",
                 "schema": _RESPONSE_SCHEMA,
             },
+        )
+        input_tokens_total, output_tokens_total = _accumulate_usage(
+            response, input_tokens_total, output_tokens_total
         )
         text, cited_ids, parse_error = _parse_response(str(response.get("output_text", "")))
         if parse_error is not None:
@@ -334,6 +341,8 @@ def generate_node_explanation(
                 guard_violations=(),
                 model=model,
                 audience=audience,
+                input_token_count=input_tokens_total,
+                output_token_count=output_tokens_total,
             )
         last_violations = violations
         correction = (
@@ -353,7 +362,23 @@ def generate_node_explanation(
         guard_violations=last_violations,
         model=model,
         audience=audience,
+        input_token_count=input_tokens_total,
+        output_token_count=output_tokens_total,
     )
+
+
+def _accumulate_usage(
+    response: dict[str, object], input_total: int | None, output_total: int | None
+) -> tuple[int | None, int | None]:
+    """Sum token usage across retries — every attempt is a real billed call (RIS-34)."""
+    usage = response.get("usage")
+    if not isinstance(usage, dict):
+        return input_total, output_total
+    input_tokens = usage.get("input_tokens")
+    output_tokens = usage.get("output_tokens")
+    new_input = input_total if input_tokens is None else int(input_tokens) + (input_total or 0)
+    new_output = output_total if output_tokens is None else int(output_tokens) + (output_total or 0)
+    return new_input, new_output
 
 
 _RESPONSE_SCHEMA: dict[str, object] = {

@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from riskweave_api.accounting.service import GeminiAccountingService
 from riskweave_api.ingestion.models import (
     CovenantThresholdExtraction,
     Document,
@@ -49,9 +50,15 @@ class BatchExtractionResult:
 
 
 class ExtractionService:
-    def __init__(self, session: Session, client: GeminiExtractionClient | None = None) -> None:
+    def __init__(
+        self,
+        session: Session,
+        client: GeminiExtractionClient | None = None,
+        accounting: GeminiAccountingService | None = None,
+    ) -> None:
         self.session = session
         self.client = client
+        self.accounting = accounting
 
     def extract_relationships_for_chunk(self, snapshot_id: int, chunk_id: int) -> ExtractionResult:
         run = self._get_or_create_run(
@@ -64,6 +71,11 @@ class ExtractionService:
             return ExtractionResult(inserted=0, skipped_existing=True)
         if self.client is None:
             raise RuntimeError("Gemini client is required for extraction")
+        # RIS-34: refuse to start further extraction calls once the hard daily
+        # budget is hit; the run stays "running" so a later invocation resumes
+        # it (`_get_or_create_run` only skips "completed" runs).
+        if self.accounting is not None:
+            self.accounting.check_budget_or_raise(self.session, purpose="extraction")
         chunk = self._chunk(chunk_id)
         document = self._document(chunk)
         try:
@@ -90,6 +102,14 @@ class ExtractionService:
             "schema_valid_after_retry": bool(response.retry_failures),
         }
         self.session.flush()
+        if self.accounting is not None:
+            self.accounting.record(
+                self.session,
+                purpose="extraction",
+                model=GEMINI_EXTRACTION_MODEL,
+                input_tokens=response.input_token_count,
+                output_tokens=response.output_token_count,
+            )
         return ExtractionResult(inserted=inserted)
 
     def extract_relationships_for_snapshot(self, snapshot_id: int) -> BatchExtractionResult:
@@ -117,6 +137,8 @@ class ExtractionService:
             return ExtractionResult(inserted=0, skipped_existing=True)
         if self.client is None:
             raise RuntimeError("Gemini client is required for extraction")
+        if self.accounting is not None:
+            self.accounting.check_budget_or_raise(self.session, purpose="extraction")
         chunk = self._chunk(chunk_id)
         document = self._document(chunk)
         try:
@@ -139,6 +161,14 @@ class ExtractionService:
         run.output_token_count = response.output_token_count
         run.outcome_json = {"inserted": inserted, "retry_failures": response.retry_failures}
         self.session.flush()
+        if self.accounting is not None:
+            self.accounting.record(
+                self.session,
+                purpose="extraction",
+                model=GEMINI_EXTRACTION_MODEL,
+                input_tokens=response.input_token_count,
+                output_tokens=response.output_token_count,
+            )
         return ExtractionResult(inserted=inserted)
 
     def extract_covenants_for_snapshot(self, snapshot_id: int) -> BatchExtractionResult:
