@@ -8,6 +8,7 @@ callback.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -75,6 +76,9 @@ def diagnose(session: Session, snapshot_id: int) -> dict:
     }
 
 
+logger = logging.getLogger("riskweave_api.pipeline")
+
+
 @dataclass
 class ExtractionProgress:
     """Mutable progress record for a running extraction pass."""
@@ -85,6 +89,7 @@ class ExtractionProgress:
     inserted: int = 0
     skipped: int = 0
     failed: int = 0
+    last_error: str | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -94,6 +99,7 @@ class ExtractionProgress:
             "inserted": self.inserted,
             "skipped": self.skipped,
             "failed": self.failed,
+            "last_error": self.last_error,
         }
 
 
@@ -127,8 +133,10 @@ def run_extraction(
             result = service.extract_relationships_for_chunk(snapshot.id, chunk_id)
             state.inserted += result.inserted
             state.skipped += int(result.skipped_existing)
-        except (GeminiResponseError, OffsetMismatchError):
+        except (GeminiResponseError, OffsetMismatchError) as exc:
             state.failed += 1
+            state.last_error = f"chunk {chunk_id}: {type(exc).__name__}: {exc}"
+            logger.warning("extraction chunk %s failed: %s", chunk_id, exc)
         session.commit()
         state.processed += 1
         if progress is not None:
