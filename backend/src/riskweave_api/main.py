@@ -19,6 +19,7 @@ from riskweave_api.observability.middleware import StructuredLoggingMiddleware
 from riskweave_api.postgres_scenario_store import PostgresScenarioStore
 from riskweave_api.routers import (
     accounting,
+    evaluation,
     graph,
     observability,
     registry,
@@ -147,6 +148,7 @@ app.include_router(slider.router)
 app.include_router(registry.router)
 app.include_router(spike.router)
 app.include_router(graph.router)
+app.include_router(evaluation.router)
 app.include_router(accounting.router)
 app.include_router(observability.router)
 
