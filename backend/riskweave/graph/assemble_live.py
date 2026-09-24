@@ -119,6 +119,7 @@ def main(argv: list[str] | None = None) -> int:
         f"assembly report: seen={report.relationships_seen} "
         f"edges={report.edges_built} unresolved={report.skipped_unresolved} "
         f"no_weight={report.skipped_no_weight} unknown_type={report.skipped_unknown_type} "
+        f"duplicate={report.skipped_duplicate} "
         f"methods={dict(report.method_counts)}"
     )
 
@@ -154,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
             f"provenance coverage: {cov['coverage']:.0%} "
             f"({cov['provenanced_edges']}/{cov['total_edges']} edges)"
         )
+    except Exception as exc:
+        print(f"error: failed to seed Neo4j: {exc}", file=sys.stderr)
+        return 1
     finally:
         store.close()
     return 0

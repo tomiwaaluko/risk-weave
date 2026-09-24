@@ -26,11 +26,13 @@ Shock magnitudes here are set by deterministic code, never by Gemini
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session, sessionmaker
 
 from riskweave.derivations.registry import list_methods
 from riskweave.entity_resolution import Resolver
@@ -43,11 +45,12 @@ from riskweave.graph.live import (
     assemble_live_graph,
 )
 from riskweave_api.dependencies import get_store
-from riskweave_api.ingestion.database import session_factory
 from riskweave_api.models import ScenarioCreateRequest, ScenarioState, ShockFactorIn
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.security import default_rate_limit, require_api_key
 from riskweave_api.settings import Settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/graph", tags=["graph"])
 StoreDependency = Annotated[ScenarioStore, Depends(get_store)]
@@ -300,18 +303,22 @@ def _live_factors_for(graph: AssembledGraph) -> tuple[tuple[str, str, float], ..
     return (("live-origin-shock", top.entity_id, 1.0),)
 
 
-def _assemble_live(settings: Settings, snapshot_id: int) -> AssembledGraph:
+def _assemble_live(
+    settings: Settings,
+    snapshot_id: int,
+    factory: sessionmaker[Session],
+) -> AssembledGraph:
     from riskweave_api.graph.live_loader import load_extracted_relationships
 
-    factory = session_factory(settings.database_url)
     try:
         with factory() as session:
             relationships = load_extracted_relationships(session, snapshot_id)
     except LiveAssemblyError:
         raise
     except Exception as exc:
+        logger.exception("failed to load extractions for snapshot_id=%s", snapshot_id)
         raise LiveAssemblyError(
-            f"failed to load extractions for snapshot_id={snapshot_id}: {exc}"
+            f"failed to load extractions for snapshot_id={snapshot_id}"
         ) from exc
 
     universe = DEFAULT_UNIVERSE_PATH
@@ -376,7 +383,11 @@ def seed_graph(
     if source == "live":
         live_snap = snapshot_id if snapshot_id is not None else settings.live_graph_snapshot_id
         try:
-            graph = _assemble_live(settings, live_snap)
+            graph = _assemble_live(
+                settings,
+                live_snap,
+                request.app.state.db_session_factory,
+            )
             scenario_id = LIVE_GRAPH_SCENARIO_ID
             factors = _live_factors_for(graph)
         except LiveAssemblyError as exc:

@@ -144,6 +144,7 @@ class LiveAssemblyReport:
     skipped_unresolved: int
     skipped_no_weight: int
     skipped_unknown_type: int
+    skipped_duplicate: int
     method_counts: Mapping[str, int]
 
 
@@ -341,10 +342,12 @@ def assemble_live_graph(
             resolved_by_mention[result.input_string] = result.entity
 
     edges: list[ProposedEdge] = []
+    edges_by_id: dict[str, ProposedEdge] = {}
     entities_by_id: dict[str, UniverseEntity] = {}
     skipped_unresolved = 0
     skipped_no_weight = 0
     skipped_unknown_type = 0
+    skipped_duplicate = 0
     method_counts: dict[str, int] = {}
 
     for rel in relationships:
@@ -395,6 +398,13 @@ def assemble_live_graph(
             direction=rel.direction,
             record=record,
         )
+        previous = edges_by_id.get(edge.edge_id)
+        if previous is not None:
+            if previous != edge:
+                raise LiveAssemblyError(f"conflicting duplicate edge_id: {edge.edge_id}")
+            skipped_duplicate += 1
+            continue
+        edges_by_id[edge.edge_id] = edge
         edges.append(edge)
         method_counts[record.method_id] = method_counts.get(record.method_id, 0) + 1
         for entity in (source, target):
@@ -408,6 +418,7 @@ def assemble_live_graph(
         skipped_unresolved=skipped_unresolved,
         skipped_no_weight=skipped_no_weight,
         skipped_unknown_type=skipped_unknown_type,
+        skipped_duplicate=skipped_duplicate,
         method_counts=method_counts,
     )
 

@@ -41,7 +41,12 @@ def load_extracted_relationships(
     for rel, filing_date in rows:
         # Disclosure as-of is the filing date; Gemini does not invent timestamps.
         data_ts = datetime.combine(filing_date, datetime.min.time())
-        direction = rel.direction if rel.direction in ("positive", "negative") else "positive"
+        direction = (rel.direction or "").strip().lower()
+        if direction not in ("positive", "negative"):
+            raise LiveAssemblyError(
+                f"relationship_extractions.id={rel.id} has unsupported direction "
+                f"{rel.direction!r}; refusing to guess an edge sign"
+            )
         out.append(
             ExtractedRelationshipInput(
                 source_entity=rel.source_entity,

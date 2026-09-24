@@ -60,6 +60,7 @@ def _rel(
     relationship_type: str,
     magnitude: str | None,
     passage: str,
+    direction: str = "positive",
     doc: str = "0000019617-24-000001",
     char_start: int = 100,
     confidence: float = 0.91,
@@ -68,7 +69,7 @@ def _rel(
         source_entity=source,
         target_entity=target,
         relationship_type=relationship_type,
-        direction="positive",
+        direction=direction,  # type: ignore[arg-type]
         disclosed_magnitude=magnitude,
         source_passage=passage,
         source_document_id=doc,
@@ -339,3 +340,50 @@ def test_derive_weight_for_relationship_is_deterministic() -> None:
     assert first is not None and second is not None
     assert first.method_id == "DER-COMMODITY"
     assert first.value == second.value == pytest.approx(0.28)
+
+
+def test_identical_duplicate_edges_are_skipped(resolver: Resolver) -> None:
+    passage = "loans secured by commercial real estate totaled approximately 12% of the portfolio"
+    rel = _rel(
+        source="Wells Fargo",
+        target="Boston Properties",
+        relationship_type="creditor",
+        magnitude="approximately 12% of the portfolio",
+        passage=passage,
+    )
+    graph, report = assemble_live_graph(
+        snapshot_id="live-dup",
+        relationships=[rel, rel],
+        resolver=resolver,
+        universe_path=UNIVERSE,
+    )
+    assert report.edges_built == 1
+    assert report.skipped_duplicate == 1
+    assert len(graph.edges) == 1
+
+
+def test_conflicting_duplicate_edge_id_is_rejected(resolver: Resolver) -> None:
+    passage = "loans secured by commercial real estate totaled approximately 12% of the portfolio"
+    positive = _rel(
+        source="Wells Fargo",
+        target="Boston Properties",
+        relationship_type="creditor",
+        magnitude="approximately 12% of the portfolio",
+        passage=passage,
+        direction="positive",
+    )
+    negative = _rel(
+        source="Wells Fargo",
+        target="Boston Properties",
+        relationship_type="creditor",
+        magnitude="approximately 12% of the portfolio",
+        passage=passage,
+        direction="negative",
+    )
+    with pytest.raises(LiveAssemblyError, match="conflicting duplicate edge_id"):
+        assemble_live_graph(
+            snapshot_id="live-conflict",
+            relationships=[positive, negative],
+            resolver=resolver,
+            universe_path=UNIVERSE,
+        )
