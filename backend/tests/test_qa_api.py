@@ -24,6 +24,7 @@ _ENV = {
     "NEO4J_PASSWORD": "password",
     "REDIS_URL": "redis://redis:6379/0",
     "GEMINI_API_KEY": "test-placeholder",
+    "SEC_USER_AGENT": "RiskWeave tests@riskweave.dev",
 }
 
 

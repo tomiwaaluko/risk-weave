@@ -145,7 +145,7 @@ class _FakeSec:
     def usage_stats(self) -> dict:
         return {
             "provider": "sec_edgar",
-            "user_agent": "RiskWeave test@example.com",
+            "user_agent": "RiskWeave tests@riskweave.dev",
             "request_count": 0,
             "fair_use_requests_per_second": 10,
         }

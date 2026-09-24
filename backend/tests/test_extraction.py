@@ -347,6 +347,7 @@ def test_gemini_api_key_is_read_from_server_settings_only() -> None:
         neo4j_password="password",
         redis_url="redis://localhost:6379/0",
         gemini_api_key="real-server-side-key",
+        sec_user_agent="RiskWeave tests@riskweave.dev",
     )
     client = GeminiExtractionClient.from_settings(settings, transport=_FlakyTransport())
     assert client.api_key.get_secret_value() == "real-server-side-key"

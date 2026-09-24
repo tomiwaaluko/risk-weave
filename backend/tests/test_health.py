@@ -10,6 +10,7 @@ def test_health_endpoint_reports_ready(monkeypatch) -> None:
     monkeypatch.setenv("NEO4J_PASSWORD", "password")
     monkeypatch.setenv("REDIS_URL", "redis://redis:6379/0")
     monkeypatch.setenv("GEMINI_API_KEY", "test-placeholder")
+    monkeypatch.setenv("SEC_USER_AGENT", "RiskWeave tests@riskweave.dev")
 
     with TestClient(app) as client:
         response = client.get("/health")
