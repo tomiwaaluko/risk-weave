@@ -14,30 +14,49 @@ runnable scenario so the existing propagation engine and WebSocket slider work
 unchanged, and it echoes the human-readable derivation methodology
 (`/graph/methodology`) for the honesty page.
 
+RIS-28 adds an explicit **live** seed path (`?source=live`) that assembles a
+graph from already-extracted snapshot rows + layered entity resolution +
+registered ``DER-*`` derivations. The fixture remains the default so demo
+freeze and existing tests stay intact. Live assembly never calls Gemini and
+never silently substitutes the fixture unless ``fallback_to_fixture=true``.
+
 Shock magnitudes here are set by deterministic code, never by Gemini
 (`RW-AI-010`); they seed the primary CRE-decline demo cascade.
 """
 
 from __future__ import annotations
 
-from typing import Annotated
+import logging
+from pathlib import Path
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session, sessionmaker
 
 from riskweave.derivations.registry import list_methods
+from riskweave.entity_resolution import Resolver
 from riskweave.explain import EdgeEvidence
 from riskweave.graph.assembly import AssembledGraph, GraphAssemblyError
 from riskweave.graph.fixture import load_graph_fixture
+from riskweave.graph.live import (
+    DEFAULT_UNIVERSE_PATH,
+    LiveAssemblyError,
+    assemble_live_graph,
+)
 from riskweave_api.dependencies import get_store
 from riskweave_api.models import ScenarioCreateRequest, ScenarioState, ShockFactorIn
 from riskweave_api.scenario_store import ScenarioStore
 from riskweave_api.security import default_rate_limit, require_api_key
+from riskweave_api.settings import Settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/graph", tags=["graph"])
 StoreDependency = Annotated[ScenarioStore, Depends(get_store)]
 
 GRAPH_SCENARIO_ID = "cre-demo"
+LIVE_GRAPH_SCENARIO_ID = "cre-live"
 SEED = 20260711
 
 # Deterministic CRE-decline demo shock (magnitudes chosen by code, not Gemini).
@@ -111,6 +130,7 @@ class GraphSeedResponse(BaseModel):
     state: str
     checksum: str
     low_confidence_threshold: float
+    source: Literal["fixture", "live"] = "fixture"
     nodes: list[GraphNodeOut]
     edges: list[GraphEdgeOut]
     factors: list[GraphFactorOut]
@@ -130,6 +150,15 @@ class MethodologyResponse(BaseModel):
     methods: list[MethodOut]
     data_sources: list[str]
     limitations: list[str]
+
+
+class LiveAssemblyInfo(BaseModel):
+    """Operator-facing binding for the live pipeline (RIS-28)."""
+
+    default_snapshot_id: int
+    graph_version: str
+    assemble_command: str
+    notes: list[str]
 
 
 # ---------------------------------------------------------------------------
@@ -164,7 +193,13 @@ def _provenance_by_edge(graph: AssembledGraph) -> dict[str, EdgeEvidence]:
     return records
 
 
-def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
+def _serialize_graph(
+    graph: AssembledGraph,
+    *,
+    scenario_id: str,
+    source: Literal["fixture", "live"],
+    factors: tuple[tuple[str, str, float], ...],
+) -> GraphSeedResponse:
     from riskweave.derivations.registry import get_method
 
     nodes = [
@@ -208,21 +243,96 @@ def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
             )
         )
 
-    factors = [
-        GraphFactorOut(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in _DEMO_FACTORS
+    factor_out = [
+        GraphFactorOut(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in factors
     ]
 
     return GraphSeedResponse(
-        scenario_id=GRAPH_SCENARIO_ID,
+        scenario_id=scenario_id,
         snapshot_id=graph.snapshot_id,
         graph_version=graph.graph_version,
         state=ScenarioState.READY,
         checksum=graph.checksum,
         low_confidence_threshold=LOW_CONFIDENCE_THRESHOLD,
+        source=source,
         nodes=nodes,
         edges=edges,
-        factors=factors,
+        factors=factor_out,
     )
+
+
+def _register_scenario(
+    store: ScenarioStore,
+    graph: AssembledGraph,
+    *,
+    scenario_id: str,
+    factors: tuple[tuple[str, str, float], ...],
+) -> None:
+    snapshot = graph.to_snapshot()
+    store.register_snapshot(snapshot)
+    store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
+    store.delete_scenario(scenario_id)
+    req = ScenarioCreateRequest(
+        scenario_id=scenario_id,
+        snapshot_id=snapshot.snapshot_id,
+        graph_version=snapshot.graph_version,
+        factors=[
+            ShockFactorIn(factor_id=fid, node_id=nid, magnitude=mag) for fid, nid, mag in factors
+        ],
+        seed=SEED,
+    )
+    store.create(req)
+    store.transition(scenario_id, ScenarioState.VALIDATING)
+    store.transition(scenario_id, ScenarioState.READY)
+
+
+def _live_factors_for(graph: AssembledGraph) -> tuple[tuple[str, str, float], ...]:
+    """Pick shock factors whose nodes exist in the live graph.
+
+    Prefer the curated demo factor nodes; if none resolve (full universe ids
+    differ from the fixture), fall back to the highest-centrality node so the
+    scenario is still runnable.
+    """
+    known = {e.entity_id for e in graph.entities}
+    matched = tuple(f for f in _DEMO_FACTORS if f[1] in known)
+    if matched:
+        return matched
+    if not graph.entities:
+        return ()
+    top = max(graph.entities, key=lambda e: graph.centrality.get(e.entity_id, 0.0))
+    return (("live-origin-shock", top.entity_id, 1.0),)
+
+
+def _assemble_live(
+    settings: Settings,
+    snapshot_id: int,
+    factory: sessionmaker[Session],
+) -> AssembledGraph:
+    from riskweave_api.graph.live_loader import load_extracted_relationships
+
+    try:
+        with factory() as session:
+            relationships = load_extracted_relationships(session, snapshot_id)
+    except LiveAssemblyError:
+        raise
+    except Exception as exc:
+        logger.exception("failed to load extractions for snapshot_id=%s", snapshot_id)
+        raise LiveAssemblyError(
+            f"failed to load extractions for snapshot_id={snapshot_id}"
+        ) from exc
+
+    universe = DEFAULT_UNIVERSE_PATH
+    if not Path(universe).exists():
+        raise LiveAssemblyError(f"universe file not found: {universe}")
+    resolver = Resolver.from_universe_file(universe)
+    graph, _report = assemble_live_graph(
+        snapshot_id=f"live-snapshot-{snapshot_id}",
+        relationships=relationships,
+        resolver=resolver,
+        universe_path=universe,
+        graph_version=settings.live_graph_version,
+    )
+    return graph
 
 
 # ---------------------------------------------------------------------------
@@ -236,40 +346,99 @@ def _serialize_graph(graph: AssembledGraph) -> GraphSeedResponse:
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_api_key), Depends(default_rate_limit)],
 )
-def seed_graph(store: StoreDependency) -> GraphSeedResponse:
-    """Load the CRE fixture graph and register it as a runnable demo scenario.
+def seed_graph(
+    request: Request,
+    store: StoreDependency,
+    source: Literal["fixture", "live"] = Query(
+        default="fixture",
+        description=(
+            "Graph source. 'fixture' (default) loads the committed CRE demo "
+            "fixture. 'live' assembles from already-extracted rows for the "
+            "configured snapshot (LIVE_GRAPH_SNAPSHOT_ID)."
+        ),
+    ),
+    snapshot_id: int | None = Query(
+        default=None,
+        description="Override LIVE_GRAPH_SNAPSHOT_ID when source=live.",
+    ),
+    fallback_to_fixture: bool = Query(
+        default=False,
+        description=(
+            "When source=live and assembly fails, return the fixture instead "
+            "of an error. Off by default so missing extractions are visible."
+        ),
+    ),
+) -> GraphSeedResponse:
+    """Seed a runnable graph scenario.
 
-    Idempotent: re-seeding overwrites the previous demo scenario. Every returned
-    edge carries complete provenance — the write gate in the fixture loader
-    rejects anything less before it reaches here (`RW-ALG-032`).
+    Default ``source=fixture`` preserves the demo freeze and existing tests.
+    ``source=live`` requires already-persisted extraction rows and never calls
+    Gemini (`RW-AI-010`).
     """
-    try:
-        graph = load_graph_fixture()
-    except GraphAssemblyError as exc:  # pragma: no cover - fixture is committed
-        raise HTTPException(status_code=500, detail=f"fixture load failed: {exc}") from exc
+    settings: Settings = request.app.state.settings
+    graph_source: Literal["fixture", "live"] = source
+    scenario_id = GRAPH_SCENARIO_ID
+    factors = _DEMO_FACTORS
 
-    snapshot = graph.to_snapshot()
-    store.register_snapshot(snapshot)
-    store.register_provenance(snapshot.snapshot_id, _provenance_by_edge(graph))
+    if source == "live":
+        live_snap = snapshot_id if snapshot_id is not None else settings.live_graph_snapshot_id
+        try:
+            graph = _assemble_live(
+                settings,
+                live_snap,
+                request.app.state.db_session_factory,
+            )
+            scenario_id = LIVE_GRAPH_SCENARIO_ID
+            factors = _live_factors_for(graph)
+        except LiveAssemblyError as exc:
+            if not fallback_to_fixture:
+                raise HTTPException(
+                    status_code=422,
+                    detail=str(exc),
+                ) from exc
+            try:
+                graph = load_graph_fixture()
+            except GraphAssemblyError as fixture_exc:  # pragma: no cover
+                raise HTTPException(
+                    status_code=500, detail=f"fixture load failed: {fixture_exc}"
+                ) from fixture_exc
+            graph_source = "fixture"
+            scenario_id = GRAPH_SCENARIO_ID
+            factors = _DEMO_FACTORS
+    else:
+        try:
+            graph = load_graph_fixture()
+        except GraphAssemblyError as exc:  # pragma: no cover - fixture is committed
+            raise HTTPException(status_code=500, detail=f"fixture load failed: {exc}") from exc
 
-    # Overwrite any previous demo scenario so re-seeding is idempotent.
-    store.delete_scenario(GRAPH_SCENARIO_ID)
+    _register_scenario(store, graph, scenario_id=scenario_id, factors=factors)
+    return _serialize_graph(graph, scenario_id=scenario_id, source=graph_source, factors=factors)
 
-    req = ScenarioCreateRequest(
-        scenario_id=GRAPH_SCENARIO_ID,
-        snapshot_id=snapshot.snapshot_id,
-        graph_version=snapshot.graph_version,
-        factors=[
-            ShockFactorIn(factor_id=fid, node_id=nid, magnitude=mag)
-            for fid, nid, mag in _DEMO_FACTORS
+
+@router.get(
+    "/live-info",
+    response_model=LiveAssemblyInfo,
+    dependencies=[Depends(default_rate_limit)],
+)
+def get_live_assembly_info(request: Request) -> LiveAssemblyInfo:
+    """Document snapshot binding and the operator assemble command (RIS-28)."""
+    settings: Settings = request.app.state.settings
+    snap = settings.live_graph_snapshot_id
+    return LiveAssemblyInfo(
+        default_snapshot_id=snap,
+        graph_version=settings.live_graph_version,
+        assemble_command=(f"uv run python -m riskweave.graph.assemble_live --snapshot-id {snap}"),
+        notes=[
+            f"Live seed binds to immutable snapshot_id={snap} (RW-FR-015). "
+            "Override with LIVE_GRAPH_SNAPSHOT_ID or ?snapshot_id=.",
+            "POST /graph/seed?source=live assembles from already-extracted "
+            "relationship rows; it does not call Gemini (RW-AI-010).",
+            "Full Gemini extraction over snapshot 3's ~22k chunks is an "
+            "operator step (cost/budget), not part of the seed request.",
+            "Fixture remains the default: POST /graph/seed or ?source=fixture.",
+            "Optional Neo4j write: add --seed-neo4j to the assemble_live command.",
         ],
-        seed=SEED,
     )
-    store.create(req)
-    store.transition(GRAPH_SCENARIO_ID, ScenarioState.VALIDATING)
-    store.transition(GRAPH_SCENARIO_ID, ScenarioState.READY)
-
-    return _serialize_graph(graph)
 
 
 @router.get(
@@ -306,10 +475,11 @@ def get_methodology() -> MethodologyResponse:
         limitations=[
             "Equity-price sensitivities use limited free-tier history; betas are "
             "indicative, not risk-model grade (RW-DATA-002).",
-            "The demo graph is a reduced, curated CRE fixture (~15 entities); it "
-            "is not the full 100-200 entity universe.",
-            "Edge weights are pre-baked deterministic-method outputs from real "
-            "disclosures; the live Gemini extraction pipeline is deferred.",
+            "The default demo graph is a reduced, curated CRE fixture (~15 entities); "
+            "POST /graph/seed?source=live assembles from extracted snapshot rows "
+            "when available (RIS-28).",
+            "Edge weights are always produced by registered DER-* methods; Gemini "
+            "only captures passages and disclosed_magnitude strings (RW-AI-010).",
             "Analytics only — no price predictions and no buy/sell/hold advice.",
         ],
     )
