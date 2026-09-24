@@ -53,6 +53,37 @@ validated `Provenance`, then `assemble()`. A fixture edge missing any provenance
 field is rejected at load (`test_missing_provenance_field_is_rejected`). So the
 fixture is pre-baked, not un-provenanced.
 
+## Live assembly from extracted snapshot rows (RIS-28)
+
+`live.assemble_live_graph()` is the end-to-end wiring path:
+
+1. Take already-persisted relationship extraction rows (Gemini already ran;
+   this step does **not** call Gemini — `RW-AI-010`).
+2. Resolve entity mentions against `data/universe/entities.json` (RIS-11).
+3. Derive each edge weight with a registered `DER-*` method (RIS-9):
+   parse `disclosed_magnitude` via `parse_disclosed_magnitude`, or use
+   caller-supplied XBRL / return-series inputs. Never invent a weight.
+4. Hand every `WeightRecord` to `assemble()` (same Graft 2 gate as the fixture).
+
+API / operator surface:
+
+| Path | Behavior |
+|---|---|
+| `POST /graph/seed` (default) | Fixture demo graph (`cre-demo`) |
+| `POST /graph/seed?source=live` | Assemble from `LIVE_GRAPH_SNAPSHOT_ID` (default `3`) |
+| `POST /graph/seed?source=live&fallback_to_fixture=true` | Live, else fixture (explicit only) |
+| `GET /graph/live-info` | Snapshot binding + assemble command |
+
+Operator command (from `backend/`, with `DATABASE_URL` set and extractions present):
+
+```
+uv run python -m riskweave.graph.assemble_live --snapshot-id 3
+uv run python -m riskweave.graph.assemble_live --snapshot-id 3 --seed-neo4j
+```
+
+Full Gemini extraction of snapshot 3 (~22k chunks) is a separate, budgeted
+operator step — not performed by seed or assemble_live.
+
 ## Neo4j store — the second write gate
 
 `store.Neo4jGraphStore` writes and reads the assembled graph, and is the graph's

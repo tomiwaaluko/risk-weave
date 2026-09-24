@@ -60,3 +60,11 @@ class Settings(BaseSettings):
     fred_rate_limit_requests_per_minute: int = Field(
         default=120, validation_alias="FRED_RATE_LIMIT_REQUESTS_PER_MINUTE"
     )
+
+    # RIS-28: live graph assembly binds to an immutable ingested snapshot
+    # (`RW-FR-015`). Snapshot 3 is the Railway-proven CRE/oil ingestion run
+    # from RIS-25. POST /graph/seed?source=live reads already-extracted rows
+    # for this id — it does not run Gemini. Override when assembling a newer
+    # snapshot after re-ingestion + extraction.
+    live_graph_snapshot_id: int = Field(default=3, validation_alias="LIVE_GRAPH_SNAPSHOT_ID")
+    live_graph_version: str = Field(default="1.0.0", validation_alias="LIVE_GRAPH_VERSION")
