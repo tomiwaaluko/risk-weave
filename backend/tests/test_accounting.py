@@ -334,6 +334,11 @@ def test_rejects_sec_user_agent_without_email() -> None:
         SecClient("RiskWeave without-email")
 
 
+def test_rejects_sec_user_agent_with_incomplete_email() -> None:
+    with pytest.raises(ValueError, match="contact email"):
+        SecClient("RiskWeave contact@")
+
+
 def test_accepts_identifying_sec_user_agent() -> None:
     client = SecClient("RiskWeave tomiwaaluko02@gmail.com")
     assert client.user_agent == "RiskWeave tomiwaaluko02@gmail.com"

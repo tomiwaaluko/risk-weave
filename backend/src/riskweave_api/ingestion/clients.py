@@ -14,18 +14,19 @@ MAX_FILING_BYTES = 50 * 1024 * 1024
 
 # RFC 2606 placeholder domains — not identifying contacts under SEC fair access.
 _PLACEHOLDER_EMAIL_DOMAINS = frozenset({"example.com", "example.org", "example.net"})
-_EMAIL_DOMAIN_IN_USER_AGENT = re.compile(r"@([A-Za-z0-9.-]+)")
+_CONTACT_EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
 
 
 def validate_sec_user_agent(user_agent: str) -> str:
     """Require an identifying contact email (`RW-DATA-005` / SEC fair access).
 
-    Rejects missing ``@`` and obvious placeholder domains so a silent
-    ``contact@example.com`` default cannot ship as a User-Agent.
+    A bare ``@`` is not enough: the value must contain a complete email, and
+    that email must not use a placeholder domain such as ``example.com``.
     """
-    if "@" not in user_agent:
+    matches = list(_CONTACT_EMAIL.finditer(user_agent))
+    if not matches:
         raise ValueError("SEC User-Agent must identify a contact email")
-    for match in _EMAIL_DOMAIN_IN_USER_AGENT.finditer(user_agent):
+    for match in matches:
         domain = match.group(1).lower().rstrip(".")
         if domain in _PLACEHOLDER_EMAIL_DOMAINS:
             raise ValueError("SEC User-Agent must not use a placeholder email domain")
