@@ -69,6 +69,7 @@ def test_preflight_returns_allow_origin_for_real_vercel_origin(monkeypatch) -> N
     monkeypatch.setenv("NEO4J_PASSWORD", "password")
     monkeypatch.setenv("REDIS_URL", "redis://redis:6379/0")
     monkeypatch.setenv("GEMINI_API_KEY", "test-placeholder")
+    monkeypatch.setenv("SEC_USER_AGENT", "RiskWeave tests@riskweave.dev")
 
     origin = "https://risk-weave-five.vercel.app"
     with TestClient(app) as client:
