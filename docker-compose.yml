@@ -62,6 +62,7 @@ services:
       NEO4J_PASSWORD: ${NEO4J_PASSWORD}
       REDIS_URL: ${REDIS_URL}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      SEC_USER_AGENT: ${SEC_USER_AGENT}
       RISKWEAVE_UNIVERSE_PATH: /app/data/universe/entities.json
       # RIS-30: the local stack has a real Postgres, so persist scenarios/runs
       # there instead of the in-memory fixture backend.

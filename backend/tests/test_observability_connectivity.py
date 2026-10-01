@@ -23,6 +23,7 @@ _ENV = {
     # Deliberately unreachable — nothing is listening on this port.
     "REDIS_URL": "redis://127.0.0.1:1/0",
     "GEMINI_API_KEY": "test-placeholder",
+    "SEC_USER_AGENT": "RiskWeave tests@riskweave.dev",
 }
 
 

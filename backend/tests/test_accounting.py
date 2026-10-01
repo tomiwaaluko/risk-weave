@@ -311,12 +311,37 @@ def test_sec_client_reports_request_count_and_configured_fair_use_limit() -> Non
     calls: list[float] = []
     limiter = RateLimiter(1_000, clock=lambda: 0.0, sleep=calls.append)
     client = SecClient(
-        "RiskWeave contact@example.com", limiter=limiter, fair_use_requests_per_second=10
+        "RiskWeave tests@riskweave.dev", limiter=limiter, fair_use_requests_per_second=10
     )
     stats_before = client.usage_stats()
     assert stats_before["request_count"] == 0
     assert stats_before["fair_use_requests_per_second"] == 10
-    assert stats_before["user_agent"] == "RiskWeave contact@example.com"
+    assert stats_before["user_agent"] == "RiskWeave tests@riskweave.dev"
+
+
+def test_rejects_placeholder_sec_user_agent_domain() -> None:
+    for user_agent in (
+        "RiskWeave contact@example.com",
+        "RiskWeave contact@EXAMPLE.ORG",
+        "RiskWeave contact@example.net",
+    ):
+        with pytest.raises(ValueError, match="placeholder email domain"):
+            SecClient(user_agent)
+
+
+def test_rejects_sec_user_agent_without_email() -> None:
+    with pytest.raises(ValueError, match="contact email"):
+        SecClient("RiskWeave without-email")
+
+
+def test_rejects_sec_user_agent_with_incomplete_email() -> None:
+    with pytest.raises(ValueError, match="contact email"):
+        SecClient("RiskWeave contact@")
+
+
+def test_accepts_identifying_sec_user_agent() -> None:
+    client = SecClient("RiskWeave tomiwaaluko02@gmail.com")
+    assert client.user_agent == "RiskWeave tomiwaaluko02@gmail.com"
 
 
 def test_fred_client_reports_request_count_and_configured_rate_limit() -> None:
