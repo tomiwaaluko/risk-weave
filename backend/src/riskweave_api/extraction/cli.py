@@ -8,6 +8,7 @@ before the next call so a stop persists and a later run resumes.
 from __future__ import annotations
 
 import os
+import urllib.error
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -79,6 +80,10 @@ def _extract_one(factory, accounting, client, snapshot_id, chunk_id, kind, cap) 
         except GeminiResponseError as exc:
             session.commit()
             print(f"chunk_id={chunk_id} {kind} schema_invalid: {exc}", flush=True)
+            return 0
+        except (TimeoutError, urllib.error.URLError) as exc:
+            session.rollback()
+            print(f"chunk_id={chunk_id} {kind} transport_error: {exc}", flush=True)
             return 0
         session.commit()
         spent = accounting.daily_spend_usd(session, datetime.now(UTC).date())
