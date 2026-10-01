@@ -5,7 +5,7 @@
     "dockerfilePath": "backend/Dockerfile"
   },
   "deploy": {
-    "startCommand": "python -m riskweave_api.extraction.cli",
+    "startCommand": "python -m riskweave_api.extraction.saved_report",
     "restartPolicyType": "NEVER",
     "numReplicas": 1
   }
