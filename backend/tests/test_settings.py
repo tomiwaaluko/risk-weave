@@ -14,6 +14,7 @@ def test_settings_reject_missing_infrastructure_configuration(monkeypatch) -> No
         "NEO4J_PASSWORD",
         "REDIS_URL",
         "GEMINI_API_KEY",
+        "SEC_USER_AGENT",
     ):
         monkeypatch.delenv(variable, raising=False)
 
@@ -29,14 +30,62 @@ def test_settings_accept_server_side_configuration() -> None:
         neo4j_password="password",
         redis_url="redis://redis:6379/0",
         gemini_api_key="test-placeholder",
+        sec_user_agent="RiskWeave tests@riskweave.dev",
     )
 
     assert settings.neo4j_user == "neo4j"
+    assert settings.sec_user_agent == "RiskWeave tests@riskweave.dev"
+
+
+def test_settings_reject_missing_sec_user_agent(monkeypatch) -> None:
+    monkeypatch.delenv("SEC_USER_AGENT", raising=False)
+
+    with pytest.raises(ValidationError) as error:
+        Settings(
+            database_url="postgresql://riskweave:password@postgres:5432/riskweave",
+            neo4j_uri="bolt://neo4j:7687",
+            neo4j_user="neo4j",
+            neo4j_password="password",
+            redis_url="redis://redis:6379/0",
+            gemini_api_key="test-placeholder",
+            _env_file=None,
+        )
+
+    assert "sec_user_agent" in str(error.value)
+
+
+def test_settings_reject_incomplete_sec_user_agent_email() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            database_url="postgresql://riskweave:password@postgres:5432/riskweave",
+            neo4j_uri="bolt://neo4j:7687",
+            neo4j_user="neo4j",
+            neo4j_password="password",
+            redis_url="redis://redis:6379/0",
+            gemini_api_key="test-placeholder",
+            sec_user_agent="RiskWeave contact@",
+        )
+
+
+def test_settings_reject_placeholder_sec_user_agent_domain() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            database_url="postgresql://riskweave:password@postgres:5432/riskweave",
+            neo4j_uri="bolt://neo4j:7687",
+            neo4j_user="neo4j",
+            neo4j_password="password",
+            redis_url="redis://redis:6379/0",
+            gemini_api_key="test-placeholder",
+            sec_user_agent="RiskWeave contact@example.com",
+        )
 
 
 def test_example_environment_defines_required_server_settings() -> None:
     example_environment = Path(__file__).parents[2] / ".env.example"
 
-    settings = Settings(_env_file=example_environment)
+    settings = Settings(
+        _env_file=example_environment,
+        sec_user_agent="RiskWeave tests@riskweave.dev",
+    )
 
     assert settings.database_url.startswith("postgresql://")

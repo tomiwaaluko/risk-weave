@@ -1,7 +1,9 @@
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from riskweave_api.ingestion.clients import validate_sec_user_agent
 
 
 class Settings(BaseSettings):
@@ -16,7 +18,15 @@ class Settings(BaseSettings):
     redis_url: str
     gemini_api_key: SecretStr
     fred_api_key: SecretStr | None = None
-    sec_user_agent: str = "RiskWeave contact@example.com"
+    # Required identifying contact for SEC EDGAR fair access (`RW-DATA-005`).
+    # No placeholder default — unset fails loudly; placeholder domains rejected.
+    sec_user_agent: str
+
+    @field_validator("sec_user_agent")
+    @classmethod
+    def sec_user_agent_must_identify_contact(cls, value: str) -> str:
+        return validate_sec_user_agent(value)
+
     # Matches the project's Vercel origins (production alias + git/preview
     # subdomains, all under the ``risk-weave`` prefix) and local dev. The
     # subdomain body is restricted to Vercel hostname characters rather than
