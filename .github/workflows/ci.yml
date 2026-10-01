@@ -65,6 +65,11 @@ jobs:
     name: Compose stack end-to-end round-trip
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # .env.example leaves SEC_USER_AGENT empty so a copied file cannot send a
+      # sample contact. Compose gives shell values precedence, and this job
+      # never calls EDGAR (RIS-36).
+      SEC_USER_AGENT: RiskWeave ci@riskweave.dev
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       # Boot only the backend and its data dependencies (postgres/neo4j/redis);
