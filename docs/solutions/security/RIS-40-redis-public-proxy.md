@@ -2,7 +2,8 @@
 
 Date: 2026-09-24  
 Linear: [RIS-40](https://linear.app/risk-weave/issue/RIS-40/railway-redis-is-publicly-reachable-via-tcp-proxy-6379)  
-Origin: Finding F2 from [RIS-35](https://linear.app/risk-weave/issue/RIS-35/security-review-pass-for-the-live-deployment-rw-sec-001004) (`docs/solutions/security/RIS-35-live-deployment-security-review.md` §4).
+Origin: Finding F2 from [RIS-35](https://linear.app/risk-weave/issue/RIS-35/security-review-pass-for-the-live-deployment-rw-sec-001004) (`docs/solutions/security/RIS-35-live-deployment-security-review.md` §4).  
+Classification: enabling work. Closing the public Redis proxy is an operational follow-up to that review. It does not implement `RW-SEC-001` through `RW-SEC-004`.
 
 ## Problem
 
