@@ -70,7 +70,7 @@ class ExtractionService:
             schema_name="relationship-extraction-v1",
             prompt_version=RELATIONSHIP_PROMPT_VERSION,
         )
-        if run.status == "completed":
+        if run.status in {"completed", "schema_invalid"}:
             return ExtractionResult(inserted=0, skipped_existing=True)
         if self.client is None:
             raise RuntimeError("Gemini client is required for extraction")
@@ -144,7 +144,7 @@ class ExtractionService:
             schema_name="covenant-threshold-extraction-v1",
             prompt_version=COVENANT_PROMPT_VERSION,
         )
-        if run.status == "completed":
+        if run.status in {"completed", "schema_invalid"}:
             return ExtractionResult(inserted=0, skipped_existing=True)
         if self.client is None:
             raise RuntimeError("Gemini client is required for extraction")
