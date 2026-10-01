@@ -15,6 +15,8 @@ QUERIES = (
     "select relationship_type, count(*) from relationship_extractions group by relationship_type order by count(*) desc",
     "select count(distinct chunk_id) from relationship_extractions",
     "select count(distinct chunk_id) from extraction_runs where status = 'completed'",
+    "select source_entity, target_entity, relationship_type, direction, disclosed_magnitude, left(source_passage, 300), source_document_id, extraction_confidence from relationship_extractions",
+    "select left(outcome_json::text, 500) from extraction_runs where status = 'schema_invalid' limit 3",
 )
 
 
