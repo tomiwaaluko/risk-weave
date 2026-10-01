@@ -14,7 +14,7 @@ from decimal import Decimal
 
 from riskweave_api.accounting.service import BudgetExceededError, GeminiAccountingService
 from riskweave_api.extraction.gemini import GeminiExtractionClient, GeminiResponseError
-from riskweave_api.extraction.service import ExtractionService
+from riskweave_api.extraction.service import ExtractionService, OffsetMismatchError
 from riskweave_api.ingestion.database import session_factory
 from riskweave_api.settings import Settings
 
@@ -84,6 +84,14 @@ def _extract_one(factory, accounting, client, snapshot_id, chunk_id, kind, cap) 
         except (TimeoutError, urllib.error.URLError) as exc:
             session.rollback()
             print(f"chunk_id={chunk_id} {kind} transport_error: {exc}", flush=True)
+            return 0
+        except OffsetMismatchError as exc:
+            session.commit()
+            print(f"chunk_id={chunk_id} {kind} offset_mismatch: {exc}", flush=True)
+            return 0
+        except Exception as exc:
+            session.rollback()
+            print(f"chunk_id={chunk_id} {kind} skipped_after_error: {exc}", flush=True)
             return 0
         session.commit()
         spent = accounting.daily_spend_usd(session, datetime.now(UTC).date())

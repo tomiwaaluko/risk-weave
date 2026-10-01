@@ -95,6 +95,9 @@ class ExtractionService:
         except GeminiResponseError as exc:
             self._mark_schema_invalid(run, exc)
             raise
+        except OffsetMismatchError as exc:
+            self._mark_offset_mismatch(run, exc)
+            return ExtractionResult(inserted=0)
         run.status = "completed"
         run.completed_at = datetime.now(UTC)
         run.attempts = response.attempts
@@ -165,6 +168,9 @@ class ExtractionService:
         except GeminiResponseError as exc:
             self._mark_schema_invalid(run, exc)
             raise
+        except OffsetMismatchError as exc:
+            self._mark_offset_mismatch(run, exc)
+            return ExtractionResult(inserted=0)
         run.status = "completed"
         run.completed_at = datetime.now(UTC)
         run.attempts = response.attempts
@@ -369,6 +375,13 @@ class ExtractionService:
         if actual != source_passage:
             raise OffsetMismatchError("source passage does not match claimed offsets")
         return chunk.char_start + local_start, chunk.char_start + local_end
+
+    def _mark_offset_mismatch(self, run: ExtractionRun, exc: OffsetMismatchError) -> None:
+        """Record a bad passage and stop. Do not call Gemini again for this chunk."""
+        run.status = "schema_invalid"
+        run.completed_at = datetime.now(UTC)
+        run.outcome_json = {"failures": [str(exc)], "schema_valid_after_retry": False}
+        self.session.flush()
 
     def _mark_schema_invalid(self, run: ExtractionRun, exc: GeminiResponseError) -> None:
         run.status = "schema_invalid"
