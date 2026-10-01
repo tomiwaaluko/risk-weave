@@ -106,7 +106,7 @@ class GeminiAccountingService:
     def daily_spend_usd(self, session: Session, day: date) -> Decimal:
         total = session.scalar(
             select(func.coalesce(func.sum(GeminiUsageRecord.cost_usd), 0)).where(
-                func.date(GeminiUsageRecord.created_at) == day.isoformat()
+                func.date(GeminiUsageRecord.created_at) == day
             )
         )
         return Decimal(total or 0)
