@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -10,6 +11,26 @@ from .rate_limit import RateLimiter
 
 MAX_JSON_BYTES = 25 * 1024 * 1024
 MAX_FILING_BYTES = 50 * 1024 * 1024
+
+# RFC 2606 placeholder domains — not identifying contacts under SEC fair access.
+_PLACEHOLDER_EMAIL_DOMAINS = frozenset({"example.com", "example.org", "example.net"})
+_CONTACT_EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
+
+
+def validate_sec_user_agent(user_agent: str) -> str:
+    """Require an identifying contact email (`RW-DATA-005` / SEC fair access).
+
+    A bare ``@`` is not enough: the value must contain a complete email, and
+    that email must not use a placeholder domain such as ``example.com``.
+    """
+    matches = list(_CONTACT_EMAIL.finditer(user_agent))
+    if not matches:
+        raise ValueError("SEC User-Agent must identify a contact email")
+    for match in matches:
+        domain = match.group(1).lower().rstrip(".")
+        if domain in _PLACEHOLDER_EMAIL_DOMAINS:
+            raise ValueError("SEC User-Agent must not use a placeholder email domain")
+    return user_agent
 
 
 class ProviderError(RuntimeError):
@@ -46,10 +67,8 @@ class SecClient:
         limiter: RateLimiter | None = None,
         fair_use_requests_per_second: int = 10,
     ) -> None:
-        if "@" not in user_agent:
-            raise ValueError("SEC User-Agent must identify a contact email")
-        self.user_agent = user_agent
-        self._headers = {"User-Agent": user_agent, "Accept-Encoding": "identity"}
+        self.user_agent = validate_sec_user_agent(user_agent)
+        self._headers = {"User-Agent": self.user_agent, "Accept-Encoding": "identity"}
         self._fair_use_requests_per_second = fair_use_requests_per_second
         self._limiter = limiter or RateLimiter(fair_use_requests_per_second)
         self._request_count = 0

@@ -44,6 +44,7 @@ def client(monkeypatch):
     monkeypatch.setenv("NEO4J_PASSWORD", "test")
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.setenv("SEC_USER_AGENT", "RiskWeave tests@riskweave.dev")
     with TestClient(app, raise_server_exceptions=True) as c:
         snapshot = GraphSnapshot(
             snapshot_id="snap-api-1",
